@@ -26,6 +26,11 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 			category_values = category.upper().split(',')
 			filters['category__in'] = category_values
 
+		record_ids = self.request.query_params.get('record_ids', None)
+		if record_ids is not None:
+			record_id_list = record_ids.upper().split(',')
+			filters['id__in'] = record_id_list
+
 		type = self.request.query_params.get('type', None)
 		if type is not None:
 			type_values = type.split(',')
@@ -73,22 +78,35 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 		only_categories = self.request.query_params.get('only_categories', None)
 		search_string = self.request.query_params.get('search', None)
 		search_field = self.request.query_params.get('search_field', 'record')
+		record_ids = self.request.query_params.get('record_ids', None)
 		
 		joins = []
 		where = []
 		
-		if country is not None or category is not None or type is not None or only_categories is not None or search_string is not None:
+		if country is not None or category is not None or type is not None or only_categories is not None or search_string is not None or record_ids is not None:
 			joins.append('LEFT JOIN records_places ON records_places.place = socken.id')
 			joins.append('LEFT JOIN records ON records.id = records_places.record')
+
+		if search_string is not None and search_field == 'person':
+			joins.append('LEFT JOIN records_persons ON records_persons.record = records.id')
+			joins.append('LEFT JOIN persons ON records_persons.person = persons.id')
 
 		if search_string is not None:
 			if search_field.lower() == 'record':
 				if search_string.find(';') > -1:
-					where.append('MATCH(records.text) AGAINST("'+search.replace(';', '+')+'")')
+					where.append('MATCH(records.text) AGAINST("'+search_string.replace(';', '+')+'")')
 				else:
-					where.append('(LOWER(records.title) LIKE "%'+search_string.lower()+'%" OR LOWER(records.text) LIKE "%'+search_string.lower()+'%" OR LOWER(records.archive_id) LIKE "%'+search_string.lower()+'%")')
+					where.append('(LOWER(records.title) LIKE "%%'+search_string.lower()+'%%" OR LOWER(records.text) LIKE "%%'+search_string.lower()+'%%" OR LOWER(records.archive_id) LIKE "%%'+search_string.lower()+'%%")')
 			elif search_field.lower() == 'person':
-				where.append('(LOWER(persons.name) LIKE "%'+search_string.lower()+'%")')
+				where.append('(LOWER(persons.name) LIKE "%%'+search_string.lower()+'%%")')
+
+		if record_ids is not None:
+			if record_ids.find(',') > -1:
+				record_id_list = record_ids.split(',')
+				record_id_criteria = '(records.id = '+' OR records.id = '.join(record_id_list)+')'
+				where.append(record_id_criteria)
+			else:
+				where.append('LOWER(records.id) = "'+record_ids+'"')
 
 		if type is not None:
 			if type.find(',') > -1:
@@ -120,9 +138,9 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 		where.append('socken.lat IS NOT NULL')
 		where.append('socken.lng IS NOT NULL')
 
-		joins.append('LEFT JOIN harad ON harad.id = socken.harad')
+		#joins.append('LEFT JOIN harad ON harad.id = socken.harad')
 
-		sql = 'SELECT DISTINCT socken.id, socken.name, socken.lat, socken.lng, socken.lmId lm_id, socken.fylke FROM socken '+(' '.join(joins)+' WHERE '+' AND '.join(where) if len(where) > 0 else '')+' GROUP BY socken.id'
+		sql = 'SELECT DISTINCT socken.id, socken.name, socken.lat, socken.lng, socken.lmId lm_id, socken.fylke FROM socken '+((' '.join(joins) if len(joins) > 0 else '')+' WHERE '+(' AND '.join(where) if len(where) > 0 else ''))+' GROUP BY socken.id'
 
 		print(sql)
 		queryset = Socken.objects.raw(sql)
