@@ -1,8 +1,20 @@
 from rest_framework import serializers
-from .models import Records, Persons, Socken, RecordsMetadata, Category
+from .models import Records, Persons, Socken, Harad, RecordsMetadata, Category
 
+
+class HaradSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Harad
+
+		fields = (
+			'name',
+			'lan',
+			'landskap'
+		)
 
 class SockenSerializer(serializers.ModelSerializer):
+	harad = HaradSerializer(read_only=True)
+
 	class Meta:
 		model = Socken
 
@@ -10,7 +22,8 @@ class SockenSerializer(serializers.ModelSerializer):
 			'id',
 			'name',
 			'lat',
-			'lng'
+			'lng',
+			'harad'
 		)
 
 class CategorySerializer(serializers.ModelSerializer):

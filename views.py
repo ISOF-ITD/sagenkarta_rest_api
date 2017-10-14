@@ -35,6 +35,10 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 		if person is not None:
 			filters['persons__id'] = person
 
+		place = self.request.query_params.get('place', None)
+		if place is not None:
+			filters['places__id'] = place
+
 		search_string = self.request.query_params.get('search', None)
 		if search_string is not None:
 			search_field = self.request.query_params.get('search_field', 'record')
@@ -118,12 +122,18 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
 		joins.append('LEFT JOIN harad ON harad.id = socken.harad')
 
-		sql = 'SELECT DISTINCT socken.id, socken.name, socken.lat, socken.lng, socken.lmId lm_id, harad.name harad, harad.landskap, harad.lan county, socken.fylke FROM socken '+(' '.join(joins)+' WHERE '+' AND '.join(where) if len(where) > 0 else '')+' GROUP BY socken.id'
+		sql = 'SELECT DISTINCT socken.id, socken.name, socken.lat, socken.lng, socken.lmId lm_id, socken.fylke FROM socken '+(' '.join(joins)+' WHERE '+' AND '.join(where) if len(where) > 0 else '')+' GROUP BY socken.id'
 
 		print(sql)
 		queryset = Socken.objects.raw(sql)
 
 		return queryset
+
+	def retrieve(self, request, pk=None):
+		queryset = Socken.objects.all()
+		socken = get_object_or_404(queryset, pk=pk)
+		serializer = SockenSerializer(socken)
+		return Response(serializer.data)
 
 	def paginate_queryset(self, queryset, view=None):
 		return None
