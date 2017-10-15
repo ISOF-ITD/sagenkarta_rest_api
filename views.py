@@ -47,11 +47,19 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 		search_string = self.request.query_params.get('search', None)
 		if search_string is not None:
 			search_field = self.request.query_params.get('search_field', 'record')
+			search_string = search_string.lower();
 
 			if search_field.lower() == 'record':
 				queryset = queryset.filter(Q(title__icontains=search_string) | Q(text__icontains=search_string))
-			if search_field.lower() == 'person':
+			elif search_field.lower() == 'person':
 				filters['persons__name__icontains'] = search_string
+			elif search_field.lower() == 'place':
+				queryset = queryset.filter(Q(places__name__icontains=search_string) | Q(places__harad__name__icontains=search_string) | Q(places__harad__lan__icontains=search_string) | Q(places__harad__landskap__icontains=search_string))
+
+		record_ids = self.request.query_params.get('record_ids', None)
+		if record_ids is not None:
+			record_id_list = record_ids.split(',')
+			filters['id__in'] = record_id_list
 
 		queryset = queryset.filter(**filters).distinct()
 
@@ -99,6 +107,17 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 					where.append('(LOWER(records.title) LIKE "%%'+search_string.lower()+'%%" OR LOWER(records.text) LIKE "%%'+search_string.lower()+'%%" OR LOWER(records.archive_id) LIKE "%%'+search_string.lower()+'%%")')
 			elif search_field.lower() == 'person':
 				where.append('(LOWER(persons.name) LIKE "%%'+search_string.lower()+'%%")')
+			elif search_field.lower() == 'place':
+				where.append((
+					'('
+					'LOWER(harad.name) LIKE "%%'+search_string.lower()+'%%" OR '
+					'LOWER(harad.landskap) LIKE "%%'+search_string.lower()+'%%" OR '
+					'LOWER(harad.lan) LIKE "%%'+search_string.lower()+'%%" OR '
+					'LOWER(socken.fylke) LIKE "%%'+search_string.lower()+'%%" OR '
+					'LOWER(socken.name) LIKE "%%'+search_string.lower()+'%%"'
+					')'
+				))
+				joins.append('LEFT JOIN harad ON harad.id = socken.harad')
 
 		if record_ids is not None:
 			if record_ids.find(',') > -1:
