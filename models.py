@@ -46,9 +46,9 @@ class Socken(models.Model):
 
 
 class Persons(models.Model):
-	id = models.CharField(primary_key=True,max_length=255)
+	id = models.IntegerField(primary_key=True)
 	name = models.CharField(max_length=255)
-	gender = models.CharField(max_length=2, choices=[('k', 'Kvinna'), ('m', 'Man')])
+	gender = models.CharField(max_length=2)
 	birth_year = models.IntegerField(blank=True, null=True)
 	address = models.CharField(max_length=255)
 	biography = models.TextField()
@@ -65,12 +65,21 @@ class Persons(models.Model):
 
 
 class PersonsPlaces(models.Model):
-	person = models.ForeignKey(Persons, db_column='person')
+	person = models.ForeignKey(Persons, db_column='person', related_name='person_object')
 	place = models.ForeignKey(Socken, db_column='place')
 	relation = models.CharField(max_length=5, blank=True, null=True)
 
 	class Meta:
 		db_table = 'persons_places'
+
+
+class Media(models.Model):
+	id = models.IntegerField(primary_key=True)
+	source = models.ImageField(verbose_name='Bildfil')
+	type = models.CharField(max_length=10, verbose_name='Mediatyp')
+
+	class Meta:
+		db_table = 'media'
 
 
 class Records(models.Model):
@@ -88,31 +97,50 @@ class Records(models.Model):
 	comment = models.TextField(blank=True)
 	country = models.TextField()
 	changedate = models.DateTimeField()
-	persons = models.ManyToManyField(
+	persons_persons = models.ManyToManyField(
 		Persons, 
-		through='RecordsPersons',
-		related_name='persons'
+		through='RecordsPersons'
 	)
 	places = models.ManyToManyField(
 		Socken, 
 		through = 'RecordsPlaces'
+	)
+	media = models.ManyToManyField(
+		Media,
+		through='RecordsMedia'
 	)
 
 	class Meta:
 		db_table = 'records'
 
 
+class RecordsPersons(models.Model): #ingredient
+	record = models.ForeignKey(Records, db_column='record', related_name='persons')
+	relation = models.CharField(max_length=5, blank=True, null=True)
+	person = models.ForeignKey(Persons, db_column='person')
+
+	class Meta:
+		db_table = 'records_persons'
+
+
+class RecordsMedia(models.Model):
+	record = models.ForeignKey(Records, db_column='record')
+	media = models.ForeignKey(Media, db_column='media')
+
+	class Meta:
+		db_table = 'records_media'
+
+
 class RecordsMetadata(models.Model):
-    record = models.ForeignKey(Records, db_column='record', related_name='metadata')
-    type = models.CharField(max_length=30, blank=True, null=True, choices=[('sitevision_url', 'Sitevision url'), ('custom', 'Example')])
-    value = models.CharField(max_length=30, blank=True, null=True)
+	record = models.ForeignKey(Records, db_column='record', related_name='metadata')
+	type = models.CharField(max_length=30, blank=True, null=True, choices=[('sitevision_url', 'Sitevision url'), ('custom', 'Example')])
+	value = models.CharField(max_length=30, blank=True, null=True)
 
-    def __str__(self):
-        return self.type+': '+self.value if self.type else ''
+	def __str__(self):
+		return self.type+': '+self.value if self.type else ''
 
-    class Meta:
-        managed = False
-        db_table = 'records_metadata'
+	class Meta:
+		db_table = 'records_metadata'
 
 
 class RecordsPlaces(models.Model):
@@ -121,12 +149,3 @@ class RecordsPlaces(models.Model):
 
 	class Meta:
 		db_table = 'records_places'
-
-
-class RecordsPersons(models.Model):
-	record = models.ForeignKey(Records, db_column='record')
-	person = models.ForeignKey(Persons, db_column='person')
-	relation = models.CharField(max_length=5, blank=True, null=True, choices=[('i', 'Informant'), ('c', 'Uppteckare')])
-
-	class Meta:
-		db_table = 'records_persons'

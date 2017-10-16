@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Records, Persons, Socken, Harad, RecordsMetadata, Category
+from .models import Records, Persons, Socken, Harad, RecordsMetadata, Category, Media, RecordsPersons, RecordsPersons
 
 
 class HaradSerializer(serializers.ModelSerializer):
@@ -24,6 +24,15 @@ class SockenSerializer(serializers.ModelSerializer):
 			'lat',
 			'lng',
 			'harad'
+		)
+
+class MediaSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Media
+
+		fields = (
+			'source',
+			'type'
 		)
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -52,6 +61,20 @@ class PersonsSerializer(serializers.ModelSerializer):
 			'places'
 		)
 
+class InformantsSerializer(PersonsSerializer):
+	places = SockenSerializer(many=True, read_only=True);
+
+class RecordsPersonsSerializer(serializers.ModelSerializer):
+	person = PersonsSerializer(read_only=True)
+	
+	class Meta:
+		model = RecordsPersons
+
+		fields = (
+			'relation',
+			'person'
+		)
+
 class RecordsMetadataSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = RecordsMetadata
@@ -62,10 +85,12 @@ class RecordsMetadataSerializer(serializers.ModelSerializer):
 		)
 
 class SingleRecordSerializer(serializers.ModelSerializer):
-	persons = PersonsSerializer(many=True, read_only=True);
+	#records_persons = PersonsSerializer(many=True, read_only=True);
+	persons = RecordsPersonsSerializer(many=True, read_only=True);
 	places = SockenSerializer(many=True, read_only=True);
 	metadata = RecordsMetadataSerializer(many=True, read_only=True);
 	category = CategorySerializer(read_only=True);
+	media = MediaSerializer(many=True, read_only=True);
 
 	class Meta:
 		model = Records
@@ -84,7 +109,8 @@ class SingleRecordSerializer(serializers.ModelSerializer):
 			'comment',
 			'places',
 			'persons',
-			'metadata'
+			'metadata',
+			'media'
 		)
 
 class RecordsSerializer(serializers.ModelSerializer):

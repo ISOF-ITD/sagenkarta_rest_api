@@ -44,6 +44,11 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 		if place is not None:
 			filters['places__id'] = place
 
+		gender = self.request.query_params.get('gender', None)
+		if gender is not None:
+			person_relation = self.request.query_params.get('person_relation', None)
+			filters['persons__gender__icontains'] = gender.lower()
+
 		search_string = self.request.query_params.get('search', None)
 		if search_string is not None:
 			search_field = self.request.query_params.get('search_field', 'record')
@@ -69,8 +74,8 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 
 	def retrieve(self, request, pk=None):
 		queryset = Records.objects.all()
-		user = get_object_or_404(queryset, pk=pk)
-		serializer = SingleRecordSerializer(user)
+		record = get_object_or_404(queryset, pk=pk)
+		serializer = SingleRecordSerializer(record)
 		return Response(serializer.data)
 
 class PersonsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -87,6 +92,8 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 		search_string = self.request.query_params.get('search', None)
 		search_field = self.request.query_params.get('search_field', 'record')
 		record_ids = self.request.query_params.get('record_ids', None)
+		person_relation = self.request.query_params.get('person_relation', None)
+		gender = self.request.query_params.get('gender', None)
 		
 		joins = []
 		where = []
@@ -95,7 +102,7 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 			joins.append('LEFT JOIN records_places ON records_places.place = socken.id')
 			joins.append('LEFT JOIN records ON records.id = records_places.record')
 
-		if search_string is not None and search_field == 'person':
+		if (search_string is not None and search_field == 'person') or gender is not None:
 			joins.append('LEFT JOIN records_persons ON records_persons.record = records.id')
 			joins.append('LEFT JOIN persons ON records_persons.person = persons.id')
 
@@ -142,6 +149,12 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 				where.append(category_criteria)
 			else:
 				where.append('LOWER(records.category) = "'+category.lower()+'"')
+
+		if person_relation is not None:
+			where.append('LOWER(records_persons.relation) = "'+person_relation.lower()+'"')
+
+		if gender is not None:
+			where.append('LOWER(persons.gender) = "'+gender.lower()+'"')
 
 		if only_categories is not None and only_categories == True:
 			where.join('records.category != ""')
