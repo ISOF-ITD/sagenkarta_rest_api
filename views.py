@@ -38,7 +38,7 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 
 		person = self.request.query_params.get('person', None)
 		if person is not None:
-			filters['persons__id'] = person
+			filters['persons_persons__id'] = person
 
 		place = self.request.query_params.get('place', None)
 		if place is not None:
@@ -47,7 +47,10 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 		gender = self.request.query_params.get('gender', None)
 		if gender is not None:
 			person_relation = self.request.query_params.get('person_relation', None)
-			filters['persons__gender__icontains'] = gender.lower()
+			filters['persons_persons__gender__icontains'] = gender.lower()
+
+			#if person_relation is not None:
+			#	filters['']
 
 		search_string = self.request.query_params.get('search', None)
 		if search_string is not None:
@@ -57,7 +60,7 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 			if search_field.lower() == 'record':
 				queryset = queryset.filter(Q(title__icontains=search_string) | Q(text__icontains=search_string))
 			elif search_field.lower() == 'person':
-				filters['persons__name__icontains'] = search_string
+				filters['persons_persons__name__icontains'] = search_string
 			elif search_field.lower() == 'place':
 				queryset = queryset.filter(Q(places__name__icontains=search_string) | Q(places__harad__name__icontains=search_string) | Q(places__harad__lan__icontains=search_string) | Q(places__harad__landskap__icontains=search_string))
 
