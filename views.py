@@ -38,7 +38,7 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 
 		person = self.request.query_params.get('person', None)
 		if person is not None:
-			filters['persons_persons__id'] = person
+			filters['records_persons__id'] = person
 
 		place = self.request.query_params.get('place', None)
 		if place is not None:
@@ -47,10 +47,12 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 		gender = self.request.query_params.get('gender', None)
 		if gender is not None:
 			person_relation = self.request.query_params.get('person_relation', None)
-			filters['persons_persons__gender__icontains'] = gender.lower()
 
-			#if person_relation is not None:
-			#	filters['']
+			if person_relation is not None:
+				queryset = queryset.filter(Q(records_persons__gender=gender.lower()) and Q(records_persons__recordspersons__relation=person_relation.lower()))
+			else:
+				filters['records_persons__gender'] = gender.lower()
+				#filters['records_persons__recordspersons__relation'] = person_relation.lower()
 
 		search_string = self.request.query_params.get('search', None)
 		if search_string is not None:
@@ -60,7 +62,7 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 			if search_field.lower() == 'record':
 				queryset = queryset.filter(Q(title__icontains=search_string) | Q(text__icontains=search_string))
 			elif search_field.lower() == 'person':
-				filters['persons_persons__name__icontains'] = search_string
+				filters['records_persons__name__icontains'] = search_string
 			elif search_field.lower() == 'place':
 				queryset = queryset.filter(Q(places__name__icontains=search_string) | Q(places__harad__name__icontains=search_string) | Q(places__harad__lan__icontains=search_string) | Q(places__harad__landskap__icontains=search_string))
 
@@ -70,6 +72,10 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 			filters['id__in'] = record_id_list
 
 		queryset = queryset.filter(**filters).distinct()
+
+		#processed_query = str(queryset.query)
+		#processed_query = processed_query.replace('INNER JOIN', 'LEFT JOIN')
+		#queryset.raw(processed_query)
 
 		print(queryset.query)
 
@@ -177,7 +183,6 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
 		sql = 'SELECT DISTINCT socken.id, socken.name, socken.lat, socken.lng, socken.lmId lm_id, socken.fylke FROM socken '+((' '.join(joins) if len(joins) > 0 else '')+' WHERE '+(' AND '.join(where) if len(where) > 0 else ''))+' GROUP BY socken.id'
 
-		print(sql)
 		queryset = Socken.objects.raw(sql)
 
 		return queryset

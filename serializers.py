@@ -116,6 +116,7 @@ class SingleRecordSerializer(serializers.ModelSerializer):
 class RecordsSerializer(serializers.ModelSerializer):
 	places = SockenSerializer(many=True, read_only=True);
 	category = CategorySerializer(read_only=True);
+	metadata = RecordsMetadataSerializer(many=True, read_only=True);
 
 	class Meta:
 		model = Records

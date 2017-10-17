@@ -97,13 +97,13 @@ class Records(models.Model):
 	comment = models.TextField(blank=True)
 	country = models.TextField()
 	changedate = models.DateTimeField()
-	persons_persons = models.ManyToManyField(
+	records_persons = models.ManyToManyField(
 		Persons, 
-		through='RecordsPersons'
+		through='RecordsPersons', symmetrical=False
 	)
 	places = models.ManyToManyField(
 		Socken, 
-		through = 'RecordsPlaces'
+		through = 'RecordsPlaces', symmetrical=False
 	)
 	media = models.ManyToManyField(
 		Media,
