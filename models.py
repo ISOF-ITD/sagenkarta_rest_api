@@ -35,6 +35,8 @@ class Socken(models.Model):
 	harad = models.ForeignKey(Harad, models.DO_NOTHING, db_column='harad')
 	lat = models.FloatField()
 	lng = models.FloatField()
+	name = models.CharField(max_length=200)
+	lmId = models.IntegerField()
 
 	socken_records = models.ManyToManyField(
 		'Records', 
@@ -95,7 +97,7 @@ class Records(models.Model):
 	archive_page = models.CharField(max_length=20, blank=True, null=True)
 	source = models.TextField(blank=True)
 	comment = models.TextField(blank=True)
-	country = models.TextField()
+	country = models.CharField(max_length=50)
 	changedate = models.DateTimeField()
 	records_persons = models.ManyToManyField(
 		Persons, 

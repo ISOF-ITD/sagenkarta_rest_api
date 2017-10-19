@@ -1,6 +1,6 @@
 from .models import Records, Persons, Socken
 from rest_framework import viewsets
-from .serializers import RecordsSerializer, SingleRecordSerializer, PersonsSerializer, SockenSerializer
+from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer
 from rest_framework.response import Response
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -81,11 +81,11 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 
 		return queryset
 
-	def retrieve(self, request, pk=None):
-		queryset = Records.objects.all()
-		record = get_object_or_404(queryset, pk=pk)
-		serializer = SingleRecordSerializer(record)
-		return Response(serializer.data)
+	#def retrieve(self, request, pk=None):
+	#	queryset = Records.objects.all()
+	#	record = get_object_or_404(queryset, pk=pk)
+	#	serializer = SingleRecordSerializer(record)
+	#	return Response(serializer.data)
 
 class PersonsViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = Persons.objects.all()
