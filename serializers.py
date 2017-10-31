@@ -42,6 +42,11 @@ class SockenSerializer(serializers.ModelSerializer):
 		)
 
 class MediaSerializer(serializers.ModelSerializer):
+	source = serializers.SerializerMethodField('get_source_url')
+
+	def get_source_url(self, obj):
+		return str(obj.source)
+
 	class Meta:
 		model = Media
 
