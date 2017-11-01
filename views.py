@@ -1,9 +1,13 @@
-from .models import Records, Persons, Socken
+from .models import Records, Persons, Socken, Category
 from rest_framework import viewsets
-from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer
+from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer, CategorySerializer
 from rest_framework.response import Response
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+
+class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = Category.objects.all()
+	serializer_class = CategorySerializer
 
 class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = RecordsSerializer

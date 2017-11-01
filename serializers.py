@@ -62,7 +62,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 		fields = (
 			'category',
-			'name'
+			'name',
+			'type'
 		)
 
 class PersonsSerializer(serializers.ModelSerializer):

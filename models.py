@@ -15,9 +15,11 @@ from django.db import models
 class Category(models.Model):
 	id = models.CharField(primary_key=True,max_length=255)
 	name = models.CharField(max_length=100, blank=False, null=False)
+	type = models.CharField(max_length=100, blank=False, null=False)
 
 	class Meta:
 		db_table = 'categories_v2'
+		ordering = ['-type', 'id']
 
 
 class Harad(models.Model):
@@ -54,7 +56,7 @@ class Persons(models.Model):
 	birth_year = models.IntegerField(blank=True, null=True)
 	address = models.CharField(max_length=255)
 	biography = models.TextField()
-	image = models.ImageField(verbose_name='Bildfil')
+	image = models.CharField(max_length=255, verbose_name='Bildfil')
 	changedate = models.DateTimeField()
 	places = models.ManyToManyField(
 		Socken, 
@@ -77,7 +79,7 @@ class PersonsPlaces(models.Model):
 
 class Media(models.Model):
 	id = models.IntegerField(primary_key=True)
-	source = models.ImageField(verbose_name='Bildfil')
+	source = models.CharField(max_length=255, verbose_name='Bildfil')
 	type = models.CharField(max_length=10, verbose_name='Mediatyp')
 
 	class Meta:
