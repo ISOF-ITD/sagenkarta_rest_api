@@ -118,6 +118,7 @@ class RecordsMedia(models.Model):
 	record = models.ForeignKey(Records, db_column='record', related_name='media')
 	type = models.CharField(max_length=50, blank=True, null=True)
 	source = models.CharField(max_length=255, blank=True, null=True)
+	type = models.CharField(max_length=255, blank=True, null=True)
 
 	class Meta:
 		db_table = 'records_media'

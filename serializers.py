@@ -121,7 +121,8 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 
 		fields = (
 			'type',
-			'source'
+			'source',
+			'title'
 		)
 
 class RecordsSerializer(serializers.ModelSerializer):
