@@ -77,15 +77,6 @@ class PersonsPlaces(models.Model):
 		db_table = 'persons_places'
 
 
-class Media(models.Model):
-	id = models.IntegerField(primary_key=True)
-	source = models.CharField(max_length=255, verbose_name='Bildfil')
-	type = models.CharField(max_length=10, verbose_name='Mediatyp')
-
-	class Meta:
-		db_table = 'media'
-
-
 class Records(models.Model):
 	id = models.IntegerField(primary_key=True)
 	title = models.CharField(max_length=255)
@@ -109,10 +100,6 @@ class Records(models.Model):
 		Socken, 
 		through = 'RecordsPlaces', symmetrical=False
 	)
-	media = models.ManyToManyField(
-		Media,
-		through='RecordsMedia'
-	)
 
 	class Meta:
 		db_table = 'records'
@@ -128,8 +115,9 @@ class RecordsPersons(models.Model): #ingredient
 
 
 class RecordsMedia(models.Model):
-	record = models.ForeignKey(Records, db_column='record')
-	media = models.ForeignKey(Media, db_column='media')
+	record = models.ForeignKey(Records, db_column='record', related_name='media')
+	type = models.CharField(max_length=50, blank=True, null=True)
+	source = models.CharField(max_length=255, blank=True, null=True)
 
 	class Meta:
 		db_table = 'records_media'
