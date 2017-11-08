@@ -4,6 +4,8 @@ from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer,
 from rest_framework.response import Response
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from revproxy.views import ProxyView
+from base64 import b64encode
 
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = Category.objects.all()
@@ -248,3 +250,14 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 		return None
 
 	serializer_class = SockenSerializer
+
+class LantmaterietProxyView(ProxyView):
+	upstream = 'http://maps.lantmateriet.se/topowebb/v1/wmts/1.0.0/topowebb/default/3006/'
+
+	def get_request_headers(self):
+		headers = super(LantmaterietProxyView, self).get_request_headers()
+
+		authHeaderHash = b64encode(b'ifsf0001:XgDmt3SC60l').decode("ascii")
+
+		headers['Authorization'] = 'Basic %s' %  authHeaderHash
+		return headers
