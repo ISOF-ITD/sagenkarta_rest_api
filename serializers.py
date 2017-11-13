@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Records, Persons, Socken, Harad, RecordsMetadata, Category, RecordsMedia, RecordsPersons, RecordsPersons
+from .models import Records, Persons, Socken, Harad, RecordsMetadata, Category, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory
 
 
 class HaradSerializer(serializers.ModelSerializer):
@@ -125,11 +125,26 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 			'title'
 		)
 
+class RecordsCategorySerializer(serializers.ModelSerializer):
+	category = serializers.CharField(source='category.id')
+	name = serializers.CharField(source='category.name')
+	type = serializers.CharField(source='category.type')
+	
+	class Meta:
+		model = RecordsCategory
+
+		fields = (
+			'category',
+			'name',
+			'type'
+		)
+
 class RecordsSerializer(serializers.ModelSerializer):
 	persons = RecordsPersonsSerializer(many=True, read_only=True);
 	places = SockenSerializer(many=True, read_only=True);
 	metadata = RecordsMetadataSerializer(many=True, read_only=True);
-	taxonomy = CategorySerializer(source='category', read_only=True);
+	#taxonomy = CategorySerializer(source='category', read_only=True);
+	taxonomy = RecordsCategorySerializer(many=True, read_only=True, source='categories');
 	media = RecordsMediaSerializer(many=True, read_only=True);
 	materialtype = serializers.CharField(source='type')
 	archive = serializers.SerializerMethodField('get_archive_object')

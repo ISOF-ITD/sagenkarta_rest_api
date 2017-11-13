@@ -82,8 +82,6 @@ class Records(models.Model):
 	title = models.CharField(max_length=255)
 	text = models.TextField()
 	year = models.IntegerField(blank=True, null=True)
-	#category = models.CharField(max_length=20, blank=True)
-	category = models.ForeignKey(Category, db_column='category')
 	archive = models.CharField(max_length=255, blank=True)
 	archive_id = models.CharField(max_length=255, blank=True)
 	type = models.CharField(max_length=20)
@@ -99,6 +97,10 @@ class Records(models.Model):
 	places = models.ManyToManyField(
 		Socken, 
 		through = 'RecordsPlaces', symmetrical=False
+	)
+	taxonomy = models.ManyToManyField(
+		Category, 
+		through = 'RecordsCategory', symmetrical=False
 	)
 
 	class Meta:
@@ -142,3 +144,14 @@ class RecordsPlaces(models.Model):
 
 	class Meta:
 		db_table = 'records_places'
+
+
+class RecordsCategory(models.Model):
+	record = models.ForeignKey(Records, db_column='record', related_name='categories')
+	category = models.ForeignKey(Category, db_column='category')
+
+	class Meta:
+		managed = False
+		db_table = 'records_category'
+
+
