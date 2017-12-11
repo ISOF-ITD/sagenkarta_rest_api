@@ -18,6 +18,7 @@ class SockenSerializer(serializers.ModelSerializer):
 	landskap = serializers.CharField(source='harad.landskap')
 	county = serializers.CharField(source='harad.lan')
 	lm_id = serializers.CharField(source='lmId')
+	fylke = serializers.CharField()
 
 	location = serializers.SerializerMethodField('get_location_object')
 
@@ -38,7 +39,8 @@ class SockenSerializer(serializers.ModelSerializer):
 			'harad_id',
 			'landskap',
 			'county',
-			'lm_id'
+			'lm_id',
+			'fylke'
 		)
 
 class CategorySerializer(serializers.ModelSerializer):
