@@ -38,6 +38,7 @@ class Socken(models.Model):
 	lat = models.FloatField()
 	lng = models.FloatField()
 	name = models.CharField(max_length=200)
+	fylke = models.CharField(max_length=200)
 	lmId = models.IntegerField()
 
 	socken_records = models.ManyToManyField(
