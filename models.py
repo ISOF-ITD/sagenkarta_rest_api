@@ -90,6 +90,7 @@ class Records(models.Model):
 	source = models.TextField(blank=True)
 	comment = models.TextField(blank=True)
 	country = models.CharField(max_length=50)
+	language = models.CharField(max_length=50)
 	changedate = models.DateTimeField()
 	records_persons = models.ManyToManyField(
 		Persons, 

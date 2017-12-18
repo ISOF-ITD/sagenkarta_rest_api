@@ -168,6 +168,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'year', 
 			'taxonomy', 
 			'archive', 
+			'language',
 			'materialtype', 
 			'source', 
 			'comment',
