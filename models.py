@@ -79,7 +79,7 @@ class PersonsPlaces(models.Model):
 
 
 class Records(models.Model):
-	id = models.IntegerField(primary_key=True)
+	id = models.CharField(max_length=20, primary_key=True)
 	title = models.CharField(max_length=255)
 	text = models.TextField()
 	year = models.IntegerField(blank=True, null=True)
