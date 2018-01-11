@@ -154,6 +154,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	def get_archive_object(self, obj):
 		return {
 			'archive_id': obj.archive_id,
+			'total_paes': obj.total_pages,
 			'country': obj.country,
 			'archive': obj.archive
 		}
