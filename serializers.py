@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Records, Persons, Socken, Harad, RecordsMetadata, Category, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory
+from .models import Records, Persons, Socken, Harad, RecordsMetadata, Category, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces
 
 
 class HaradSerializer(serializers.ModelSerializer):
@@ -10,6 +10,41 @@ class HaradSerializer(serializers.ModelSerializer):
 			'name',
 			'lan',
 			'landskap'
+		)
+
+class RecordsPlacesSerializer(serializers.ModelSerializer):
+	id = serializers.CharField(source='place.id')
+	name = serializers.CharField(source='place.name')
+	location = serializers.CharField(source='place.location')
+	harad = serializers.CharField(source='place.harad.name')
+	harad_id = serializers.IntegerField(source='place.harad.id')
+	landskap = serializers.CharField(source='place.harad.landskap')
+	county = serializers.CharField(source='place.harad.lan')
+	lm_id = serializers.CharField(source='place.lmId')
+	fylke = serializers.CharField(source='place.fylke')
+
+	location = serializers.SerializerMethodField('get_location_object')
+
+	def get_location_object(self, obj):
+		return {
+			'lat': obj.place.lat,
+			'lon': obj.place.lng
+		}
+
+	class Meta:
+		model = RecordsPlaces
+
+		fields = (
+			'id',
+			'name',
+			'location',
+			'harad',
+			'harad_id',
+			'landskap',
+			'county',
+			'lm_id',
+			'fylke',
+			'type'
 		)
 
 class SockenSerializer(serializers.ModelSerializer):
@@ -85,9 +120,6 @@ class PersonsMinimalSerializer(serializers.ModelSerializer):
 			'places'
 		)
 
-class InformantsSerializer(PersonsSerializer):
-	places = SockenSerializer(many=True, read_only=True);
-
 class RecordsPersonsSerializer(serializers.ModelSerializer):
 	#person = PersonsMinimalSerializer(read_only=True)
 	id = serializers.CharField(source='person.id')
@@ -143,7 +175,8 @@ class RecordsCategorySerializer(serializers.ModelSerializer):
 
 class RecordsSerializer(serializers.ModelSerializer):
 	persons = RecordsPersonsSerializer(many=True, read_only=True);
-	places = SockenSerializer(many=True, read_only=True);
+	#places = SockenSerializer(many=True, read_only=True);
+	places = RecordsPlacesSerializer(many=True, read_only=True);
 	metadata = RecordsMetadataSerializer(many=True, read_only=True);
 	#taxonomy = CategorySerializer(source='category', read_only=True);
 	taxonomy = RecordsCategorySerializer(many=True, read_only=True, source='categories');
@@ -154,7 +187,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	def get_archive_object(self, obj):
 		return {
 			'archive_id': obj.archive_id,
-			'total_paes': obj.total_pages,
+			'total_pages': obj.total_pages,
 			'country': obj.country,
 			'archive': obj.archive
 		}
