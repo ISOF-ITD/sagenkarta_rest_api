@@ -15,7 +15,6 @@ class HaradSerializer(serializers.ModelSerializer):
 class RecordsPlacesSerializer(serializers.ModelSerializer):
 	id = serializers.CharField(source='place.id')
 	name = serializers.CharField(source='place.name')
-	location = serializers.CharField(source='place.location')
 	harad = serializers.CharField(source='place.harad.name')
 	harad_id = serializers.IntegerField(source='place.harad.id')
 	landskap = serializers.CharField(source='place.harad.landskap')
@@ -26,10 +25,15 @@ class RecordsPlacesSerializer(serializers.ModelSerializer):
 	location = serializers.SerializerMethodField('get_location_object')
 
 	def get_location_object(self, obj):
-		return {
-			'lat': obj.place.lat,
-			'lon': obj.place.lng
-		}
+		try:
+			location = {
+				'lat': obj.place.lat,
+				'lon': obj.place.lng
+			}
+		except :
+			location = {}
+
+		return location
 
 	class Meta:
 		model = RecordsPlaces
