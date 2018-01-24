@@ -51,7 +51,7 @@ class Socken(models.Model):
 
 
 class Persons(models.Model):
-	id = models.CharField(max_length=20, primary_key=True)
+	id = models.CharField(max_length=50, primary_key=True)
 	name = models.CharField(max_length=255)
 	gender = models.CharField(max_length=2)
 	birth_year = models.IntegerField(blank=True, null=True)
@@ -79,7 +79,7 @@ class PersonsPlaces(models.Model):
 
 
 class Records(models.Model):
-	id = models.CharField(max_length=20, primary_key=True)
+	id = models.CharField(max_length=50, primary_key=True)
 	title = models.CharField(max_length=255)
 	text = models.TextField()
 	year = models.DateField(blank=True, null=True)

@@ -1,11 +1,13 @@
 from .models import Records, Persons, Socken, Category
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer, CategorySerializer
 from rest_framework.response import Response
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from revproxy.views import ProxyView
 from base64 import b64encode
+from django.core.mail import send_mail
+import json
 
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = Category.objects.all()
@@ -261,3 +263,20 @@ class LantmaterietProxyView(ProxyView):
 
 		headers['Authorization'] = 'Basic %s' %  authHeaderHash
 		return headers
+
+class FeedbackViewSet(viewsets.ViewSet):
+	def list(self, request):
+		return Response()
+
+	def post(self, request, format=None):
+		if 'json' in request.data:
+			jsonData = json.loads(request.data['json'])
+			print(jsonData['from_email'])
+
+			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], ['traustid@gmail.com'], fail_silently=False)
+		return Response('success')
+
+	def get_permissions(self):
+		permission_classes = [permissions.AllowAny]
+
+		return [permission() for permission in permission_classes]
