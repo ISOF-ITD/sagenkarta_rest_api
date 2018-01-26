@@ -10,6 +10,8 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 import json
 
+import es_config
+
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = Category.objects.all()
 	serializer_class = CategorySerializer
@@ -21,7 +23,7 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 		queryset = Records.objects.all()
 
 		filters = {}
-		
+
 		country = self.request.query_params.get('country', None)
 		if country is not None:
 			filters['country__iexact'] = country
@@ -112,10 +114,10 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 		record_ids = self.request.query_params.get('record_ids', None)
 		person_relation = self.request.query_params.get('person_relation', None)
 		gender = self.request.query_params.get('gender', None)
-		
+
 		joins = []
 		where = []
-		
+
 		if country is not None or category is not None or type is not None or only_categories is not None or search_string is not None or record_ids is not None:
 			joins.append('LEFT JOIN records_places ON records_places.place = socken.id')
 			joins.append('LEFT JOIN records ON records.id = records_places.record')
@@ -274,7 +276,7 @@ class FeedbackViewSet(viewsets.ViewSet):
 			jsonData = json.loads(request.data['json'])
 			print(jsonData['from_email'])
 
-			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], ['traustid@gmail.com'], fail_silently=False)
+			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [es_config.feedbackEmail], fail_silently=False)
 		return JsonResponse({'success':'true'})
 
 	def get_permissions(self):
