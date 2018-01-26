@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from revproxy.views import ProxyView
 from base64 import b64encode
 from django.core.mail import send_mail
+from django.http import JsonResponse
 import json
 
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
@@ -274,7 +275,7 @@ class FeedbackViewSet(viewsets.ViewSet):
 			print(jsonData['from_email'])
 
 			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], ['traustid@gmail.com'], fail_silently=False)
-		return Response('success')
+		return JsonResponse({'success':'true'})
 
 	def get_permissions(self):
 		permission_classes = [permissions.AllowAny]
