@@ -192,7 +192,7 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
 		#joins.append('LEFT JOIN harad ON harad.id = socken.harad')
 
-		sql = 'SELECT DISTINCT socken.id, socken.name, socken.lat, socken.lng, socken.lmId lm_id, socken.fylke FROM socken '+((' '.join(joins) if len(joins) > 0 else '')+' WHERE '+(' AND '.join(where) if len(where) > 0 else ''))+' GROUP BY socken.id'
+		sql = 'SELECT DISTINCT socken.id, socken.name, socken.lat, socken.lng, socken.lmId lm_id, socken.fylke FROM socken '+((' '.join(joins) if len(joins) > 0 else '')+' WHERE '+(' AND '.join(where) if len(where) > 0 else ''))+' GROUP BY socken.id ORDER BY socken.name'
 
 		queryset = Socken.objects.raw(sql)
 
