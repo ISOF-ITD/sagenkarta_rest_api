@@ -119,7 +119,7 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 		if landskap_name is not None:
 			landskap_name = landskap_name.lower();
 
-			queryset = queryset.filter(Q(harad__name__icontains=landskap_name) | Q(harad__name__icontains=landskap_name))
+			queryset = queryset.filter(Q(harad__name__icontains=landskap_name) | Q(harad__landskap__icontains=landskap_name))
 
 		queryset = queryset.filter(**filters).distinct()
 
