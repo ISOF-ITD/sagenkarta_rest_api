@@ -35,7 +35,7 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
 		category = self.request.query_params.get('category', None)
 		if category is not None:
 			category_values = category.upper().split(',')
-			filters['category__in'] = category_values
+			filters['categories__id__exact'] = category_values
 
 		record_ids = self.request.query_params.get('record_ids', None)
 		if record_ids is not None:
