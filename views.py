@@ -105,7 +105,7 @@ class PersonsViewSet(viewsets.ReadOnlyModelViewSet):
 
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 	def get_queryset(self):
-		queryset = Records.objects.all()
+		queryset = Socken.objects.all()
 
 		filters = {}
 
