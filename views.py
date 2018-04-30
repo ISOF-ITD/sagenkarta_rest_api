@@ -113,7 +113,7 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 		if socken_name is not None:
 			socken_name = socken_name.lower();
 
-			queryset = filters['name__icontains'] = socken_name
+			filters['name__icontains'] = socken_name
 
 		landskap_name = self.request.query_params.get('landskap_name', None)
 		if landskap_name is not None:
