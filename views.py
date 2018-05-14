@@ -195,7 +195,7 @@ class FeedbackViewSet(viewsets.ViewSet):
 			jsonData = json.loads(request.data['json'])
 			print(jsonData['from_email'])
 
-			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [jsonData['email']+'@sprakochfolkminnen.se' if hasattr(jsonData, 'email') else es_config.feedbackEmail], fail_silently=False)
+			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [jsonData['send_to']+'@sprakochfolkminnen.se' if 'send_to' in jsonData else es_config.feedbackEmail], fail_silently=False)
 		return JsonResponse({'success':'true', 'data': jsonData})
 
 	def get_permissions(self):
