@@ -126,6 +126,20 @@ class PersonsSerializer(serializers.ModelSerializer):
 
 class PersonsMinimalSerializer(serializers.ModelSerializer):
 	places = SockenSerializer(many=True, read_only=True);
+	gender = serializers.SerializerMethodField('get_gender')
+
+	def get_gender(self, obj):
+		genders = {
+			'm': 'male',
+			'male': 'male',
+			'k': 'female',
+			'female': 'female',
+			'o': 'unknown',
+			'O': 'unknown',
+			'Ok': 'unknown',
+			'Ma': 'male'
+		}
+		return genders[obj.gender] if obj.gender in genders else obj.gender
 
 	class Meta:
 		model = Persons
