@@ -108,7 +108,7 @@ class PersonsSerializer(serializers.ModelSerializer):
 			'Ok': 'unknown',
 			'Ma': 'male'
 		}
-		return genders[obj.gender]
+		return genders[obj.gender] if obj.gender in genders else obj.gender
 
 	class Meta:
 		model = Persons
