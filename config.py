@@ -1,0 +1,10 @@
+host = 'oden-test.sprakochfolkminnen.se:9200'
+index_name = 'isof-kartor'
+#host = 'uuc-login016-qa.its.uu.se:9200'
+#index_name = 'uu-isof-taledb-sagendatabas'
+protocol = 'http://'
+#user = 'trada905'
+#password = 'Bqude794ed'
+cert_file = False
+restApiRecordUrl = 'http://frigg.sprakochfolkminnen.se/sagendatabas/api/records/'
+feedbackEmail = 'fredrik.skott@sprakochfolkminnen.se'
