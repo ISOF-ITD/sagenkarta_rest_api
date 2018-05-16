@@ -94,7 +94,21 @@ class CategorySerializer(serializers.ModelSerializer):
 		)
 
 class PersonsSerializer(serializers.ModelSerializer):
-	places = SockenSerializer(many=True, read_only=True);
+	places = SockenSerializer(many=True, read_only=True)
+	gender = serializers.SerializerMethodField('get_gender')
+
+	def get_gender(self, obj):
+		genders = {
+			'm': 'male',
+			'male': 'male',
+			'k': 'female',
+			'female': 'female',
+			'o': 'unknown',
+			'O': 'unknown',
+			'Ok': 'unknown',
+			'Ma': 'male'
+		}
+		return genders[obj.gender]
 
 	class Meta:
 		model = Persons
