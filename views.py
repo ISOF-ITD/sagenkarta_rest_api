@@ -10,7 +10,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 import json
 
-import es_config
+from . import config
 
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = Category.objects.all()
@@ -195,7 +195,7 @@ class FeedbackViewSet(viewsets.ViewSet):
 			jsonData = json.loads(request.data['json'])
 			print(jsonData['from_email'])
 
-			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [jsonData['send_to']+'@sprakochfolkminnen.se' if 'send_to' in jsonData else es_config.feedbackEmail], fail_silently=False)
+			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [jsonData['send_to']+'@sprakochfolkminnen.se' if 'send_to' in jsonData else config.feedbackEmail], fail_silently=False)
 		return JsonResponse({'success':'true', 'data': jsonData})
 
 	def get_permissions(self):
