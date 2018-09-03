@@ -181,7 +181,7 @@ class LantmaterietProxyView(ProxyView):
 	def get_request_headers(self):
 		headers = super(LantmaterietProxyView, self).get_request_headers()
 
-		authHeaderHash = b64encode(b'ifsf0001:XgDmt3SC60l').decode("ascii")
+		authHeaderHash = b64encode(b'ifsf0001:13kEU3l8Qr3ezKA').decode("ascii")
 
 		headers['Authorization'] = 'Basic %s' %  authHeaderHash
 		return headers
