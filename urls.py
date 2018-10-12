@@ -12,5 +12,6 @@ router.register(r'feedback', views.FeedbackViewSet, base_name='feedback')
 
 urlpatterns = [
 	url(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
+	url(r'^isofgeo_proxy/(?P<path>.*)$', views.IsofGeoProxyView.as_view()),
 	url(r'^', include(router.urls)),
 ]

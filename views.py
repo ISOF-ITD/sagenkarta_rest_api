@@ -186,6 +186,13 @@ class LantmaterietProxyView(ProxyView):
 		headers['Authorization'] = 'Basic %s' %  authHeaderHash
 		return headers
 
+class IsofGeoProxyView(ProxyView):
+	upstream = 'https://oden-test.sprakochfolkminnen.se/geoserver/oland_agonamn_mysql/ows'
+
+	def get_request_headers(self):
+		headers = super(IsofGeoProxyView, self).get_request_headers()
+		return headers
+
 class FeedbackViewSet(viewsets.ViewSet):
 	def list(self, request):
 		return Response()
