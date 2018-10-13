@@ -187,7 +187,7 @@ class LantmaterietProxyView(ProxyView):
 		return headers
 
 class IsofGeoProxyView(ProxyView):
-	upstream = 'https://oden-test.sprakochfolkminnen.se/geoserver/oland_agonamn_mysql/ows'
+	upstream = 'https://oden-test.sprakochfolkminnen.se/geoserver/'
 
 	def get_request_headers(self):
 		headers = super(IsofGeoProxyView, self).get_request_headers()
