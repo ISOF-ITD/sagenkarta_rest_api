@@ -176,18 +176,18 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = SockenSerializer
 
 class LantmaterietProxyView(ProxyView):
-	upstream = 'http://maps.lantmateriet.se/topowebb/v1/wmts/1.0.0/topowebb/default/3006/'
+	upstream = config.LantmaterietProxy
 
 	def get_request_headers(self):
 		headers = super(LantmaterietProxyView, self).get_request_headers()
 
-		authHeaderHash = b64encode(b'ifsf0001:13kEU3l8Qr3ezKA').decode("ascii")
+		authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
 
 		headers['Authorization'] = 'Basic %s' %  authHeaderHash
 		return headers
 
 class IsofGeoProxyView(ProxyView):
-	upstream = 'https://oden-test.sprakochfolkminnen.se/geoserver/'
+	upstream = config.IsofGeoProxy
 
 	def get_request_headers(self):
 		headers = super(IsofGeoProxyView, self).get_request_headers()
