@@ -1,4 +1,4 @@
-from .models import Records, Persons, Socken, Category
+from .models import Records, Persons, Socken, Category #, TranscribedRecords
 from rest_framework import viewsets, permissions
 from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer, CategorySerializer
 from rest_framework.response import Response
@@ -176,14 +176,21 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = SockenSerializer
 
 class LantmaterietProxyView(ProxyView):
-	upstream = 'http://maps.lantmateriet.se/topowebb/v1/wmts/1.0.0/topowebb/default/3006/'
+	upstream = config.LantmaterietProxy
 
 	def get_request_headers(self):
 		headers = super(LantmaterietProxyView, self).get_request_headers()
 
-		authHeaderHash = b64encode(b'ifsf0001:13kEU3l8Qr3ezKA').decode("ascii")
+		authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
 
 		headers['Authorization'] = 'Basic %s' %  authHeaderHash
+		return headers
+
+class IsofGeoProxyView(ProxyView):
+	upstream = config.IsofGeoProxy
+
+	def get_request_headers(self):
+		headers = super(IsofGeoProxyView, self).get_request_headers()
 		return headers
 
 class FeedbackViewSet(viewsets.ViewSet):
@@ -196,6 +203,34 @@ class FeedbackViewSet(viewsets.ViewSet):
 			print(jsonData['from_email'])
 
 			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [jsonData['send_to']+'@sprakochfolkminnen.se' if 'send_to' in jsonData else config.feedbackEmail], fail_silently=False)
+		return JsonResponse({'success':'true', 'data': jsonData})
+
+
+
+	def get_permissions(self):
+		permission_classes = [permissions.AllowAny]
+
+		return [permission() for permission in permission_classes]
+
+class TranscribeViewSet(viewsets.ViewSet):
+	def list(self, request):
+		return Response()
+
+	def post(self, request, format=None):
+		if 'json' in request.data:
+			jsonData = json.loads(request.data['json'])
+			print(jsonData['from_email'])
+
+			# save_new_record(jsonData)
+			transcribedrecord = TranscribedRecords()
+			transcribedrecord.text = jsonData['message']
+			transcribedrecord.title = jsonData['subject']
+			transcribedrecord.transcribed_by_name = jsonData['from_email']
+
+
+			transcribedrecord.save()
+
+
 		return JsonResponse({'success':'true', 'data': jsonData})
 
 	def get_permissions(self):
