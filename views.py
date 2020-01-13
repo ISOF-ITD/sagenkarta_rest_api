@@ -193,6 +193,13 @@ class IsofGeoProxyView(ProxyView):
 		headers = super(IsofGeoProxyView, self).get_request_headers()
 		return headers
 
+class IsofHomepageView(ProxyView):
+	upstream = config.IsofHomepage
+
+	def get_request_headers(self):
+		headers = super(IsofHomepageView, self).get_request_headers()
+		return headers
+
 class FeedbackViewSet(viewsets.ViewSet):
 	def list(self, request):
 		return Response()
