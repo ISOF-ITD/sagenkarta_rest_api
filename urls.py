@@ -14,5 +14,6 @@ router.register(r'transcribe', views.TranscribeViewSet, base_name='transcribe')
 urlpatterns = [
 	url(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
 	url(r'^isofgeo_proxy/(?P<path>.*)$', views.IsofGeoProxyView.as_view()),
+	url(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
 	url(r'^', include(router.urls)),
 ]
