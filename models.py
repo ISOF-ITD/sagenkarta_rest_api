@@ -12,7 +12,7 @@ from string import Template
 from django.db import models
 
 
-class Category(models.Model):
+class Categories(models.Model):
 	id = models.CharField(primary_key=True,max_length=255)
 	name = models.CharField(max_length=100, blank=False, null=False)
 	type = models.CharField(max_length=100, blank=False, null=False)
@@ -77,8 +77,24 @@ class PersonsPlaces(models.Model):
 	class Meta:
 		db_table = 'persons_places'
 
+class CrowdSourceUsers(models.Model):
+	userid = models.CharField(primary_key=True, max_length=150)
+	name = models.CharField(max_length=255)
+	email = models.EmailField()
+
+	class Meta:
+		managed = True
+		db_table = 'crowdsource_users'
 
 class Records(models.Model):
+	transcription_statuses = [
+		('untranscribed', 'Ej transkriberad'),
+		('transcribed', 'Transkriberad'),
+		('reviewing', 'Under granskning'),
+		('approved', 'Godkänd'),
+		('published', 'Publicerad')
+	]
+
 	id = models.CharField(max_length=50, primary_key=True)
 	title = models.CharField(max_length=255)
 	text = models.TextField()
@@ -91,6 +107,9 @@ class Records(models.Model):
 	source = models.TextField(blank=True)
 	comment = models.TextField(blank=True)
 	country = models.CharField(max_length=50)
+	transcriptiondate = models.DateTimeField(blank=True, verbose_name="Transkriptionsdatum")
+	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True)
+	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new', choices=transcription_statuses)
 	language = models.CharField(max_length=50)
 	changedate = models.DateTimeField()
 	records_persons = models.ManyToManyField(
@@ -102,7 +121,7 @@ class Records(models.Model):
 		through = 'RecordsPlaces', symmetrical=False
 	)
 	taxonomy = models.ManyToManyField(
-		Category, 
+		Categories,
 		through = 'RecordsCategory', symmetrical=False
 	)
 
@@ -152,7 +171,7 @@ class RecordsPlaces(models.Model):
 
 class RecordsCategory(models.Model):
 	record = models.ForeignKey(Records, db_column='record', related_name='categories')
-	category = models.ForeignKey(Category, db_column='category')
+	category = models.ForeignKey(Categories, db_column='category')
 
 	class Meta:
 		managed = False

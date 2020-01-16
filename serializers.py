@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Records, Persons, Socken, Harad, RecordsMetadata, Category, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces
+from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces
 
 
 class HaradSerializer(serializers.ModelSerializer):
@@ -85,7 +85,7 @@ class SockenSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
 	category = serializers.CharField(source='id')
 	class Meta:
-		model = Category
+		model = Categories
 
 		fields = (
 			'category',

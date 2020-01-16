@@ -1,4 +1,6 @@
-from .models import Records, Persons, Socken, Category #, TranscribedRecords
+from django.db.models.functions import Now
+
+from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers
 from rest_framework import viewsets, permissions
 from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer, CategorySerializer
 from rest_framework.response import Response
@@ -12,235 +14,321 @@ import json
 
 from . import config
 
+
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = Category.objects.all()
-	serializer_class = CategorySerializer
+    queryset = Categories.objects.all()
+    serializer_class = CategorySerializer
+
 
 class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
-	serializer_class = RecordsSerializer
+    serializer_class = RecordsSerializer
 
-	def get_queryset(self):
-		queryset = Records.objects.all()
+    def get_queryset(self):
+        queryset = Records.objects.all()
 
-		filters = {}
+        filters = {}
 
-		country = self.request.query_params.get('country', None)
-		if country is not None:
-			filters['country__iexact'] = country
+        country = self.request.query_params.get('country', None)
+        if country is not None:
+            filters['country__iexact'] = country
 
-		only_categories = self.request.query_params.get('only_categories', None)
-		if only_categories is not None:
-			queryset = queryset.exclude(category='')
+        only_categories = self.request.query_params.get('only_categories', None)
+        if only_categories is not None:
+            queryset = queryset.exclude(category='')
 
-		category = self.request.query_params.get('category', None)
-		if category is not None:
-			category_values = category.upper().split(',')
-			filters['categories__id__exact'] = category_values
+        category = self.request.query_params.get('category', None)
+        if category is not None:
+            category_values = category.upper().split(',')
+            filters['categories__id__exact'] = category_values
 
-		record_ids = self.request.query_params.get('record_ids', None)
-		if record_ids is not None:
-			record_id_list = record_ids.upper().split(',')
-			filters['id__in'] = record_id_list
+        record_ids = self.request.query_params.get('record_ids', None)
+        if record_ids is not None:
+            record_id_list = record_ids.upper().split(',')
+            filters['id__in'] = record_id_list
 
-		type = self.request.query_params.get('type', None)
-		if type is not None:
-			type_values = type.split(',')
-			filters['type__in'] = type_values
+        type = self.request.query_params.get('type', None)
+        if type is not None:
+            type_values = type.split(',')
+            filters['type__in'] = type_values
 
-		person = self.request.query_params.get('person', None)
-		if person is not None:
-			filters['records_persons__id'] = person
+        person = self.request.query_params.get('person', None)
+        if person is not None:
+            filters['records_persons__id'] = person
 
-		place = self.request.query_params.get('place', None)
-		if place is not None:
-			filters['places__id'] = place
+        place = self.request.query_params.get('place', None)
+        if place is not None:
+            filters['places__id'] = place
 
-		gender = self.request.query_params.get('gender', None)
-		if gender is not None:
-			person_relation = self.request.query_params.get('person_relation', None)
+        gender = self.request.query_params.get('gender', None)
+        if gender is not None:
+            person_relation = self.request.query_params.get('person_relation', None)
 
-			if person_relation is not None:
-				queryset = queryset.filter(Q(records_persons__gender=gender.lower()) and Q(records_persons__recordspersons__relation=person_relation.lower()))
-			else:
-				filters['records_persons__gender'] = gender.lower()
-				#filters['records_persons__recordspersons__relation'] = person_relation.lower()
+            if person_relation is not None:
+                queryset = queryset.filter(Q(records_persons__gender=gender.lower()) and Q(
+                    records_persons__recordspersons__relation=person_relation.lower()))
+            else:
+                filters['records_persons__gender'] = gender.lower()
+            # filters['records_persons__recordspersons__relation'] = person_relation.lower()
 
-		search_string = self.request.query_params.get('search', None)
-		if search_string is not None:
-			search_field = self.request.query_params.get('search_field', 'record')
-			search_string = search_string.lower();
+        search_string = self.request.query_params.get('search', None)
+        if search_string is not None:
+            search_field = self.request.query_params.get('search_field', 'record')
+            search_string = search_string.lower();
 
-			if search_field.lower() == 'record':
-				queryset = queryset.filter(Q(title__icontains=search_string) | Q(text__icontains=search_string))
-			elif search_field.lower() == 'person':
-				filters['records_persons__name__icontains'] = search_string
-			elif search_field.lower() == 'place':
-				queryset = queryset.filter(Q(places__name__icontains=search_string) | Q(places__harad__name__icontains=search_string) | Q(places__harad__lan__icontains=search_string) | Q(places__harad__landskap__icontains=search_string))
+            if search_field.lower() == 'record':
+                queryset = queryset.filter(Q(title__icontains=search_string) | Q(text__icontains=search_string))
+            elif search_field.lower() == 'person':
+                filters['records_persons__name__icontains'] = search_string
+            elif search_field.lower() == 'place':
+                queryset = queryset.filter(
+                    Q(places__name__icontains=search_string) | Q(places__harad__name__icontains=search_string) | Q(
+                        places__harad__lan__icontains=search_string) | Q(
+                        places__harad__landskap__icontains=search_string))
 
-		record_ids = self.request.query_params.get('record_ids', None)
-		if record_ids is not None:
-			record_id_list = record_ids.split(',')
-			filters['id__in'] = record_id_list
+        record_ids = self.request.query_params.get('record_ids', None)
+        if record_ids is not None:
+            record_id_list = record_ids.split(',')
+            filters['id__in'] = record_id_list
 
-		queryset = queryset.filter(**filters).distinct()
+        queryset = queryset.filter(**filters).distinct()
 
-		#processed_query = str(queryset.query)
-		#processed_query = processed_query.replace('INNER JOIN', 'LEFT JOIN')
-		#queryset.raw(processed_query)
+        # processed_query = str(queryset.query)
+        # processed_query = processed_query.replace('INNER JOIN', 'LEFT JOIN')
+        # queryset.raw(processed_query)
 
-		print(queryset.query)
+        print(queryset.query)
 
-		return queryset
+        return queryset
 
-	#def retrieve(self, request, pk=None):
-	#	queryset = Records.objects.all()
-	#	record = get_object_or_404(queryset, pk=pk)
-	#	serializer = SingleRecordSerializer(record)
-	#	return Response(serializer.data)
+# def retrieve(self, request, pk=None):
+#	queryset = Records.objects.all()
+#	record = get_object_or_404(queryset, pk=pk)
+#	serializer = SingleRecordSerializer(record)
+#	return Response(serializer.data)
+
 
 class PersonsViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = Persons.objects.all()
-	serializer_class = PersonsSerializer
+    queryset = Persons.objects.all()
+    serializer_class = PersonsSerializer
 
 
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
-	def get_queryset(self):
-		queryset = Socken.objects.all()
+    def get_queryset(self):
+        queryset = Socken.objects.all()
 
-		filters = {}
+        filters = {}
 
-		socken_name = self.request.query_params.get('socken_name', None)
-		if socken_name is not None:
-			socken_name = socken_name.lower();
+        socken_name = self.request.query_params.get('socken_name', None)
+        if socken_name is not None:
+            socken_name = socken_name.lower();
 
-			filters['name__icontains'] = socken_name
+            filters['name__icontains'] = socken_name
 
-		landskap_name = self.request.query_params.get('landskap_name', None)
-		if landskap_name is not None:
-			landskap_name = landskap_name.lower();
+        landskap_name = self.request.query_params.get('landskap_name', None)
+        if landskap_name is not None:
+            landskap_name = landskap_name.lower();
 
-			queryset = queryset.filter(Q(harad__name__icontains=landskap_name) | Q(harad__landskap__icontains=landskap_name))
+            queryset = queryset.filter(
+                Q(harad__name__icontains=landskap_name) | Q(harad__landskap__icontains=landskap_name))
 
-		queryset = queryset.filter(**filters).distinct()
+        queryset = queryset.filter(**filters).distinct()
 
-		return queryset
+        return queryset
 
-	serializer_class = SockenSerializer
+    serializer_class = SockenSerializer
 
 
 class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
-	def get_queryset(self):
-		queryset = Socken.objects.all()
+    def get_queryset(self):
+        queryset = Socken.objects.all()
 
-		filters = {}
+        filters = {}
 
-		country = self.request.query_params.get('country', None)
-		if country is not None:
-			#queryset = queryset.filter(socken_records__country=country)
-			filters['socken_records__country'] = country
+        country = self.request.query_params.get('country', None)
+        if country is not None:
+            # queryset = queryset.filter(socken_records__country=country)
+            filters['socken_records__country'] = country
 
-		category = self.request.query_params.get('category', None)
-		if category is not None:
-			#queryset = queryset.filter(socken_records__category=category)
-			filters['socken_records__category'] = category.upper()
+        category = self.request.query_params.get('category', None)
+        if category is not None:
+            # queryset = queryset.filter(socken_records__category=category)
+            filters['socken_records__category'] = category.upper()
 
-		type = self.request.query_params.get('type', None)
-		if type is not None:
-			type_values = type.split(',')
-			#queryset = queryset.filter(socken_records__type__in=type_values).distinct()
-			filters['socken_records__type__in'] = type_values
+        type = self.request.query_params.get('type', None)
+        if type is not None:
+            type_values = type.split(',')
+            # queryset = queryset.filter(socken_records__type__in=type_values).distinct()
+            filters['socken_records__type__in'] = type_values
 
-		search_string = self.request.query_params.get('search', None)
-		if search_string is not None:
-			search_field = self.request.query_params.get('search_field', 'record')
+        search_string = self.request.query_params.get('search', None)
+        if search_string is not None:
+            search_field = self.request.query_params.get('search_field', 'record')
 
-			if search_field.lower() == 'record':
-				queryset = queryset.filter(Q(socken_records__title__icontains=search_string) | Q(socken_records__text__icontains=search_string))
-			if search_field.lower() == 'person':
-				filters['socken_records__persons__name__icontains'] = search_string
+            if search_field.lower() == 'record':
+                queryset = queryset.filter(Q(socken_records__title__icontains=search_string) | Q(
+                    socken_records__text__icontains=search_string))
+            if search_field.lower() == 'person':
+                filters['socken_records__persons__name__icontains'] = search_string
 
-		only_categories = self.request.query_params.get('only_categories', None)
-		if only_categories is not None:
-			#queryset = queryset.filter(~Q(socken_records__category=None))
-			queryset = queryset.exclude(socken_records__category='')
+        only_categories = self.request.query_params.get('only_categories', None)
+        if only_categories is not None:
+            # queryset = queryset.filter(~Q(socken_records__category=None))
+            queryset = queryset.exclude(socken_records__category='')
 
-		queryset = queryset.filter(**filters).distinct()
+        queryset = queryset.filter(**filters).distinct()
 
-		print(queryset.query)
+        print(queryset.query)
 
-		return queryset
+        return queryset
 
-	def paginate_queryset(self, queryset, view=None):
-		return None
+    def paginate_queryset(self, queryset, view=None):
+        return None
 
-	serializer_class = SockenSerializer
+    serializer_class = SockenSerializer
+
 
 class LantmaterietProxyView(ProxyView):
-	upstream = config.LantmaterietProxy
+    upstream = config.LantmaterietProxy
 
-	def get_request_headers(self):
-		headers = super(LantmaterietProxyView, self).get_request_headers()
+    def get_request_headers(self):
+        headers = super(LantmaterietProxyView, self).get_request_headers()
 
-		authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
+        authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
 
-		headers['Authorization'] = 'Basic %s' %  authHeaderHash
-		return headers
+        headers['Authorization'] = 'Basic %s' % authHeaderHash
+        return headers
+
 
 class IsofGeoProxyView(ProxyView):
-	upstream = config.IsofGeoProxy
+    upstream = config.IsofGeoProxy
 
-	def get_request_headers(self):
-		headers = super(IsofGeoProxyView, self).get_request_headers()
-		return headers
+    def get_request_headers(self):
+        headers = super(IsofGeoProxyView, self).get_request_headers()
+        return headers
+
 
 class IsofHomepageView(ProxyView):
-	upstream = config.IsofHomepage
+    upstream = config.IsofHomepage
 
-	def get_request_headers(self):
-		headers = super(IsofHomepageView, self).get_request_headers()
-		return headers
+    def get_request_headers(self):
+        headers = super(IsofHomepageView, self).get_request_headers()
+        return headers
+
 
 class FeedbackViewSet(viewsets.ViewSet):
-	def list(self, request):
-		return Response()
+    def list(self, request):
+        return Response()
 
-	def post(self, request, format=None):
-		if 'json' in request.data:
-			jsonData = json.loads(request.data['json'])
-			print(jsonData['from_email'])
+    def post(self, request, format=None):
+        if 'json' in request.data:
+            jsonData = json.loads(request.data['json'])
+            print(jsonData['from_email'])
 
-			send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [jsonData['send_to']+'@sprakochfolkminnen.se' if 'send_to' in jsonData else config.feedbackEmail], fail_silently=False)
-		return JsonResponse({'success':'true', 'data': jsonData})
+            send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
+                jsonData['send_to'] + '@sprakochfolkminnen.se' if 'send_to' in jsonData else config.feedbackEmail],
+                      fail_silently=False)
+        return JsonResponse({'success': 'true', 'data': jsonData})
 
+    def get_permissions(self):
+        permission_classes = [permissions.AllowAny]
 
-
-	def get_permissions(self):
-		permission_classes = [permissions.AllowAny]
-
-		return [permission() for permission in permission_classes]
+        return [permission() for permission in permission_classes]
 
 class TranscribeViewSet(viewsets.ViewSet):
-	def list(self, request):
-		return Response()
+    def list(self, request):
+        return Response()
 
-	def post(self, request, format=None):
-		if 'json' in request.data:
-			jsonData = json.loads(request.data['json'])
-			print(jsonData['from_email'])
+    def post(self, request, format=None):
+		#Test
+		#curl -H "Content-Type: application/json" --request POST -d '{"url":"https://www.isof.se/om-oss/kartor/publikutforska.html#record/1536", "recordid":"1536","recordtitle":"Vattenväsen","from_email":"per.laas@isof.se","from_name":"Per","subject":"Crowdsource: Transkribering","informantName":"Olof Hagberg","informantBirthDate":"1873","informantBirthPlace":"Årnäs?","informantInformation":"Årnäs","message":"TEST En gammal.","messageComment":"Svår"}' http://localhost:8000/api/transcribe/
+        #if request.data is not None:
+        if 'json' in request.data:
+            jsonData = json.loads(request.data['json'])
+            print(jsonData)
+            recordid = jsonData['recordid']
 
-			# save_new_record(jsonData)
-			transcribedrecord = TranscribedRecords()
-			transcribedrecord.text = jsonData['message']
-			transcribedrecord.title = jsonData['subject']
-			transcribedrecord.transcribed_by_name = jsonData['from_email']
+            # find record
+            #transcribed_record_arr = []
+            transcribedrecord = Records.objects.get(pk=recordid)
+            #transcribed_record_arr += transcribedrecord
+            #if len(transcribed_record_arr) == 1:
+            #Check if transcription
+            if transcribedrecord is not None and 'message' in jsonData:
+                transcribedrecord.text = jsonData['message']
+                if 'messageComment' in jsonData:
+                    #transcribedrecord.transcriptioncomment = jsonData['messageComment']
+                    if transcribedrecord.comment is None:
+                        transcribedrecord.comment = 'Transcriptioncomment:' + jsonData['messageComment']
+                    else:
+                        transcribedrecord.comment = transcribedrecord.comment + ' Transcriptioncomment:' + jsonData['messageComment']
+                transcribedrecord.transcriptionstatus = 'transcribed'
+                transcribedrecord.transcriptiondate = Now()
 
+                #Save informant when there is an informant name
+                if 'informantName' in jsonData:
+                    informant = Persons()
+                    informant.name = jsonData['informantName']
+                    if 'informantBirthPlace' in jsonData:
+                        informant.biography = jsonData['informantBirthPlace']
+                        #informant.biography = 'BirthPlace: ' + jsonData['informantBirthPlace'] + 'Extra: ' + jsonData['informantInformation']
+                        biography = 'BirthPlace: '
+                        biography = biography + jsonData['informantBirthPlace']
+                    if 'informantBirthDate' in jsonData:
+                        if jsonData['informantBirthDate'].isdigit():
+                            informant.birth_year = jsonData['informantBirthDate']
+                    if 'informantInformation' in jsonData:
+                        #biography = biography + 'Extra: ' + jsonData['informantInformation']
+                        informant.transcriptioncomment = jsonData['informantInformation']
+                    informant.biography = biography
 
-			transcribedrecord.save()
+                    #if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
+                    # Check if a informant that is crowdsourced already exists
+                    # to avoid lots of rows with the same informant data:
+                    existing_person = Persons.objects.filter(name=informant.name, birth_year=informant.birth_year,biography=informant.biography).first()
+                    if existing_person is None:
+                        print(informant)
+                    # Save new informant
+                    # informant.save()
+                    else:
+                        # Use existing informant
+                        informant = existing_person
 
+                if informant is not None:
+                    records_person = RecordsPersons()
+                    records_person.person = informant
+                    records_person.record = transcribedrecord
+                    records_person.relation = 'i'
+                    # recordsPersons.save()
 
-		return JsonResponse({'success':'true', 'data': jsonData})
+                    transcribedrecord.records_persons = records_person
 
-	def get_permissions(self):
-		permission_classes = [permissions.AllowAny]
+                if 'from_name' in jsonData:
+                    crowdsource_user = CrowdSourceUsers()
+                    crowdsource_user.name = jsonData['from_name']
+                    if 'from_email' in jsonData:
+                        crowdsource_user.email = jsonData['from_email']
+                        transcribedrecord.comment = jsonData['from_email']
+                    # crowdsource_user.save()
 
-		return [permission() for permission in permission_classes]
+                if crowdsource_user.email is not None or crowdsource_user.name is not None:
+
+                    #Check if crowdsource user already exists:
+                    existing_crowdsource_user = CrowdSourceUsers.objects.filter(email=crowdsource_user.email).first()
+                    if existing_crowdsource_user is None:
+                        print(crowdsource_user)
+                        # Save new
+                        # crowdsource_user.save()
+                    else:
+                        # Use existing
+                        crowdsource_user = existing_crowdsource_user
+
+                print(transcribedrecord)
+                transcribedrecord.transcribedby = crowdsource_user
+                # transcribedrecord.save()
+
+        return JsonResponse({'success': 'true', 'data': jsondata})
+
+    def get_permissions(self):
+        permission_classes = [permissions.AllowAny]
+
+        return [permission() for permission in permission_classes]
