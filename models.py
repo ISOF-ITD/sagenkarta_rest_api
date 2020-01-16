@@ -56,8 +56,11 @@ class Persons(models.Model):
 	gender = models.CharField(max_length=2)
 	birth_year = models.IntegerField(blank=True, null=True)
 	address = models.CharField(max_length=255)
+	birthplace = models.CharField(blank=True, null=True, max_length=255, verbose_name='Födelseort')
 	biography = models.TextField()
 	image = models.CharField(max_length=255, verbose_name='Bildfil')
+	transcriptioncomment = models.CharField(max_length=255, verbose_name='Kommentarer', default='')
+	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
 	changedate = models.DateTimeField()
 	places = models.ManyToManyField(
 		Socken, 
@@ -133,6 +136,9 @@ class RecordsPersons(models.Model): #ingredient
 	record = models.ForeignKey(Records, db_column='record', related_name='persons')
 	person = models.ForeignKey(Persons, db_column='person')
 	relation = models.CharField(max_length=5, blank=True, null=True)
+
+	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
+	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
 
 	class Meta:
 		db_table = 'records_persons'
