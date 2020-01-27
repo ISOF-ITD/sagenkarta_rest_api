@@ -282,7 +282,7 @@ class TranscribeViewSet(viewsets.ViewSet):
                     # Check if a informant that is crowdsourced already exists
                     # to avoid lots of rows with the same informant data:
                     existing_person = Persons.objects.filter(name=informant.name, birth_year=informant.birth_year,
-                                                             biography=informant.biography).first()
+                                                             biography=informant.biography,transcriptioncomment=informant.transcriptioncomment).first()
                     if existing_person is None:
                         print(informant)
                         # Save new informant
@@ -315,6 +315,7 @@ class TranscribeViewSet(viewsets.ViewSet):
 
                 if 'from_name' in jsonData:
                     crowdsource_user = CrowdSourceUsers()
+                    # TODO: Find unique id if transcription rejected and new user starts with same recordid
                     crowdsource_user.userid = 'rid' + recordid
                     crowdsource_user.name = jsonData['from_name']
                     if 'from_email' in jsonData:
@@ -324,7 +325,7 @@ class TranscribeViewSet(viewsets.ViewSet):
                     if crowdsource_user.email is not None or crowdsource_user.name is not None:
 
                         # Check if crowdsource user already exists:
-                        existing_crowdsource_user = CrowdSourceUsers.objects.filter(
+                        existing_crowdsource_user = CrowdSourceUsers.objects.filter(name=crowdsource_user.name,
                             email=crowdsource_user.email).first()
                         if existing_crowdsource_user is None:
                             # print(crowdsource_user)
