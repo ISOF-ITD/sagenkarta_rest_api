@@ -239,55 +239,55 @@ class TranscribeViewSet(viewsets.ViewSet):
         return Response()
 
     def post(self, request, format=None):
-		#Test
-		#curl -H "Content-Type: application/json" --request POST -d '{"url":"https://www.isof.se/om-oss/kartor/publikutforska.html#record/1536", "recordid":"1536","recordtitle":"Vattenväsen","from_email":"per.laas@isof.se","from_name":"Per","subject":"Crowdsource: Transkribering","informantName":"Olof Hagberg","informantBirthDate":"1873","informantBirthPlace":"Årnäs?","informantInformation":"Årnäs","message":"TEST En gammal.","messageComment":"Svår"}' http://localhost:8000/api/transcribe/
-        #if request.data is not None:
+        # if request.data is not None:
         if 'json' in request.data:
             jsonData = json.loads(request.data['json'])
             print(jsonData)
             recordid = jsonData['recordid']
 
             # find record
-            #transcribed_record_arr = []
+            # transcribed_record_arr = []
             transcribedrecord = Records.objects.get(pk=recordid)
-            #transcribed_record_arr += transcribedrecord
-            #if len(transcribed_record_arr) == 1:
-            #Check if transcribed (message)
+            # transcribed_record_arr += transcribedrecord
+            # if len(transcribed_record_arr) == 1:
+            # Check if transcribed (message)
             if transcribedrecord is not None and 'message' in jsonData:
                 transcribedrecord.text = jsonData['message']
                 if 'messageComment' in jsonData:
-                    #transcribedrecord.transcriptioncomment = jsonData['messageComment']
+                    # transcribedrecord.transcriptioncomment = jsonData['messageComment']
                     if transcribedrecord.comment is None:
                         transcribedrecord.comment = 'Transcriptioncomment:' + jsonData['messageComment']
                     else:
-                        transcribedrecord.comment = transcribedrecord.comment + ' Transcriptioncomment:' + jsonData['messageComment']
+                        transcribedrecord.comment = transcribedrecord.comment + ' Transcriptioncomment:' + jsonData[
+                            'messageComment']
                 transcribedrecord.transcriptionstatus = 'transcribed'
                 transcribedrecord.transcriptiondate = Now()
 
-                #Save informant when there is an informant name
+                # Save informant when there is an informant name
                 if 'informantName' in jsonData:
                     informant = Persons()
                     informant.id = 'crwd' + recordid
                     informant.name = jsonData['informantName']
                     if 'informantBirthPlace' in jsonData:
                         informant.birthplace = jsonData['informantBirthPlace']
-                        #informant.biography = 'BirthPlace: ' + jsonData['informantBirthPlace'] + 'Extra: ' + jsonData['informantInformation']
+                        # informant.biography = 'BirthPlace: ' + jsonData['informantBirthPlace'] + 'Extra: ' + jsonData['informantInformation']
                     if 'informantBirthDate' in jsonData:
                         if jsonData['informantBirthDate'].isdigit():
                             informant.birth_year = jsonData['informantBirthDate']
                     if 'informantInformation' in jsonData:
-                        #biography = biography + 'Extra: ' + jsonData['informantInformation']
+                        # biography = biography + 'Extra: ' + jsonData['informantInformation']
                         informant.transcriptioncomment = jsonData['informantInformation']
 
-                    #if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
+                    # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
                     # Check if a informant that is crowdsourced already exists
                     # to avoid lots of rows with the same informant data:
-                    existing_person = Persons.objects.filter(name=informant.name, birth_year=informant.birth_year,biography=informant.biography).first()
+                    existing_person = Persons.objects.filter(name=informant.name, birth_year=informant.birth_year,
+                                                             biography=informant.biography,transcriptioncomment=informant.transcriptioncomment).first()
                     if existing_person is None:
                         print(informant)
                         # Save new informant
                         try:
-                            #informant.createdate = Now()
+                            # informant.createdate = Now()
                             informant.save()
                         except Exception as e:
                             print(e)
@@ -297,22 +297,25 @@ class TranscribeViewSet(viewsets.ViewSet):
 
                 if informant is not None:
                     # Check if records_person relation already exists:
-                    existing_records_person = RecordsPersons.objects.filter(person=informant, record=transcribedrecord, relation='i').first()
+                    existing_records_person = RecordsPersons.objects.filter(person=informant,
+                                                                            record=transcribedrecord,
+                                                                            relation='i').first()
                     if existing_records_person is None:
-                        #records_person = RecordsPersons()
+                        # records_person = RecordsPersons()
                         records_person = RecordsPersons(person=informant, record=transcribedrecord, relation='i')
-                        #records_person.person = informant.id
-                        #records_person.record = transcribedrecord.id
-                        #records_person.relation = 'i'
+                        # records_person.person = informant.id
+                        # records_person.record = transcribedrecord.id
+                        # records_person.relation = 'i'
                         try:
                             records_person.save()
                         except Exception as e:
                             print(e)
 
-                    #transcribedrecord.records_persons = records_person
+                    # transcribedrecord.records_persons = records_person
 
                 if 'from_name' in jsonData:
                     crowdsource_user = CrowdSourceUsers()
+                    # TODO: Find unique id if transcription rejected and new user starts with same recordid
                     crowdsource_user.userid = 'rid' + recordid
                     crowdsource_user.name = jsonData['from_name']
                     if 'from_email' in jsonData:
@@ -321,26 +324,56 @@ class TranscribeViewSet(viewsets.ViewSet):
 
                     if crowdsource_user.email is not None or crowdsource_user.name is not None:
 
-                        #Check if crowdsource user already exists:
-                        existing_crowdsource_user = CrowdSourceUsers.objects.filter(email=crowdsource_user.email).first()
+                        # Check if crowdsource user already exists:
+                        existing_crowdsource_user = CrowdSourceUsers.objects.filter(name=crowdsource_user.name,
+                            email=crowdsource_user.email).first()
                         if existing_crowdsource_user is None:
-                            #print(crowdsource_user)
+                            # print(crowdsource_user)
                             # Save new
                             crowdsource_user.save()
                         else:
                             # Use existing
                             crowdsource_user = existing_crowdsource_user
 
-                    #print(transcribedrecord)
+                    # print(transcribedrecord)
                     transcribedrecord.transcribedby = crowdsource_user
                 try:
                     transcribedrecord.save()
                 except Exception as e:
                     print(e)
 
-        return JsonResponse({'success': 'true', 'data': jsondata})
+        return JsonResponse({'success': 'true', 'data': jsonData})
 
     def get_permissions(self):
         permission_classes = [permissions.AllowAny]
 
         return [permission() for permission in permission_classes]
+
+class TranscribeStartViewSet(viewsets.ViewSet):
+    def list(self, request):
+        return Response()
+
+    def post(self, request, format=None):
+        #if request.data is not None:
+        if 'json' in request.data:
+            jsonData = json.loads(request.data['json'])
+            print(jsonData)
+            recordid = jsonData['recordid']
+
+            # find record
+            transcribedrecord = Records.objects.get(pk=recordid)
+            if transcribedrecord is not None:
+                transcribedrecord.transcriptiondate = Now()
+
+                try:
+                    transcribedrecord.save()
+                except Exception as e:
+                    print(e)
+
+        return JsonResponse({'success': 'true', 'data': jsonData})
+
+    def get_permissions(self):
+        permission_classes = [permissions.AllowAny]
+
+        return [permission() for permission in permission_classes]
+
