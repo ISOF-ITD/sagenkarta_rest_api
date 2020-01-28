@@ -213,5 +213,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'places',
 			'persons',
 			'metadata',
-			'media'
+			'media',
+			'transcriptionstatus',
+			'transcriptiondate'
 		)
