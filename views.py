@@ -14,6 +14,8 @@ import json
 
 from . import config
 
+import logging
+logger = logging.getLogger(__name__)
 
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Categories.objects.all()
@@ -349,6 +351,7 @@ class TranscribeViewSet(viewsets.ViewSet):
                     transcribedrecord.transcribedby = crowdsource_user
                 try:
                     transcribedrecord.save()
+                    logger.debug("TranscribeViewSet data %s", jsonData)
                 except Exception as e:
                     print(e)
 
@@ -377,6 +380,7 @@ class TranscribeStartViewSet(viewsets.ViewSet):
 
                 try:
                     transcribedrecord.save()
+                    logger.debug("TranscribeStartViewSet data %s", jsonData)
                 except Exception as e:
                     print(e)
 

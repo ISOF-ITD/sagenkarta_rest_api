@@ -18,6 +18,9 @@ from django.db import models
 
 from . import config
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Categories(models.Model):
 	id = models.CharField(primary_key=True,max_length=255)
 	name = models.CharField(max_length=100, blank=False, null=False)
@@ -202,18 +205,24 @@ def records_post_saved(sender, **kwargs):
 		modelId = kwargs['instance'].id
 		print('records_post_saved')
 
-		modelResponseData = requests.get(config.restApiRecordUrl+str(modelId), verify=False)
+		restUrl = config.restApiRecordUrl+str(modelId)
+		modelResponseData = requests.get(restUrl, verify=False)
 		modelResponseData.encoding = 'utf-8'
 		modelJson = modelResponseData.json()
 
 		document = {
 			'doc': modelJson
 		}
+		logger.debug("url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
-		esResponse = requests.post(config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/legend/'+str(modelId)+'/_update', data=json.dumps(document).encode('utf-8'), verify=False)
+		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/legend/'+str(modelId)+'/_update'
+
+		esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False)
+		logger.debug("url post %s ", esUrl)
 
 		if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
-			esResponse = requests.put(config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/legend/'+str(modelId), data=json.dumps(modelJson).encode('utf-8'), verify=False)
+			esResponse = requests.put(esUrl, data=json.dumps(modelJson).encode('utf-8'), verify=False)
+			logger.debug("url put %s ", esUrl)
 
 	t = Timer(5, save_es_model)
 	t.start()
