@@ -6,11 +6,17 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
+
+from django.db.models.signals import post_save
+import requests, json
+from threading import Timer
+
 from django.utils.safestring import mark_safe
 from string import Template
 
 from django.db import models
 
+from . import config
 
 class Categories(models.Model):
 	id = models.CharField(primary_key=True,max_length=255)
@@ -18,6 +24,7 @@ class Categories(models.Model):
 	type = models.CharField(max_length=100, blank=False, null=False)
 
 	class Meta:
+		managed = False
 		db_table = 'categories_v2'
 		ordering = ['-type', 'id']
 
@@ -29,6 +36,7 @@ class Harad(models.Model):
 	country = models.CharField(unique=True, max_length=100, blank=True, null=True)
 
 	class Meta:
+		managed = False
 		db_table = 'harad'
 
 
@@ -47,6 +55,7 @@ class Socken(models.Model):
 	)
 
 	class Meta:
+		managed = False
 		db_table = 'socken'
 
 
@@ -69,6 +78,7 @@ class Persons(models.Model):
 	)
 
 	class Meta:
+		managed = False
 		db_table = 'persons'
 
 
@@ -78,6 +88,7 @@ class PersonsPlaces(models.Model):
 	relation = models.CharField(max_length=5, blank=True, null=True)
 
 	class Meta:
+		managed = False
 		db_table = 'persons_places'
 
 class CrowdSourceUsers(models.Model):
@@ -86,7 +97,7 @@ class CrowdSourceUsers(models.Model):
 	email = models.EmailField()
 
 	class Meta:
-		managed = True
+		managed = False
 		db_table = 'crowdsource_users'
 
 class Records(models.Model):
@@ -129,6 +140,7 @@ class Records(models.Model):
 	)
 
 	class Meta:
+		managed = False
 		db_table = 'records'
 
 
@@ -151,6 +163,7 @@ class RecordsMedia(models.Model):
 	title = models.CharField(max_length=255, blank=True, null=True)
 
 	class Meta:
+		managed = False
 		db_table = 'records_media'
 
 
@@ -183,4 +196,27 @@ class RecordsCategory(models.Model):
 		managed = False
 		db_table = 'records_category'
 
+# Spara/uppdatera modell JSON i Elasticsearch
+def records_post_saved(sender, **kwargs):
+	def save_es_model():
+		modelId = kwargs['instance'].id
+		print('records_post_saved')
+
+		modelResponseData = requests.get(config.restApiRecordUrl+str(modelId), verify=False)
+		modelResponseData.encoding = 'utf-8'
+		modelJson = modelResponseData.json()
+
+		document = {
+			'doc': modelJson
+		}
+
+		esResponse = requests.post(config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/legend/'+str(modelId)+'/_update', data=json.dumps(document).encode('utf-8'), verify=False)
+
+		if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
+			esResponse = requests.put(config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/legend/'+str(modelId), data=json.dumps(modelJson).encode('utf-8'), verify=False)
+
+	t = Timer(5, save_es_model)
+	t.start()
+
+post_save.connect(records_post_saved, sender=Records)
 
