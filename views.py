@@ -198,6 +198,16 @@ class LantmaterietProxyView(ProxyView):
         headers['Authorization'] = 'Basic %s' % authHeaderHash
         return headers
 
+class LantmaterietTopoProxyView(ProxyView):
+    upstream = config.LantmaterietTopoProxy
+
+    def get_request_headers(self):
+        headers = super(LantmaterietTopoProxyView, self).get_request_headers()
+
+        authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
+
+        headers['Authorization'] = 'Basic %s' % authHeaderHash
+        return headers
 
 class IsofGeoProxyView(ProxyView):
     upstream = config.IsofGeoProxy
