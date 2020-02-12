@@ -19,6 +19,13 @@ from django.views.decorators.csrf import csrf_exempt
 import logging
 logger = logging.getLogger(__name__)
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
+
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategorySerializer
@@ -248,11 +255,14 @@ class FeedbackViewSet(viewsets.ViewSet):
 
         return [permission() for permission in permission_classes]
 
+
 class TranscribeViewSet(viewsets.ViewSet):
-    @method_decorator(csrf_exempt)
+    #authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+
     def list(self, request):
         return Response()
 
+    @method_decorator(csrf_exempt)
     def post(self, request, format=None):
         # if request.data is not None:
         if 'json' in request.data:
@@ -366,11 +376,14 @@ class TranscribeViewSet(viewsets.ViewSet):
 
         return [permission() for permission in permission_classes]
 
+
 class TranscribeStartViewSet(viewsets.ViewSet):
-    @method_decorator(csrf_exempt)
+    #authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+
     def list(self, request):
         return Response()
 
+    @method_decorator(csrf_exempt)
     def post(self, request, format=None):
         #if request.data is not None:
         if 'json' in request.data:
