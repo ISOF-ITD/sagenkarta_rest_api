@@ -13,8 +13,6 @@ from django.http import JsonResponse
 import json
 
 from . import config
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 
 import logging
 logger = logging.getLogger(__name__)
@@ -262,7 +260,8 @@ class TranscribeViewSet(viewsets.ViewSet):
     def list(self, request):
         return Response()
 
-    @method_decorator(csrf_exempt)
+    # I'm almost certain the DRF authentication middleware entirely ignores any such decorator. https://stackoverflow.com/questions/19897973/how-to-unset-csrf-in-modelviewset-of-django-rest-framework
+    #@method_decorator(csrf_exempt)
     def post(self, request, format=None):
         # if request.data is not None:
         if 'json' in request.data:
@@ -383,7 +382,8 @@ class TranscribeStartViewSet(viewsets.ViewSet):
     def list(self, request):
         return Response()
 
-    @method_decorator(csrf_exempt)
+    # I'm almost certain the DRF authentication middleware entirely ignores any such decorator. https://stackoverflow.com/questions/19897973/how-to-unset-csrf-in-modelviewset-of-django-rest-framework
+    #@method_decorator(csrf_exempt)
     def post(self, request, format=None):
         #if request.data is not None:
         if 'json' in request.data:
