@@ -257,7 +257,7 @@ class FeedbackViewSet(viewsets.ViewSet):
 
 
 class TranscribeViewSet(viewsets.ViewSet):
-    #authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
         return Response()
@@ -378,7 +378,7 @@ class TranscribeViewSet(viewsets.ViewSet):
 
 
 class TranscribeStartViewSet(viewsets.ViewSet):
-    #authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
         return Response()
