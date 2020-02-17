@@ -187,6 +187,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	media = RecordsMediaSerializer(many=True, read_only=True);
 	materialtype = serializers.CharField(source='type')
 	archive = serializers.SerializerMethodField('get_archive_object')
+	text = serializers.CharField(source='text_to_publish')
 
 	def get_archive_object(self, obj):
 		return {
@@ -203,7 +204,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'id', 
 			'title', 
 			'text', 
-			'year', 
+			'year',
 			'taxonomy', 
 			'archive', 
 			'language',
