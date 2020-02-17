@@ -106,6 +106,7 @@ class CrowdSourceUsers(models.Model):
 class Records(models.Model):
 	transcription_statuses = [
 		('untranscribed', 'Ej transkriberad'),
+		('readytotranscribe', 'Publicerad för transkribering'),
 		('transcribed', 'Transkriberad'),
 		('reviewing', 'Under granskning'),
 		('approved', 'Godkänd'),
@@ -141,6 +142,13 @@ class Records(models.Model):
 		Categories,
 		through = 'RecordsCategory', symmetrical=False
 	)
+
+	#Only publish text when transcriptionstatus published
+	def text_to_publish(self):
+		text_to = dict(self.transcription_statuses)[str(self.transcriptionstatus)]
+		if self.transcriptionstatus == 'published':
+			text_to = str(self.text)
+		return text_to
 
 	class Meta:
 		managed = False
