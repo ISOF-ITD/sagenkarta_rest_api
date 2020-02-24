@@ -10,9 +10,11 @@ router.register(r'locations', views.LocationsViewSet, base_name='locations')
 router.register(r'categories', views.CategoriesViewSet, base_name='categories')
 router.register(r'feedback', views.FeedbackViewSet, base_name='feedback')
 router.register(r'transcribe', views.TranscribeViewSet, base_name='transcribe')
+router.register(r'transcribestart', views.TranscribeStartViewSet, base_name='transcribestart')
 
 urlpatterns = [
 	url(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
+	url(r'^lm_orto_proxy/(?P<path>.*)$', views.LantmaterietOrtoProxyView.as_view()),
 	url(r'^isofgeo_proxy/(?P<path>.*)$', views.IsofGeoProxyView.as_view()),
 	url(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
 	url(r'^', include(router.urls)),
