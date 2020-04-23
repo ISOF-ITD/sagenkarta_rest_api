@@ -192,6 +192,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	def get_archive_object(self, obj):
 		return {
 			'archive_id': obj.archive_id,
+			'page': obj.archive_page,
 			'total_pages': obj.total_pages,
 			'country': obj.country,
 			'archive': obj.archive
