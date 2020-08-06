@@ -233,6 +233,13 @@ class IsofHomepageView(ProxyView):
         headers = super(IsofHomepageView, self).get_request_headers()
         return headers
 
+class FriggStaticView(ProxyView):
+    upstream = config.FriggStatic
+
+    def get_request_headers(self):
+        headers = super(FriggStaticView, self).get_request_headers()
+        return headers
+
 
 class FeedbackViewSet(viewsets.ViewSet):
     def list(self, request):
