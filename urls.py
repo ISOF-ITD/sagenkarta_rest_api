@@ -14,6 +14,7 @@ router.register(r'transcribestart', views.TranscribeStartViewSet, base_name='tra
 
 urlpatterns = [
 	url(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
+	url(r'^lm_mercator_proxy/(?P<path>.*)$', views.LantmaterietMercatorProxyView.as_view()),
 	url(r'^lm_orto_proxy/(?P<path>.*)$', views.LantmaterietOrtoProxyView.as_view()),
 	url(r'^isofgeo_proxy/(?P<path>.*)$', views.IsofGeoProxyView.as_view()),
 	url(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
