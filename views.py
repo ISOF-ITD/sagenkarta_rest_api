@@ -207,11 +207,11 @@ class LantmaterietProxyView(ProxyView):
         headers['Authorization'] = 'Basic %s' % authHeaderHash
         return headers
 
-class LantmaterietMercatorProxyView(ProxyView):
-    upstream = config.LantmaterietMercatorProxy
+class LantmaterietEpsg3857ProxyView(ProxyView):
+    upstream = config.LantmaterietEpsg3857Proxy
 
     def get_request_headers(self):
-        headers = super(LantmaterietMercatorProxyView, self).get_request_headers()
+        headers = super(LantmaterietEpsg3857ProxyView, self).get_request_headers()
 
         authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
 
