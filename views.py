@@ -207,6 +207,17 @@ class LantmaterietProxyView(ProxyView):
         headers['Authorization'] = 'Basic %s' % authHeaderHash
         return headers
 
+class LantmaterietEpsg3857ProxyView(ProxyView):
+    upstream = config.LantmaterietEpsg3857Proxy
+
+    def get_request_headers(self):
+        headers = super(LantmaterietEpsg3857ProxyView, self).get_request_headers()
+
+        authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
+
+        headers['Authorization'] = 'Basic %s' % authHeaderHash
+        return headers
+
 class LantmaterietOrtoProxyView(ProxyView):
     upstream = config.LantmaterietOrtoProxy
 
@@ -231,6 +242,13 @@ class IsofHomepageView(ProxyView):
 
     def get_request_headers(self):
         headers = super(IsofHomepageView, self).get_request_headers()
+        return headers
+
+class FriggStaticView(ProxyView):
+    upstream = config.FriggStatic
+
+    def get_request_headers(self):
+        headers = super(FriggStaticView, self).get_request_headers()
         return headers
 
 
