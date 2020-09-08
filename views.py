@@ -396,7 +396,7 @@ class TranscribeViewSet(viewsets.ViewSet):
 
     def validateString(self, title):
         if title is not None:
-            return isinstance(title, str) and title.lenght > 0  # It is a string that is longer than 0.
+            return isinstance(title, str) and len(title) > 0  # It is a string that is longer than 0.
         return False
 
     def get_permissions(self):
