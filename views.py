@@ -278,11 +278,11 @@ class TranscribeViewSet(viewsets.ViewSet):
             if transcribedrecord is not None and 'message' in jsonData:
                 if transcribedrecord.transcriptionstatus == 'readytotranscribe':
                     transcribedrecord.text = jsonData['message']
-                    if 'title' in jsonData:
+                    if 'recordtitle' in jsonData:
                         # Validate the string
-                        title = jsonData['title']
-                        if self.validateString(title):
-                            transcribedrecord.title = title
+                        recordtitle = jsonData['recordtitle']
+                        if self.validateString(recordtitle):
+                            transcribedrecord.title = recordtitle
 
                     if 'messageComment' in jsonData:
                         # transcribedrecord.transcriptioncomment = jsonData['messageComment']
