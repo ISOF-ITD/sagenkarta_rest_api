@@ -394,7 +394,7 @@ class TranscribeViewSet(viewsets.ViewSet):
 
         return JsonResponse({'success': 'true', 'data': jsonData})
 
-    def validateString(title):
+    def validateString(self, title):
         if title is not None:
             return isinstance(title, str) and title.lenght > 0  # It is a string that is longer than 0.
         return False
