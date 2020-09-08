@@ -278,6 +278,12 @@ class TranscribeViewSet(viewsets.ViewSet):
             if transcribedrecord is not None and 'message' in jsonData:
                 if transcribedrecord.transcriptionstatus == 'readytotranscribe':
                     transcribedrecord.text = jsonData['message']
+                    if 'title' in jsonData:
+                        # Validate the string
+                        title = jsonData['title']
+                        if self.validateString(title):
+                            transcribedrecord.title = title
+
                     if 'messageComment' in jsonData:
                         # transcribedrecord.transcriptioncomment = jsonData['messageComment']
                         if transcribedrecord.comment is None:
@@ -369,6 +375,11 @@ class TranscribeViewSet(viewsets.ViewSet):
                         print(e)
 
         return JsonResponse({'success': 'true', 'data': jsonData})
+
+    def validateString(title):
+        if title is not None:
+            return isinstance(title, str) and title.lenght > 0  # It is a string that is longer than 0.
+        return False
 
     def get_permissions(self):
         permission_classes = [permissions.AllowAny]
