@@ -71,7 +71,6 @@ class Persons(models.Model):
 	birthplace = models.CharField(blank=True, null=True, max_length=255, verbose_name='Födelseort')
 	biography = models.TextField(blank=True, null=True)
 	image = models.ImageField(blank=True, null=True, verbose_name='Bildfil', upload_to='personer')
-	import_batch = models.ForeignKey(ImportBatch, db_column="import_batch", null=True )
 	import_row_id = models.IntegerField(default=0, blank=False, null=False)
 	transcriptioncomment = models.CharField(max_length=255, verbose_name='Kommentarer', default='')
 	# changedate = models.DateTimeField()
