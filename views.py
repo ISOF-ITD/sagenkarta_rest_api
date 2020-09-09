@@ -1,6 +1,7 @@
 from django.db.models.functions import Now
 
 from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers
+from django.contrib.auth.models import User
 from rest_framework import viewsets, permissions
 from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer, CategorySerializer
 from rest_framework.response import Response
@@ -295,6 +296,8 @@ class TranscribeViewSet(viewsets.ViewSet):
             # Check if transcribed (message)
             if transcribedrecord is not None and 'message' in jsonData:
                 if transcribedrecord.transcriptionstatus == 'readytotranscribe':
+                    user = User.objects.filter(username='restapi').first()
+
                     transcribedrecord.text = jsonData['message']
                     if 'recordtitle' in jsonData:
                         # Validate the string
@@ -334,6 +337,8 @@ class TranscribeViewSet(viewsets.ViewSet):
                                                                  biography=informant.biography,transcriptioncomment=informant.transcriptioncomment).first()
                         if existing_person is None:
                             print(informant)
+                            informant.createdby = user
+                            informant.editedby = user
                             # Save new informant
                             try:
                                 # informant.createdate = Now()
