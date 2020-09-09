@@ -71,17 +71,15 @@ class Persons(models.Model):
 	birthplace = models.CharField(blank=True, null=True, max_length=255, verbose_name='Födelseort')
 	biography = models.TextField(blank=True, null=True)
 	image = models.ImageField(blank=True, null=True, verbose_name='Bildfil', upload_to='personer')
-	import_batch = models.ForeignKey(ImportBatch, db_column="import_batch", null=True, on_delete=CASCADE, )
+	import_batch = models.ForeignKey(ImportBatch, db_column="import_batch", null=True )
 	import_row_id = models.IntegerField(default=0, blank=False, null=False)
 	transcriptioncomment = models.CharField(max_length=255, verbose_name='Kommentarer', default='')
 	# changedate = models.DateTimeField()
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
 	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
 	createdby = models.ForeignKey(User, db_column='createdby', null=True, blank=True, editable=False,
-								  on_delete=DO_NOTHING,
 								  verbose_name="Excerperad av")
 	editedby = models.ForeignKey(User, db_column='editedby', null=True, blank=True, editable=False,
-								 on_delete=DO_NOTHING,
 								 related_name='Uppdaterad av+', verbose_name="Uppdaterad av")
 	places = models.ManyToManyField(
 		Socken, 
