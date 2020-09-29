@@ -261,16 +261,29 @@ class FeedbackViewSet(viewsets.ViewSet):
         if 'json' in request.data:
             jsonData = json.loads(request.data['json'])
             print(jsonData['from_email'])
-            send_to = None
 
-            if 'send_to' in jsonData:
-                logger.debug(jsonData['send_to'])
-                user = User.objects.get(name=jsonData['send_to']).first()
-                if user is not None:
-                    if user.email is not None:
-                        if '@' in user.email:
+            recordid = None
+            send_to_user = User.objects.filter(username='supportisof').first()
+            if send_to_user is not None:
+                send_to = send_to_user.email
+            if 'recordid' in jsonData:
+                recordid = jsonData['recordid']
+                record = Records.objects.filter(id=recordid).first()
+                if record is not None:
+                    orgcode = record.id[0 : 2]
+                    if not orgcode.isnumeric():
+                        user = User.objects.filter(name='support' + orgcode).first()
+                        if user is not None:
                             send_to = user.email
-            logger.debug(send_to)
+
+#            if 'send_to' in jsonData:
+#                logger.debug(jsonData['send_to'])
+#                user = User.objects.get(name=jsonData['send_to']).first()
+#                if user is not None:
+#                    if user.email is not None:
+#                        if '@' in user.email:
+#                            send_to = user.email
+#            logger.debug(send_to)
 
             send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
                 send_to if send_to is not None else config.feedbackEmail],
