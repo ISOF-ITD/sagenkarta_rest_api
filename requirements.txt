@@ -1,5 +1,5 @@
 Django==1.11
-djangorestframework==3.7.3
+djangorestframework==3.9.1
 mysqlclient
 requests
 django-revproxy
