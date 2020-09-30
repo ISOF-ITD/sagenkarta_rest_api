@@ -270,11 +270,11 @@ class FeedbackViewSet(viewsets.ViewSet):
                 recordid = jsonData['recordid']
                 record = Records.objects.filter(id=recordid).first()
                 if record is not None:
-                    orgcode = record.id[0 : 2]
+                    orgcode = record.id[0 : 3]
                     if not orgcode.isnumeric():
-                        user = User.objects.filter(name='support' + orgcode).first()
-                        if user is not None:
-                            send_to = user.email
+                        send_to_user = User.objects.filter(username='support' + orgcode).first()
+                        if send_to_user is not None:
+                            send_to = send_to_user.email
 
 #            if 'send_to' in jsonData:
 #                logger.debug(jsonData['send_to'])
