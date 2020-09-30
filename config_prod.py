@@ -12,4 +12,4 @@ LantmaterietOrtoProxy = 'http://maps.lantmateriet.se/ortofoto/wms/v1.3/'
 LantmaterietProxy_access = secrets.LantmaterietProxy_access
 IsofGeoProxy = 'https://oden-test.isof.se/geoserver/'
 IsofHomepage = 'https://www.isof.se/'
-FriggStatic = 'https://frigg-test.isof.se/static/'
+FriggStatic = 'https://frigg.isof.se/static/'
