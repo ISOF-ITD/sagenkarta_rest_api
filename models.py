@@ -6,6 +6,7 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
+from django.contrib.auth.models import User
 
 from django.db.models.signals import post_save
 import requests, json
@@ -63,17 +64,23 @@ class Socken(models.Model):
 
 
 class Persons(models.Model):
-	id = models.CharField(max_length=50, primary_key=True)
+	id = models.CharField(primary_key=True, max_length=50)
 	name = models.CharField(max_length=255)
-	gender = models.CharField(max_length=2)
+	gender = models.CharField(max_length=8, choices=[('female', 'Kvinna'), ('male', 'Man'), ('unknown', 'Okänd')])
 	birth_year = models.IntegerField(blank=True, null=True)
-	address = models.CharField(max_length=255)
+	address = models.CharField(blank=True, null=True, max_length=255)
 	birthplace = models.CharField(blank=True, null=True, max_length=255, verbose_name='Födelseort')
-	biography = models.TextField()
-	image = models.CharField(max_length=255, verbose_name='Bildfil')
+	biography = models.TextField(blank=True, null=True)
+	image = models.ImageField(blank=True, null=True, verbose_name='Bildfil', upload_to='personer')
+	import_row_id = models.IntegerField(default=0, blank=False, null=False)
 	transcriptioncomment = models.CharField(max_length=255, verbose_name='Kommentarer', default='')
+	# changedate = models.DateTimeField()
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
-	changedate = models.DateTimeField()
+	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
+	createdby = models.ForeignKey(User, db_column='createdby', null=True, blank=True, editable=False,
+								  verbose_name="Excerperad av")
+	editedby = models.ForeignKey(User, db_column='editedby', null=True, blank=True, editable=False,
+								 related_name='Uppdaterad av+', verbose_name="Uppdaterad av")
 	places = models.ManyToManyField(
 		Socken, 
 		through='PersonsPlaces', 

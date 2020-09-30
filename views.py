@@ -1,6 +1,7 @@
 from django.db.models.functions import Now
 
 from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers
+from django.contrib.auth.models import User
 from rest_framework import viewsets, permissions
 from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer, CategorySerializer
 from rest_framework.response import Response
@@ -207,6 +208,17 @@ class LantmaterietProxyView(ProxyView):
         headers['Authorization'] = 'Basic %s' % authHeaderHash
         return headers
 
+class LantmaterietEpsg3857ProxyView(ProxyView):
+    upstream = config.LantmaterietEpsg3857Proxy
+
+    def get_request_headers(self):
+        headers = super(LantmaterietEpsg3857ProxyView, self).get_request_headers()
+
+        authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
+
+        headers['Authorization'] = 'Basic %s' % authHeaderHash
+        return headers
+
 class LantmaterietOrtoProxyView(ProxyView):
     upstream = config.LantmaterietOrtoProxy
 
@@ -233,6 +245,13 @@ class IsofHomepageView(ProxyView):
         headers = super(IsofHomepageView, self).get_request_headers()
         return headers
 
+class FriggStaticView(ProxyView):
+    upstream = config.FriggStatic
+
+    def get_request_headers(self):
+        headers = super(FriggStaticView, self).get_request_headers()
+        return headers
+
 
 class FeedbackViewSet(viewsets.ViewSet):
     def list(self, request):
@@ -243,9 +262,35 @@ class FeedbackViewSet(viewsets.ViewSet):
             jsonData = json.loads(request.data['json'])
             print(jsonData['from_email'])
 
+            recordid = None
+            send_to_user = User.objects.filter(username='supportisof').first()
+            if send_to_user is not None:
+                send_to = send_to_user.email
+            if 'recordid' in jsonData:
+                recordid = jsonData['recordid']
+                record = Records.objects.filter(id=recordid).first()
+                if record is not None:
+                    orgcode = record.id[0 : 3]
+                    if not orgcode.isnumeric():
+                        send_to_user = User.objects.filter(username='support' + orgcode).first()
+                        if send_to_user is not None:
+                            send_to = send_to_user.email
+
+#            if 'send_to' in jsonData:
+#                logger.debug(jsonData['send_to'])
+#                user = User.objects.get(name=jsonData['send_to']).first()
+#                if user is not None:
+#                    if user.email is not None:
+#                        if '@' in user.email:
+#                            send_to = user.email
+#            logger.debug(send_to)
+
             send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
-                jsonData['send_to'] + '@sprakochfolkminnen.se' if 'send_to' in jsonData else config.feedbackEmail],
+                send_to if send_to is not None else config.feedbackEmail],
                       fail_silently=False)
+            # send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
+            #    jsonData['send_to'] + '@sprakochfolkminnen.se' if 'send_to' in jsonData else config.feedbackEmail],
+            #          fail_silently=False)
         return JsonResponse({'success': 'true', 'data': jsonData})
 
     def get_permissions(self):
@@ -277,7 +322,15 @@ class TranscribeViewSet(viewsets.ViewSet):
             # Check if transcribed (message)
             if transcribedrecord is not None and 'message' in jsonData:
                 if transcribedrecord.transcriptionstatus == 'readytotranscribe':
+                    user = User.objects.filter(username='restapi').first()
+
                     transcribedrecord.text = jsonData['message']
+                    if 'recordtitle' in jsonData:
+                        # Validate the string
+                        recordtitle = jsonData['recordtitle']
+                        if self.validateString(recordtitle):
+                            transcribedrecord.title = recordtitle
+
                     if 'messageComment' in jsonData:
                         # transcribedrecord.transcriptioncomment = jsonData['messageComment']
                         if transcribedrecord.comment is None:
@@ -310,6 +363,8 @@ class TranscribeViewSet(viewsets.ViewSet):
                                                                  biography=informant.biography,transcriptioncomment=informant.transcriptioncomment).first()
                         if existing_person is None:
                             print(informant)
+                            informant.createdby = user
+                            informant.editedby = user
                             # Save new informant
                             try:
                                 # informant.createdate = Now()
@@ -345,7 +400,7 @@ class TranscribeViewSet(viewsets.ViewSet):
                         crowdsource_user.name = jsonData['from_name']
                         if 'from_email' in jsonData:
                             crowdsource_user.email = jsonData['from_email']
-                            transcribedrecord.comment = jsonData['from_email']
+                            transcribedrecord.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
 
                         if crowdsource_user.email is not None or crowdsource_user.name is not None:
 
@@ -369,6 +424,11 @@ class TranscribeViewSet(viewsets.ViewSet):
                         print(e)
 
         return JsonResponse({'success': 'true', 'data': jsonData})
+
+    def validateString(self, title):
+        if title is not None:
+            return isinstance(title, str) and len(title) > 0  # It is a string that is longer than 0.
+        return False
 
     def get_permissions(self):
         permission_classes = [permissions.AllowAny]

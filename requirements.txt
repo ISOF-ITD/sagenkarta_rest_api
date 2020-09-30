@@ -1,0 +1,7 @@
+Django==1.11
+djangorestframework==3.7.3
+mysqlclient
+requests
+django-revproxy
+Pillow
+django-cors-headers

@@ -2,3 +2,4 @@ manage.py
 db.sqlite3
 __pycache__/
 config.py
+/secrets.py
