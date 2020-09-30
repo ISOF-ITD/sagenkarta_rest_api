@@ -1,6 +1,5 @@
 from . import secrets
 
-print(secrets)
 host = secrets.host
 index_name = 'isof-publik'
 protocol = 'http://'
