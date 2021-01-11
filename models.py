@@ -150,12 +150,14 @@ class Records(models.Model):
 		through = 'RecordsCategory', symmetrical=False
 	)
 
-	#Only publish text when transcriptionstatus published
-	def text_to_publish(self):
+#Only publish text when transcriptionstatus published
+def text_to_publish(self):
+	text_to = None
+	if self.text is not None:
 		text_to = dict(self.transcription_statuses)[str(self.transcriptionstatus)]
 		if self.transcriptionstatus == 'published':
 			text_to = str(self.text)
-		return text_to
+	return text_to
 
 	class Meta:
 		managed = False
