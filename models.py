@@ -122,7 +122,7 @@ class Records(models.Model):
 
 	id = models.CharField(max_length=50, primary_key=True)
 	title = models.CharField(max_length=255)
-	text = models.TextField()
+	text = models.TextField(blank=True, null=True)
 	year = models.DateField(blank=True, null=True)
 	archive = models.CharField(max_length=255, blank=True)
 	archive_id = models.CharField(max_length=255, blank=True)
