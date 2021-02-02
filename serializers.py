@@ -185,7 +185,8 @@ class RecordsSerializer(serializers.ModelSerializer):
 	#taxonomy = CategorySerializer(source='category', read_only=True);
 	taxonomy = RecordsCategorySerializer(many=True, read_only=True, source='categories');
 	media = RecordsMediaSerializer(many=True, read_only=True);
-	materialtype = serializers.CharField(source='material_type')
+	materialtype = serializers.CharField(source='type')
+	recordtype = serializers.CharField(source='record_type')
 	archive = serializers.SerializerMethodField('get_archive_object')
 	text = serializers.CharField(source='text_to_publish')
 
