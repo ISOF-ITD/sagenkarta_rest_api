@@ -127,6 +127,7 @@ class Records(models.Model):
 	archive = models.CharField(max_length=255, blank=True)
 	archive_id = models.CharField(max_length=255, blank=True)
 	type = models.CharField(max_length=20)
+	record_type = models.CharField(max_length=255, blank=True, null=True)
 	archive_page = models.CharField(max_length=20, blank=True, null=True)
 	total_pages = models.IntegerField(blank=True, null=True)
 	source = models.TextField(blank=True)
