@@ -211,6 +211,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'archive', 
 			'language',
 			'materialtype', 
+			'recordtype',
 			'source', 
 			'comment',
 			'places',
