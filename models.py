@@ -156,7 +156,7 @@ class Records(models.Model):
 		text_to = None
 		if self.text is not None:
 			text_to = dict(self.transcription_statuses)[str(self.transcriptionstatus)]
-			if self.transcriptionstatus == 'published' or self.recordtype == 'one_accession_row':
+			if self.transcriptionstatus == 'published' or self.record_type == 'one_accession_row':
 				text_to = str(self.text)
 		return text_to
 
