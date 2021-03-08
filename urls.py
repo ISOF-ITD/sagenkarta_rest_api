@@ -19,5 +19,6 @@ urlpatterns = [
 	url(r'^isofgeo_proxy/(?P<path>.*)$', views.IsofGeoProxyView.as_view()),
 	url(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
 	url(r'^frigg_static/(?P<path>.*)$', views.FriggStaticView.as_view()),
+	url(r'^filemaker_proxy/(?P<path>.*)$', views.FilemakerProxyView.as_view()),
 	url(r'^', include(router.urls)),
 ]

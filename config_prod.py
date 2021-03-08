@@ -13,3 +13,4 @@ LantmaterietProxy_access = secrets.LantmaterietProxy_access
 IsofGeoProxy = 'https://oden-test.isof.se/geoserver/'
 IsofHomepage = 'https://www.isof.se/'
 FriggStatic = 'https://frigg.isof.se/static/'
+FilemakerProxy = 'https://filemaker.isof.se/'

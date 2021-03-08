@@ -245,6 +245,13 @@ class IsofHomepageView(ProxyView):
         headers = super(IsofHomepageView, self).get_request_headers()
         return headers
 
+class FilemakerProxyView(ProxyView):
+    upstream = config.FilemakerProxy
+
+    def get_request_headers(self):
+        headers = super(FilemakerProxyView, self).get_request_headers()
+        return headers
+
 class FriggStaticView(ProxyView):
     upstream = config.FriggStatic
 
