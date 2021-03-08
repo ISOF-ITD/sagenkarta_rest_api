@@ -250,6 +250,7 @@ class FilemakerProxyView(ProxyView):
 
     def get_request_headers(self):
         headers = super(FilemakerProxyView, self).get_request_headers()
+        del headers['X-Frame-Options']
         return headers
 
 class FriggStaticView(ProxyView):
