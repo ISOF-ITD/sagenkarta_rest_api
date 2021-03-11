@@ -138,6 +138,7 @@ class Records(models.Model):
 	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new', choices=transcription_statuses)
 	language = models.CharField(max_length=50)
 	changedate = models.DateTimeField()
+	copyright_license = models.TextField(blank=True, verbose_name='Datalicens')
 	records_persons = models.ManyToManyField(
 		Persons, 
 		through='RecordsPersons', symmetrical=False

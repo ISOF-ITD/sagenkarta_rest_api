@@ -189,6 +189,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	recordtype = serializers.CharField(source='record_type')
 	archive = serializers.SerializerMethodField('get_archive_object')
 	text = serializers.CharField(source='text_to_publish')
+	copyrightlicense = serializers.CharField(source='copyright_license')
 
 	def get_archive_object(self, obj):
 		return {
@@ -212,6 +213,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'language',
 			'materialtype', 
 			'recordtype',
+			'copyrightlicense',
 			'source', 
 			'comment',
 			'places',
