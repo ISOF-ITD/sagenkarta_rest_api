@@ -105,6 +105,15 @@ class CrowdSourceUsers(models.Model):
 	userid = models.CharField(primary_key=True, max_length=150)
 	name = models.CharField(max_length=255)
 	email = models.EmailField()
+	# Track changes:
+	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
+	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
+	createdby = models.ForeignKey(User, db_column='createdby', related_name='records_created+', null=True, blank=True,
+								  editable=False, on_delete=DO_NOTHING,
+								  verbose_name="Excerperad av")
+	editedby = models.ForeignKey(User, db_column='editedby', null=True, blank=True, editable=False,
+								 on_delete=DO_NOTHING,
+								 related_name='Uppdaterad av+', verbose_name="Uppdaterad av")
 
 	class Meta:
 		managed = False
@@ -137,8 +146,17 @@ class Records(models.Model):
 	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True)
 	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new', choices=transcription_statuses)
 	language = models.CharField(max_length=50)
-	changedate = models.DateTimeField()
 	copyright_license = models.TextField(blank=True, verbose_name='Datalicens')
+	# Track changes:
+	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
+	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
+	createdby = models.ForeignKey(User, db_column='createdby', related_name='records_created', null=True, blank=True,
+								  editable=False, on_delete=DO_NOTHING,
+								  verbose_name="Excerperad av")
+	editedby = models.ForeignKey(User, db_column='editedby', null=True, blank=True, editable=False,
+								 on_delete=DO_NOTHING,
+								 related_name='Uppdaterad av+', verbose_name="Uppdaterad av")
+
 	records_persons = models.ManyToManyField(
 		Persons, 
 		through='RecordsPersons', symmetrical=False
