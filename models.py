@@ -16,6 +16,7 @@ from django.utils.safestring import mark_safe
 from string import Template
 
 from django.db import models
+from django.db.models.deletion import *
 
 from . import config
 
@@ -46,7 +47,7 @@ class Harad(models.Model):
 
 class Socken(models.Model):
 	name = models.CharField(max_length=200)
-	harad = models.ForeignKey(Harad, models.DO_NOTHING, db_column='harad')
+	harad = models.ForeignKey(Harad, db_column='harad', on_delete=DO_NOTHING)
 	lat = models.FloatField()
 	lng = models.FloatField()
 	name = models.CharField(max_length=200)
@@ -78,9 +79,9 @@ class Persons(models.Model):
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
 	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
 	createdby = models.ForeignKey(User, db_column='createdby', null=True, blank=True, editable=False,
-								  verbose_name="Excerperad av")
+								 on_delete=DO_NOTHING,verbose_name="Excerperad av")
 	editedby = models.ForeignKey(User, db_column='editedby', null=True, blank=True, editable=False,
-								 related_name='Uppdaterad av+', verbose_name="Uppdaterad av")
+								 on_delete=DO_NOTHING,related_name='Uppdaterad av+', verbose_name="Uppdaterad av")
 	places = models.ManyToManyField(
 		Socken, 
 		through='PersonsPlaces', 
@@ -93,8 +94,8 @@ class Persons(models.Model):
 
 
 class PersonsPlaces(models.Model):
-	person = models.ForeignKey(Persons, db_column='person', related_name='person_object')
-	place = models.ForeignKey(Socken, db_column='place')
+	person = models.ForeignKey(Persons, db_column='person', on_delete=DO_NOTHING, related_name='person_object')
+	place = models.ForeignKey(Socken, db_column='place', on_delete=DO_NOTHING)
 	relation = models.CharField(max_length=5, blank=True, null=True)
 
 	class Meta:
@@ -143,7 +144,7 @@ class Records(models.Model):
 	comment = models.TextField(blank=True)
 	country = models.CharField(max_length=50)
 	transcriptiondate = models.DateTimeField(blank=True, verbose_name="Transkriptionsdatum")
-	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True)
+	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING)
 	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new', choices=transcription_statuses)
 	language = models.CharField(max_length=50)
 	copyright_license = models.TextField(blank=True, verbose_name='Datalicens')
@@ -185,8 +186,8 @@ class Records(models.Model):
 
 
 class RecordsPersons(models.Model): #ingredient
-	record = models.ForeignKey(Records, db_column='record', related_name='persons')
-	person = models.ForeignKey(Persons, db_column='person')
+	record = models.ForeignKey(Records, db_column='record', related_name='persons', on_delete=DO_NOTHING)
+	person = models.ForeignKey(Persons, db_column='person', on_delete=DO_NOTHING)
 	relation = models.CharField(max_length=5, blank=True, null=True)
 
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
@@ -197,7 +198,7 @@ class RecordsPersons(models.Model): #ingredient
 
 
 class RecordsMedia(models.Model):
-	record = models.ForeignKey(Records, db_column='record', related_name='media')
+	record = models.ForeignKey(Records, db_column='record', related_name='media', on_delete=DO_NOTHING)
 	type = models.CharField(max_length=50, blank=True, null=True)
 	source = models.CharField(max_length=255, blank=True, null=True)
 	title = models.CharField(max_length=255, blank=True, null=True)
@@ -208,7 +209,7 @@ class RecordsMedia(models.Model):
 
 
 class RecordsMetadata(models.Model):
-	record = models.ForeignKey(Records, db_column='record', related_name='metadata')
+	record = models.ForeignKey(Records, db_column='record', related_name='metadata', on_delete=DO_NOTHING)
 	type = models.CharField(max_length=30, blank=True, null=True, choices=[('sitevision_url', 'Sitevision url'), ('custom', 'Example')])
 	value = models.CharField(max_length=30, blank=True, null=True)
 
@@ -220,8 +221,8 @@ class RecordsMetadata(models.Model):
 
 
 class RecordsPlaces(models.Model):
-	record = models.ForeignKey(Records, db_column='record', related_name='places')
-	place = models.ForeignKey(Socken, db_column='place')
+	record = models.ForeignKey(Records, db_column='record', on_delete=DO_NOTHING, related_name='places')
+	place = models.ForeignKey(Socken, db_column='place', on_delete=DO_NOTHING)
 	type = models.CharField(max_length=20, blank=True, null=True)
 
 	class Meta:
@@ -229,8 +230,8 @@ class RecordsPlaces(models.Model):
 
 
 class RecordsCategory(models.Model):
-	record = models.ForeignKey(Records, db_column='record', related_name='categories')
-	category = models.ForeignKey(Categories, db_column='category')
+	record = models.ForeignKey(Records, db_column='record', related_name='categories', on_delete=DO_NOTHING)
+	category = models.ForeignKey(Categories, db_column='category', on_delete=DO_NOTHING)
 
 	class Meta:
 		managed = False
