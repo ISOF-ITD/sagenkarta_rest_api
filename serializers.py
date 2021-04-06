@@ -190,6 +190,15 @@ class RecordsSerializer(serializers.ModelSerializer):
 	archive = serializers.SerializerMethodField('get_archive_object')
 	text = serializers.CharField(source='text_to_publish')
 	copyrightlicense = serializers.CharField(source='copyright_license')
+	numberOfOneRecords = serializers.SerializerMethodField('number_of_one_records')
+
+	# number_of_one_records (number of records with type one_record)
+	# for records of type one_accession_row with same record.archive_id
+	def number_of_one_records(self, obj):
+		count = 0
+		if obj.record_type == 'one_accession_row':
+			count = Records.objects.filter(record_type='one_record',archive_id=obj.archive_id).count()
+		return count
 
 	def get_archive_object(self, obj):
 		return {
