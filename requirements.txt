@@ -1,7 +1,16 @@
-Django==1.11
+Django==1.11.3
+mysqlclient==1.4.6
+Pillow==5.0.0
 djangorestframework==3.7.3
-mysqlclient
-requests
-django-revproxy
-Pillow
-django-cors-headers
+requests==2.18.4
+django-cors-headers==2.1.0
+django-revproxy==0.9.13
+# Testing error
+# File "/home/perla331/sagendatabas/Sagenkarta-Rest-API/urls.py", line 7, in <module>
+#    router.register(r'records', views.RecordsViewSet, base_name='record')
+# TypeError: register() got an unexpected keyword argument 'base_name'
+# Global py3 in frigg-test:
+# urllib3==1.16
+urllib3
+# Latest supporting module ?:
+#urllib3==1.21.1
