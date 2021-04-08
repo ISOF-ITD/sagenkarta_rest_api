@@ -224,6 +224,17 @@ class LantmaterietEpsg3857ProxyView(ProxyView):
         headers['Authorization'] = 'Basic %s' % authHeaderHash
         return headers
 
+class LantmaterietNedtonadEpsg3857ProxyView(ProxyView):
+    upstream = config.LantmaterietNedtonadEpsg3857Proxy
+
+    def get_request_headers(self):
+        headers = super(LantmaterietEpsg3857NedtonadProxyView, self).get_request_headers()
+
+        authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
+
+        headers['Authorization'] = 'Basic %s' % authHeaderHash
+        return headers
+
 class LantmaterietOrtoProxyView(ProxyView):
     upstream = config.LantmaterietOrtoProxy
 
