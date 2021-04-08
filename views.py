@@ -61,6 +61,11 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
             type_values = type.split(',')
             filters['type__in'] = type_values
 
+        recordtype = self.request.query_params.get('recordtype', None)
+        if recordtype is not None:
+            recordtype_values = recordtype.split(',')
+            filters['record_type__in'] = recordtype_values
+
         person = self.request.query_params.get('person', None)
         if person is not None:
             filters['records_persons__id'] = person
