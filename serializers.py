@@ -197,7 +197,9 @@ class RecordsSerializer(serializers.ModelSerializer):
 	def number_of_one_record(self, obj):
 		count = 0
 		if obj.record_type == 'one_accession_row':
-			count = Records.objects.filter(record_type='one_record',archive_id=obj.archive_id).count()
+			# Get only one_record instances for this archive_id
+			# that also is imported directly from accessionsregistret (id starts with acc)
+			count = Records.objects.filter(record_type='one_record', id__istartswith='acc',archive_id=obj.archive_id).count()
 		return count
 
 	def get_archive_object(self, obj):
