@@ -10,6 +10,7 @@ LantmaterietProxy = 'http://maps.lantmateriet.se/topowebb/v1/wmts/1.0.0/topowebb
 LantmaterietEpsg3857Proxy = 'http://maps.lantmateriet.se/topowebb/v1/wmts/1.0.0/topowebb/default/3857/'
 LantmaterietNedtonadEpsg3857Proxy = 'http://maps.lantmateriet.se/topowebb/v1/wmts/1.0.0/topowebb_nedtonad/default/3857/'
 LantmaterietOrtoProxy = 'http://maps.lantmateriet.se/ortofoto/wms/v1.3/'
+LantmaterietHistOrtoProxy = 'https://api.lantmateriet.se/historiska-ortofoton/wms/v1/'
 LantmaterietProxy_access = secrets.LantmaterietProxy_access
 IsofGeoProxy = 'https://oden-test.isof.se/geoserver/'
 IsofHomepage = 'https://www.isof.se/'
