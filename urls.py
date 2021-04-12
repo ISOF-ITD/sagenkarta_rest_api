@@ -13,6 +13,8 @@ router.register(r'transcribe', views.TranscribeViewSet, base_name='transcribe')
 router.register(r'transcribestart', views.TranscribeStartViewSet, base_name='transcribestart')
 
 urlpatterns = [
+	url(r'^isofGeoProxy/', views.isofGeoProxy, name='IsofGeoProxy'),
+
 	url(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
 	url(r'^lm_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietEpsg3857ProxyView.as_view()),
 	url(r'^lm_nedtonad_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietNedtonadEpsg3857ProxyView.as_view()),
