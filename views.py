@@ -13,6 +13,7 @@ from base64 import b64encode
 from django.core.mail import send_mail
 from django.http import JsonResponse
 import json
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from . import config
 
@@ -26,17 +27,24 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return  # To not perform the csrf check previously happening
 
+@xframe_options_exempt
 def isofGeoProxy(request):
     # Example:
     # https://oden-test.isof.se/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=SockenStad_ExtGranskning-clipped:SockenStad_ExtGranskn_v1.0_clipped&STYLE=&TILEMATRIX=EPSG:900913:4&TILEMATRIXSET=EPSG:900913&FORMAT=application/x-protobuf;type=mapbox-vector&TILECOL=9&TILEROW=4
     # http://localhost:8000/api/isofGeoProxy?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=SockenStad_ExtGranskning-clipped:SockenStad_ExtGranskn_v1.0_clipped&STYLE=&TILEMATRIX=EPSG:900913:4&TILEMATRIXSET=EPSG:900913&FORMAT=application/x-protobuf;type=mapbox-vector&TILECOL=9&TILEROW=4
     url = 'https://oden-test.isof.se/geoserver/gwc/service/wmts'
     #response = requests.get(url, params=request.GET)
-    response = requests.get(url, headers= request.headers, params=request.GET)
+    headers = None
+    if headers in request:
+        headers=request.headers
+
+    response = requests.get(url, headers=headers, params=request.GET)
     print(request)
     print(response)
+    print(request.GET)
     print(response.headers)
     print(response.content)
+    print(response.GET)
     return response
 
 class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
