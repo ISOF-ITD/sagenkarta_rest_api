@@ -1,6 +1,6 @@
 Django==2.2.10
 mysqlclient==1.4.6
-Pillow==5.0.0
+Pillow==8.2.0
 djangorestframework==3.7.3
 requests==2.18.4
 django-cors-headers==2.1.0
