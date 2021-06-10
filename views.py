@@ -287,7 +287,7 @@ class IsofGeoProxyView(ProxyView):
         headers = super(IsofGeoProxyView, self).get_request_headers()
         return headers
 
-
+# Probably not needed anymore, removed references in client code. Keep for a while, just in case. (20210610)
 class IsofHomepageView(ProxyView):
     upstream = config.IsofHomepage
 
