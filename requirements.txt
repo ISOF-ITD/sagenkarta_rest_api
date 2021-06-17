@@ -34,7 +34,7 @@ django-revproxy==0.9.15
 # NOTE: Seems to work with requests 2.18.4 OR requests 2.18.4 not used at all OR not tested
 # urllib3==1.16
 # Version in PlaceNameService:
-urllib3==1.25.9
+urllib3==1.26.5
 # ERROR: requests 2.18.4 has requirement urllib3<1.23,>=1.21.1, but you'll have urllib3 1.17 which is incompatible.
 # Latest supporting module requests 2.18.4:
 #urllib3==1.21.1
