@@ -4,13 +4,13 @@ from . import views
 from revproxy.views import ProxyView
 
 router = routers.DefaultRouter()
-router.register(r'records', views.RecordsViewSet, base_name='record')
-router.register(r'persons', views.PersonsViewSet, base_name='person')
-router.register(r'locations', views.LocationsViewSet, base_name='locations')
-router.register(r'categories', views.CategoriesViewSet, base_name='categories')
-router.register(r'feedback', views.FeedbackViewSet, base_name='feedback')
-router.register(r'transcribe', views.TranscribeViewSet, base_name='transcribe')
-router.register(r'transcribestart', views.TranscribeStartViewSet, base_name='transcribestart')
+router.register(r'records', views.RecordsViewSet, basename='record')
+router.register(r'persons', views.PersonsViewSet, basename='person')
+router.register(r'locations', views.LocationsViewSet, basename='locations')
+router.register(r'categories', views.CategoriesViewSet, basename='categories')
+router.register(r'feedback', views.FeedbackViewSet, basename='feedback')
+router.register(r'transcribe', views.TranscribeViewSet, basename='transcribe')
+router.register(r'transcribestart', views.TranscribeStartViewSet, basename='transcribestart')
 
 urlpatterns = [
 	url(r'^isofGeoProxy/', views.isofGeoProxy, name='IsofGeoProxy'),
