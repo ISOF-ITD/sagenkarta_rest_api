@@ -486,11 +486,11 @@ class TranscribeViewSet(viewsets.ViewSet):
                     except Exception as e:
                         print(e)
                 else:
-                    response_message = 'Inte redo för transkribering.'
+                    response_message = 'Ett oväntat fel: Inte redo för transkribering.'
             else:
-                response_message = 'Posten finns inte.'
+                response_message = 'Ett oväntat fel: Posten finns inte.'
         else:
-            response_message = 'Error in request'
+            response_message = 'Ett oväntat fel: Error in request'
         json_response = {'success': response_status, 'data': jsonData}
         if response_message is not None:
             json_response = {'success': response_status, 'data': jsonData, 'message': response_message}
@@ -537,11 +537,11 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                     except Exception as e:
                         print(e)
                 else:
-                    response_message = 'Posten är avskriven och under behandling.'
+                    response_message = 'Ett oväntat fel: Posten är avskriven och under behandling.'
             else:
-                response_message = 'Posten finns inte!'
+                response_message = 'Ett oväntat fel: Posten finns inte!'
         else:
-            response_message = 'Error in request'
+            response_message = 'Ett oväntat fel: Error in request'
         json_response = {'success': response_status, 'data': jsonData}
         if response_message is not None:
             json_response = {'success': response_status, 'data': jsonData, 'message': response_message}
