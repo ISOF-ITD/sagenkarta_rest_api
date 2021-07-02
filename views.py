@@ -449,7 +449,7 @@ class TranscribeViewSet(viewsets.ViewSet):
                                 print(e)
 
                         # transcribedrecord.records_persons = records_person
-
+                    crowdsource_user = None
                     if 'from_name' in jsonData:
                         crowdsource_user = CrowdSourceUsers()
                         # TODO: Find unique id if transcription rejected and new user starts with same recordid
@@ -473,6 +473,9 @@ class TranscribeViewSet(viewsets.ViewSet):
                                 crowdsource_user = existing_crowdsource_user
 
                         # print(transcribedrecord)
+                    else:
+                        crowdsource_user = CrowdSourceUsers.objects.filter(userid='isof-unspecified').first()
+                    if crowdsource_user is not None:
                         transcribedrecord.transcribedby = crowdsource_user
                     try:
                         transcribedrecord.save()
