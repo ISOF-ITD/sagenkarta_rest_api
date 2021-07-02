@@ -255,7 +255,11 @@ def records_post_saved(sender, **kwargs):
 		}
 		logger.debug("url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
-		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/legend/'+str(modelId)+'/_update'
+		# Do not use ES-mapping-type for ES >6
+		es_mapping_type = ''
+		# Old ES-mapping-type:
+		#es_mapping_type = 'legend/'
+		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/'+es_mapping_type+str(modelId)+'/_update'
 
 		esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False)
 		logger.debug("url post %s ", esUrl)
