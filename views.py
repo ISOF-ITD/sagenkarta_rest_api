@@ -366,6 +366,8 @@ class TranscribeViewSet(viewsets.ViewSet):
     #@method_decorator(csrf_exempt)
     def post(self, request, format=None):
         # if request.data is not None:
+        response_status = 'false'
+        response_message = None
         if 'json' in request.data:
             jsonData = json.loads(request.data['json'])
             print(jsonData)
@@ -479,11 +481,20 @@ class TranscribeViewSet(viewsets.ViewSet):
                         transcribedrecord.transcribedby = crowdsource_user
                     try:
                         transcribedrecord.save()
+                        response_status = 'true'
                         logger.debug("TranscribeViewSet data %s", jsonData)
                     except Exception as e:
                         print(e)
-
-        return JsonResponse({'success': 'true', 'data': jsonData})
+                else:
+                    response_message = 'Inte redo för transkribering.'
+            else:
+                response_message = 'Posten finns inte.'
+        else:
+            response_message = 'Error in request'
+        json_response = {'success': response_status, 'data': jsonData}
+        if response_message is not None:
+            json_response = {'success': response_status, 'data': jsonData, 'message': response_message}
+        return JsonResponse(json_response)
 
     def validateString(self, title):
         if title is not None:
@@ -505,6 +516,8 @@ class TranscribeStartViewSet(viewsets.ViewSet):
     # I'm almost certain the DRF authentication middleware entirely ignores any such decorator. https://stackoverflow.com/questions/19897973/how-to-unset-csrf-in-modelviewset-of-django-rest-framework
     #@method_decorator(csrf_exempt)
     def post(self, request, format=None):
+        response_status = 'false'
+        response_message = None
         #if request.data is not None:
         if 'json' in request.data:
             jsonData = json.loads(request.data['json'])
@@ -519,11 +532,20 @@ class TranscribeStartViewSet(viewsets.ViewSet):
 
                     try:
                         transcribedrecord.save()
+                        response_status = 'true'
                         logger.debug("TranscribeStartViewSet data %s", jsonData)
                     except Exception as e:
                         print(e)
-
-        return JsonResponse({'success': 'true', 'data': jsonData})
+                else:
+                    response_message = 'Posten är avskriven och under behandling.'
+            else:
+                response_message = 'Posten finns inte!'
+        else:
+            response_message = 'Error in request'
+        json_response = {'success': response_status, 'data': jsonData}
+        if response_message is not None:
+            json_response = {'success': response_status, 'data': jsonData, 'message': response_message}
+        return JsonResponse(json_response)
 
     def get_permissions(self):
         permission_classes = [permissions.AllowAny]
