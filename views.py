@@ -493,7 +493,8 @@ class TranscribeViewSet(viewsets.ViewSet):
                     except Exception as e:
                         print(e)
                 else:
-                    response_message = 'Ett oväntat fel: Inte redo för transkribering.'
+                    if response_message is None:
+                        response_message = 'Ett oväntat fel: Inte redo för transkribering.'
             else:
                 response_message = 'Ett oväntat fel: Posten finns inte.'
         else:
