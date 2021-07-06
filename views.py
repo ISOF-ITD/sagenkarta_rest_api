@@ -380,6 +380,8 @@ class TranscribeViewSet(viewsets.ViewSet):
             # if len(transcribed_record_arr) == 1:
             # Check if transcribed (message)
             if transcribedrecord is not None and 'message' in jsonData:
+                # Naive logic: First transcriber of a record saving WINS!
+                # TODO: Make transcription of same record less likely
                 statuses_for_already_transcribed = ['transcribed', 'reviewing', 'approved', 'published']
                 if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
                     response_message = 'OBS: BETAVERSION där stöd ännu inte finns för följande: Uppteckningen redan avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara detta i meddelandetexten.'
