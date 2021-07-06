@@ -2,10 +2,11 @@ Django==2.2.10
 # mysqlclient==1.4.2 # Kanske fungerade utan felmeddelande?
 mysqlclient==1.4.6 # ubuntu-py3.8 works even this error: error: invalid command 'bdist_wheel' ERROR: Failed building wheel for mysqlclient
 # Remove django models.ImageField in models-class if needed!
-# Pillow is used by models.ImageField only used in TradarkAdmin!
+# Pillow is used by models.ImageField: used in Sagenkarta-Rest-API and TradarkAdmin!
 # For django models.ImageField: (Sagenkarta-Rest-API.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
 #Old: Pillow==5.0.0
 #Newest: Pillow==8.2.0
+Pillow==8.2.0
 # djangorestframework is used by Sagenkarta-ES-API
 # djangorestframework==3.7.3
 # Version in PlaceNameService:

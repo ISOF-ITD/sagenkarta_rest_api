@@ -72,8 +72,8 @@ class Persons(models.Model):
 	address = models.CharField(blank=True, null=True, max_length=255)
 	birthplace = models.CharField(blank=True, null=True, max_length=255, verbose_name='Födelseort')
 	biography = models.TextField(blank=True, null=True)
-	# Pillow is used by models.ImageField only used in TradarkAdmin:
-	# image = models.ImageField(blank=True, null=True, verbose_name='Bildfil', upload_to='personer')
+	# Pillow is used by models.ImageField: used in Sagenkarta-Rest-API and TradarkAdmin!:
+	image = models.ImageField(blank=True, null=True, verbose_name='Bildfil', upload_to='personer')
 	import_row_id = models.IntegerField(default=0, blank=False, null=False)
 	transcriptioncomment = models.CharField(max_length=255, verbose_name='Kommentarer', default='')
 	# changedate = models.DateTimeField()
