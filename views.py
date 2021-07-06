@@ -545,7 +545,7 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                     except Exception as e:
                         print(e)
                 else:
-                    response_message = 'Ett oväntat fel: Posten är avskriven och under behandling.'
+                    response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
             else:
                 response_message = 'Ett oväntat fel: Posten finns inte!'
         else:
