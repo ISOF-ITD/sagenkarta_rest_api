@@ -1,4 +1,4 @@
-Django==2.2.10
+Django==2.2.24
 # mysqlclient==1.4.2 # Kanske fungerade utan felmeddelande?
 mysqlclient==1.4.6 # ubuntu-py3.8 works even this error: error: invalid command 'bdist_wheel' ERROR: Failed building wheel for mysqlclient
 # Remove django models.ImageField in models-class if needed!
@@ -10,19 +10,19 @@ Pillow==8.2.0
 # djangorestframework is used by Sagenkarta-ES-API
 # djangorestframework==3.7.3
 # Version in PlaceNameService:
-djangorestframework==3.11.0
+#djangorestframework==3.11.0
+djangorestframework==3.12.4
 # requests is used by Sagenkarta-Rest-API
 # requests ONLY? used for test of proxy to isof-geoserver in isofGeoProxy:
 # Old version for testing:
 # requests==2.18.4
 # Newer version not yet tested:
 requests==2.25.1
-django-cors-headers==2.1.0
+django-cors-headers==3.7.0
 # Used in external proxy services as LantmaterietProxyView:
 # django-revproxy==0.9.13
 # Newer version not yet tested:
-django-revproxy==0.9.15
-# django-revproxy==0.10.0
+django-revproxy==0.10.0
 # Testing error
 # File "/home/perla331/sagendatabas/Sagenkarta-Rest-API/urls.py", line 7, in <module>
 #    router.register(r'records', views.RecordsViewSet, base_name='record')
@@ -35,7 +35,8 @@ django-revproxy==0.9.15
 # NOTE: Seems to work with requests 2.18.4 OR requests 2.18.4 not used at all OR not tested
 # urllib3==1.16
 # Version in PlaceNameService:
-urllib3==1.25.9
+#urllib3==1.25.9
+urllib3==1.26.6
 # ERROR: requests 2.18.4 has requirement urllib3<1.23,>=1.21.1, but you'll have urllib3 1.17 which is incompatible.
 # Latest supporting module requests 2.18.4:
 #urllib3==1.21.1
