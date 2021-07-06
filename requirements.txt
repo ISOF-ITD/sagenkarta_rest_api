@@ -10,7 +10,7 @@ Pillow==8.2.0
 # djangorestframework is used by Sagenkarta-ES-API
 # djangorestframework==3.7.3
 # Version in PlaceNameService:
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 # requests is used by Sagenkarta-Rest-API
 # requests ONLY? used for test of proxy to isof-geoserver in isofGeoProxy:
 # Old version for testing:
