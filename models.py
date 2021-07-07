@@ -253,21 +253,20 @@ def records_post_saved(sender, **kwargs):
 		document = {
 			'doc': modelJson
 		}
-		logger.debug("url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
+		logger.debug("records_post_saved url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
 		# Do not use ES-mapping-type for ES >6
 		es_mapping_type = ''
 		# Old ES-mapping-type:
 		#es_mapping_type = 'legend/'
-		#Which api?: _update or _doc
-		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_update/'+str(modelId)
+		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_doc/'+str(modelId)
 
 		esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False)
-		logger.debug("url post %s ", esUrl)
+		logger.debug("records_post_saved post: url, esResponse %s %s", esUrl, esResponse)
 
 		if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
 			esResponse = requests.put(esUrl, data=json.dumps(modelJson).encode('utf-8'), verify=False)
-			logger.debug("url put %s ", esUrl)
+			logger.debug("records_post_saved put: url, esResponse %s %s", esUrl, esResponse)
 
 	t = Timer(5, save_es_model)
 	t.start()
