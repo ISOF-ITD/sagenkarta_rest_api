@@ -259,7 +259,8 @@ def records_post_saved(sender, **kwargs):
 		es_mapping_type = ''
 		# Old ES-mapping-type:
 		#es_mapping_type = 'legend/'
-		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/'+es_mapping_type+str(modelId)+'/_update'
+		#Which api?: _update or _doc
+		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_update/'+str(modelId)
 
 		esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False)
 		logger.debug("url post %s ", esUrl)
