@@ -543,6 +543,7 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                         response_status = 'true'
                         logger.debug("TranscribeStartViewSet data %s", jsonData)
                     except Exception as e:
+                        logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
                         print(e)
                 else:
                     response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'

@@ -260,13 +260,19 @@ def records_post_saved(sender, **kwargs):
 		# Old ES-mapping-type:
 		#es_mapping_type = 'legend/'
 		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_doc/'+str(modelId)
+		# Elasticsearch 6 seems to need headers:
+		headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
-		esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False)
-		logger.debug("records_post_saved post: url, esResponse %s %s", esUrl, esResponse)
+		try:
+			esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False, headers=headers)
+		except Exception as e:
+			logger.debug("records_post_saved post Exception: %s", jsonData)
+			print(e)
+		logger.debug("records_post_saved post: url, esResponse %s %s", esUrl, esResponse.text)
 
 		if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
 			esResponse = requests.put(esUrl, data=json.dumps(modelJson).encode('utf-8'), verify=False)
-			logger.debug("records_post_saved put: url, esResponse %s %s", esUrl, esResponse)
+			logger.debug("records_post_saved put: url, esResponse %s %s", esUrl, esResponse.text)
 
 	t = Timer(5, save_es_model)
 	t.start()
