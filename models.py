@@ -251,14 +251,17 @@ def records_post_saved(sender, **kwargs):
 		modelJson = modelResponseData.json()
 
 		document = {
-			'doc': modelJson
+			#'doc': modelJson
 		}
+		#ES7 Do not add top element to json:
+		document = modelJson
 		logger.debug("records_post_saved url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
 		# Do not use ES-mapping-type for ES >6
 		es_mapping_type = ''
 		# Old ES-mapping-type:
 		#es_mapping_type = 'legend/'
+		#Use Index API  _doc (Update API _update seems not to work here in ES7):
 		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_doc/'+str(modelId)
 		# Elasticsearch 6 seems to need headers:
 		headers = {'Accept': 'application/json', 'content-type': 'application/json'}
