@@ -125,6 +125,7 @@ class Records(models.Model):
 	transcription_statuses = [
 		('untranscribed', 'Ej transkriberad'),
 		('readytotranscribe', 'Publicerad för transkribering'),
+		('undertranscription', 'Under transkription'),
 		('transcribed', 'Transkriberad'),
 		('reviewing', 'Under granskning'),
 		('approved', 'Godkänd'),

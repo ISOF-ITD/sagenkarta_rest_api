@@ -383,12 +383,16 @@ class TranscribeViewSet(viewsets.ViewSet):
                 # Naive logic: First transcriber of a record saving WINS!
                 # TODO: Make transcription of same record less likely
                 statuses_for_already_transcribed = ['transcribed', 'reviewing', 'approved', 'published']
+                if transcribedrecord.transcriptionstatus == 'undertranscription':
+                    response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Uppteckningen under avskrift av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara i meddelandetexten.'
                 if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
-                    response_message = 'OBS: BETAVERSION där stöd ännu inte finns för följande: Uppteckningen redan avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara detta i meddelandetexten.'
+                    response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara i meddelandetexten.'
                 if transcribedrecord.transcriptionstatus == 'untranscribed':
                     response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
-                if transcribedrecord.transcriptionstatus == 'readytotranscribe':
-                    user = User.objects.filter(username='restapi').first()
+                # Only possible to register transcription when status (not already transcribed):
+                # ('readytotranscribe'?),'undertranscription':
+                if transcribedrecord.transcriptionstatus == 'undertranscription':
+                        user = User.objects.filter(username='restapi').first()
 
                     transcribedrecord.text = jsonData['message']
                     if 'recordtitle' in jsonData:
@@ -536,6 +540,7 @@ class TranscribeStartViewSet(viewsets.ViewSet):
             transcribedrecord = Records.objects.get(pk=recordid)
             if transcribedrecord is not None:
                 if transcribedrecord.transcriptionstatus == 'readytotranscribe':
+                    transcribedrecord.transcriptionstatus = 'undertranscription'
                     transcribedrecord.transcriptiondate = Now()
 
                     try:
