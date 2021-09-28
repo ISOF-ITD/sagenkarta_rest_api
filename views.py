@@ -383,8 +383,8 @@ class TranscribeViewSet(viewsets.ViewSet):
                 # Naive logic: First transcriber of a record saving WINS!
                 # TODO: Make transcription of same record less likely
                 statuses_for_already_transcribed = ['transcribed', 'reviewing', 'approved', 'published']
-                if transcribedrecord.transcriptionstatus == 'undertranscription':
-                    response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Uppteckningen under avskrift av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara i meddelandetexten.'
+                if transcribedrecord.transcriptionstatus == 'readytotranscribe':
+                    response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Status avskrift av uppteckningen har inte aktiverats. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara i meddelandetexten.'
                 if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
                     response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara i meddelandetexten.'
                 if transcribedrecord.transcriptionstatus == 'untranscribed':
@@ -552,6 +552,13 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                         print(e)
                 else:
                     response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
+                    statuses_for_already_transcribed = ['transcribed', 'reviewing', 'approved', 'published']
+                    if transcribedrecord.transcriptionstatus == 'undertranscription':
+                        response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Uppteckningen under avskrift av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara i meddelandetexten.'
+                    if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
+                        response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och svar" och förklara i meddelandetexten.'
+                    if transcribedrecord.transcriptionstatus == 'untranscribed':
+                        response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
             else:
                 response_message = 'Ett oväntat fel: Posten finns inte!'
         else:
