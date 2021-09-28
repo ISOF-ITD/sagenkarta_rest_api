@@ -392,7 +392,7 @@ class TranscribeViewSet(viewsets.ViewSet):
                 # Only possible to register transcription when status (not already transcribed):
                 # ('readytotranscribe'?),'undertranscription':
                 if transcribedrecord.transcriptionstatus == 'undertranscription':
-                        user = User.objects.filter(username='restapi').first()
+                    user = User.objects.filter(username='restapi').first()
 
                     transcribedrecord.text = jsonData['message']
                     if 'recordtitle' in jsonData:
