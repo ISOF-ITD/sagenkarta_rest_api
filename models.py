@@ -133,7 +133,7 @@ class Records(models.Model):
 	]
 
 	id = models.CharField(max_length=50, primary_key=True)
-	title = models.CharField(max_length=255)
+	title = models.CharField(max_length=300, verbose_name='Titel', blank=True, null=True)
 	text = models.TextField(blank=True, null=True)
 	year = models.DateField(blank=True, null=True)
 	archive = models.CharField(max_length=255, blank=True)
