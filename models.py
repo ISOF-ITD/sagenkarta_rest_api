@@ -148,6 +148,7 @@ class Records(models.Model):
 	transcriptiondate = models.DateTimeField(blank=True, verbose_name="Transkriptionsdatum")
 	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING)
 	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new', choices=transcription_statuses)
+	publishstatus = models.CharField(max_length=20, blank=False, null=False, default='unpublished')
 	language = models.CharField(max_length=50)
 	copyright_license = models.TextField(blank=True, verbose_name='Datalicens')
 	# Track changes:
