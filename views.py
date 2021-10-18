@@ -470,7 +470,8 @@ class TranscribeViewSet(viewsets.ViewSet):
                         crowdsource_user.name = jsonData['from_name']
                         if 'from_email' in jsonData:
                             crowdsource_user.email = jsonData['from_email']
-                            transcribedrecord.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
+                            # Set "transcribed by" when published in admin interface:
+                            #transcribedrecord.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
 
                         if crowdsource_user.email is not None or crowdsource_user.name is not None:
 
