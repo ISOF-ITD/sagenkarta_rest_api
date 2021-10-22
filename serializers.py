@@ -191,6 +191,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	text = serializers.CharField(source='text_to_publish')
 	copyrightlicense = serializers.CharField(source='copyright_license')
 	numberofonerecord = serializers.SerializerMethodField('number_of_one_record')
+	transcribedby = serializers.SerializerMethodField('transcribed_by')
 
 	# number_of_one_records (number of records with type one_record)
 	# for records of type one_accession_row with same record.archive_id
@@ -201,6 +202,17 @@ class RecordsSerializer(serializers.ModelSerializer):
 			# that also is imported directly from accessionsregistret (id starts with acc)
 			count = Records.objects.filter(record_type='one_record', id__istartswith='acc',archive_id=obj.archive_id).count()
 		return count
+
+	# transcribed_by is shown if transcriptionstatus is published
+	def transcribed_by(self, obj):
+		text = None
+		if obj.record_type == 'one_record' and obj.transcriptionstatus == 'published':
+			# Get only one_record instances for this archive_id
+			# that also is imported directly from accessionsregistret (id starts with acc)
+			if obj.transcribedby is not None:
+				if obj.transcribedby.name is not None:
+					text = str(obj.transcribedby.name)
+		return text
 
 	def get_archive_object(self, obj):
 		return {
@@ -234,5 +246,6 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'media',
 			'publishstatus',
 			'transcriptionstatus',
-			'transcriptiondate'
+			'transcriptiondate',
+			'transcribedby'
 		)
