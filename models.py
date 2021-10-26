@@ -178,7 +178,9 @@ class Records(models.Model):
 	def text_to_publish(self):
 		text_to = None
 		if self.text is not None:
-			text_to = dict(self.transcription_statuses)[str(self.transcriptionstatus)]
+			text_to = 'Denna text håller på att skrivas av, av en användare eller är under behandling.'
+			# Maybe later show current status of transcription, maybe point to current status in a status list:
+			# text_to = dict(self.transcription_statuses)[str(self.transcriptionstatus)]
 			if self.transcriptionstatus == 'published' or self.record_type == 'one_accession_row':
 				text_to = str(self.text)
 		return text_to
