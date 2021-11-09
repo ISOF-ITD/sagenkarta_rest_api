@@ -143,7 +143,7 @@ class Records(models.Model):
 	archive_page = models.CharField(max_length=20, blank=True, null=True)
 	total_pages = models.IntegerField(blank=True, null=True)
 	source = models.TextField(blank=True)
-	comment = models.TextField(blank=True)
+	origin_comment = models.TextField(blank=True)
 	country = models.CharField(max_length=50)
 	transcriptiondate = models.DateTimeField(blank=True, verbose_name="Transkriptionsdatum")
 	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING)
