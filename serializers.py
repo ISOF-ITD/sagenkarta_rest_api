@@ -160,6 +160,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 		fields = (
 			'type',
 			'source',
+			'store',
 			'title'
 		)
 
@@ -199,16 +200,16 @@ class RecordsSerializer(serializers.ModelSerializer):
 		count = 0
 		if obj.record_type == 'one_accession_row':
 			# Get only one_record instances for this archive_id
-			# that also is imported directly from accessionsregistret (id starts with acc)
-			count = Records.objects.filter(record_type='one_record', id__istartswith='acc',archive_id=obj.archive_id).count()
+			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
+			count = Records.objects.filter(record_type='one_record', taxonomy__type='tradark',archive_id__iexact=obj.archive_id.lower()).count()
+			# OLD: that also is imported directly from accessionsregistret (id starts with acc)
+			# count = Records.objects.filter(record_type='one_record', id__istartswith='acc',archive_id=obj.archive_id).count()
 		return count
 
 	# transcribed_by is shown if transcriptionstatus is published
 	def transcribed_by(self, obj):
 		text = None
 		if obj.record_type == 'one_record' and obj.transcriptionstatus == 'published':
-			# Get only one_record instances for this archive_id
-			# that also is imported directly from accessionsregistret (id starts with acc)
 			if obj.transcribedby is not None:
 				if obj.transcribedby.name is not None:
 					text = str(obj.transcribedby.name)

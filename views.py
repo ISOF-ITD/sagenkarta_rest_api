@@ -408,11 +408,10 @@ class TranscribeViewSet(viewsets.ViewSet):
 
                     if 'messageComment' in jsonData:
                         # transcribedrecord.transcriptioncomment = jsonData['messageComment']
-                        if transcribedrecord.comment is None:
-                            transcribedrecord.comment = 'Transcriptioncomment:' + jsonData['messageComment']
+                        if transcribedrecord.transcription_comment is None:
+                            transcribedrecord.transcription_comment = 'Transcriptioncomment:' + jsonData['messageComment']
                         else:
-                            transcribedrecord.comment = transcribedrecord.comment + ' Transcriptioncomment:' + jsonData[
-                                'messageComment']
+                            transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + ' Transcriptioncomment:' + jsonData['messageComment']
                     transcribedrecord.transcriptionstatus = 'transcribed'
                     transcribedrecord.transcriptiondate = Now()
 
@@ -434,10 +433,10 @@ class TranscribeViewSet(viewsets.ViewSet):
                         # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
                         # Check if a informant that is crowdsourced already exists
                         # to avoid lots of rows with the same informant data:
-                        existing_person = Persons.objects.filter(name=informant.name, birth_year=informant.birth_year,
-                                                                 biography=informant.biography,transcriptioncomment=informant.transcriptioncomment).first()
+                        existing_person = Persons.objects.filter(name=informant.name, birth_year=informant.birth_year,birthplace=informant.birthplace).first()
                         if existing_person is None:
                             print(informant)
+                            informant.transcriptionstatus = 'transcribed'
                             informant.createdby = user
                             informant.editedby = user
                             # Save new informant
@@ -493,6 +492,7 @@ class TranscribeViewSet(viewsets.ViewSet):
 
                         # print(transcribedrecord)
                     else:
+                        # Add anonymous user:
                         crowdsource_user = CrowdSourceUsers.objects.filter(userid='isof-unspecified').first()
                     if crowdsource_user is not None:
                         transcribedrecord.transcribedby = crowdsource_user
