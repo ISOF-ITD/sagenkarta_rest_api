@@ -179,7 +179,6 @@ class RecordsCategorySerializer(serializers.ModelSerializer):
 		)
 
 class RecordsSerializer(serializers.ModelSerializer):
-	persons = RecordsPersonsSerializer(many=True, read_only=True);
 	#places = SockenSerializer(many=True, read_only=True);
 	places = RecordsPlacesSerializer(many=True, read_only=True);
 	metadata = RecordsMetadataSerializer(many=True, read_only=True);
@@ -193,6 +192,18 @@ class RecordsSerializer(serializers.ModelSerializer):
 	copyrightlicense = serializers.CharField(source='copyright_license')
 	numberofonerecord = serializers.SerializerMethodField('number_of_one_record')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
+	# Return persons according to filter:
+	persons = serializers.SerializerMethodField('get_persons')
+	# OLD: Return all persons:
+	#persons = RecordsPersonsSerializer(many=True, read_only=True);
+
+	# Filter to return only published persons
+	def get_persons(self, record):
+		qs = RecordsPersons.objects.filter(person__transcriptionstatus='published', record=record)
+		# testing:
+		# qs = RecordsPersons.objects.filter(person__gender='female', person__transcriptionstatus='published', record=record)
+		serializer = RecordsPersonsSerializer(instance=qs, many=True)
+		return serializer.data
 
 	# number_of_one_records (number of records with type one_record)
 	# for records of type one_accession_row with same record.archive_id
