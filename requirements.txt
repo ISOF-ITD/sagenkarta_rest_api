@@ -19,6 +19,8 @@ djangorestframework==3.12.4
 # Newer version not yet tested:
 requests==2.25.1
 django-cors-headers==3.7.0
+# Test: Handle: Denied by X-Frame-Option directive set to "SAME-ORIGIN":
+django-csp==3.6
 # Used in external proxy services as LantmaterietProxyView:
 # django-revproxy==0.9.13
 # Newer version not yet tested:

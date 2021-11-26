@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 import json
 from django.views.decorators.clickjacking import xframe_options_exempt
+# from csp.decorators import csp
 
 from . import config
 
@@ -300,11 +301,18 @@ class IsofHomepageView(ProxyView):
         headers = super(IsofHomepageView, self).get_request_headers()
         return headers
 
+# Does not work: url(r'^filemaker_proxy/(?P<path>.*)$', views.FilemakerProxyView.as_view()),
+# AttributeError: 'function' object has no attribute 'as_view'
+# @csp(DEFAULT_SRC=["'self'"], IMG_SRC=['imgsrv.com'], MEDIA_SRC=['imgsrv.com'], FRAME_SRC=['imgsrv.com'],OBJECT_SRC=['scriptsrv.com', 'googleanalytics.com'])
 class FilemakerProxyView(ProxyView):
     upstream = config.FilemakerProxy
 
     def get_request_headers(self):
         headers = super(FilemakerProxyView, self).get_request_headers()
+        # Does not work: Should be added to response-headers instead:
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options:
+        # The Content-Security-Policy HTTP header has a frame-ancestors directive which you can use instead.
+        # headers['Content-Security-Policy'] = "frame-ancestors 'self' https://sok.folke.isof.se"
         return headers
 
 class FriggStaticView(ProxyView):
