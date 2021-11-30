@@ -6,7 +6,7 @@ mysqlclient==1.4.6 # ubuntu-py3.8 works even this error: error: invalid command 
 # For django models.ImageField: (Sagenkarta-Rest-API.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
 #Old: Pillow==5.0.0
 #Newest: Pillow==8.2.0
-Pillow==8.2.0
+Pillow==8.3.2
 # djangorestframework is used by Sagenkarta-ES-API
 # djangorestframework==3.7.3
 # Version in PlaceNameService:
