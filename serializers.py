@@ -104,6 +104,7 @@ class PersonsSerializer(serializers.ModelSerializer):
 			'name',
 			'gender',
 			'birth_year',
+			'birthplace',
 			'address',
 			'biography',
 			'image',
@@ -130,6 +131,7 @@ class RecordsPersonsSerializer(serializers.ModelSerializer):
 	name = serializers.CharField(source='person.name')
 	gender = serializers.CharField(source='person.gender')
 	birth_year = serializers.CharField(source='person.birth_year')
+	birthplace = serializers.CharField(source='person.birthplace')
 	home = SockenSerializer(source='person.places', many=True)
 	
 	class Meta:
@@ -140,6 +142,7 @@ class RecordsPersonsSerializer(serializers.ModelSerializer):
 			'name',
 			'gender',
 			'birth_year',
+			'birthplace',
 			'home',
 			'relation'
 		)
