@@ -419,7 +419,7 @@ class TranscribeViewSet(viewsets.ViewSet):
                         if transcribedrecord.transcription_comment is None:
                             transcribedrecord.transcription_comment = jsonData['messageComment']
                         else:
-                            transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + ' Transcriptioncomment:' + jsonData['messageComment']
+                            transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + ';' + jsonData['messageComment']
                     transcribedrecord.transcriptionstatus = 'transcribed'
                     transcribedrecord.transcriptiondate = Now()
 
