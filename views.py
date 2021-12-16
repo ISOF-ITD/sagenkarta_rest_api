@@ -501,8 +501,10 @@ class TranscribeViewSet(viewsets.ViewSet):
                         # print(transcribedrecord)
                     else:
                         # Add anonymous user:
-                        crowdsource_user = CrowdSourceUsers.objects.filter(userid='isof-unspecified').first()
+                        crowdsource_user = CrowdSourceUsers.objects.filter(userid='crowdsource-anonymous').first()
                     if crowdsource_user is not None:
+                        # TODO: if user undefined add anonymous user 'crowdsource-anonymous':
+                        # if len(crowdsource_user.name) == 0 and len(crowdsource_user.email):
                         transcribedrecord.transcribedby = crowdsource_user
                     try:
                         transcribedrecord.save()
