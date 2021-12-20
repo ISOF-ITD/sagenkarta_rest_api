@@ -435,29 +435,36 @@ class TranscribeViewSet(viewsets.ViewSet):
                             if jsonData['informantBirthDate'].isdigit():
                                 informant.birth_year = jsonData['informantBirthDate']
                         if 'informantInformation' in jsonData:
-                            # biography = biography + 'Extra: ' + jsonData['informantInformation']
-                            informant.transcriptioncomment = jsonData['informantInformation']
+                            informantInformation = jsonData['informantInformation']
+                            if informant.transcriptioncomment is None:
+                                informant.transcriptioncomment = informantInformation
+                            else:
+                                informant.transcriptioncomment = informant.transcriptioncomment + '; ' + informantInformation
 
                         # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
                         # Check if a informant that is crowdsourced already exists
-                        # to avoid lots of rows with the same informant data:
+                        # to avoid lots of rows with the same informant data.
+                        # Very likely same informant if:
+                        # Name, birth year and birthplace exactly the same.
+                        # 'Field under "informant"' is saved in person.transcriptioncomment
                         existing_person = Persons.objects.filter(name=informant.name, birth_year=informant.birth_year,birthplace=informant.birthplace).first()
                         if existing_person is None:
                             print(informant)
                             informant.transcriptionstatus = 'transcribed'
                             informant.createdby = user
                             informant.editedby = user
-                            # Save new informant
-                            try:
-                                # informant.createdate = Now()
-                                informant.save()
-                            except Exception as e:
-                                print(e)
                         else:
                             # Use existing informant
                             informant = existing_person
 
                     if informant is not None:
+                        # Save new or updated informant
+                        try:
+                            # informant.createdate = Now()
+                            informant.save()
+                        except Exception as e:
+                            print(e)
+
                         # Check if records_person relation already exists:
                         existing_records_person = RecordsPersons.objects.filter(person=informant,
                                                                                 record=transcribedrecord,
