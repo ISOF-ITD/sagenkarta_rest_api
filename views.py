@@ -419,7 +419,10 @@ class TranscribeViewSet(viewsets.ViewSet):
                         if transcribedrecord.transcription_comment is None:
                             transcribedrecord.transcription_comment = jsonData['messageComment']
                         else:
-                            transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + ';' + jsonData['messageComment']
+                            separator = ''
+                            if len(transcribedrecord.transcription_comment) > 0:
+                                separator = ';'
+                            transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + separator + jsonData['messageComment']
                     transcribedrecord.transcriptionstatus = 'transcribed'
                     transcribedrecord.transcriptiondate = Now()
 
@@ -439,7 +442,10 @@ class TranscribeViewSet(viewsets.ViewSet):
                             if informant.transcriptioncomment is None:
                                 informant.transcriptioncomment = informantInformation
                             else:
-                                informant.transcriptioncomment = informant.transcriptioncomment + '; ' + informantInformation
+                                separator = ''
+                                if len(informant.transcriptioncomment) > 0:
+                                    separator = ';'
+                                informant.transcriptioncomment = informant.transcriptioncomment + separator + informantInformation
 
                         # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
                         # Check if a informant that is crowdsourced already exists
