@@ -437,15 +437,6 @@ class TranscribeViewSet(viewsets.ViewSet):
                         if 'informantBirthDate' in jsonData:
                             if jsonData['informantBirthDate'].isdigit():
                                 informant.birth_year = jsonData['informantBirthDate']
-                        if 'informantInformation' in jsonData:
-                            informantInformation = jsonData['informantInformation']
-                            if informant.transcriptioncomment is None:
-                                informant.transcriptioncomment = informantInformation
-                            else:
-                                separator = ''
-                                if len(informant.transcriptioncomment) > 0:
-                                    separator = ';'
-                                informant.transcriptioncomment = informant.transcriptioncomment + separator + informantInformation
 
                         # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
                         # Check if a informant that is crowdsourced already exists
@@ -464,6 +455,16 @@ class TranscribeViewSet(viewsets.ViewSet):
                             informant = existing_person
 
                     if informant is not None:
+                        if 'informantInformation' in jsonData:
+                            informantInformation = jsonData['informantInformation']
+                            if informant.transcriptioncomment is None:
+                                informant.transcriptioncomment = informantInformation
+                            else:
+                                separator = ''
+                                if len(informant.transcriptioncomment) > 0:
+                                    separator = ';'
+                                informant.transcriptioncomment = informant.transcriptioncomment + separator + informantInformation
+
                         # Save new or updated informant
                         try:
                             # informant.createdate = Now()
