@@ -11,6 +11,7 @@ router.register(r'categories', views.CategoriesViewSet, basename='categories')
 router.register(r'feedback', views.FeedbackViewSet, basename='feedback')
 router.register(r'transcribe', views.TranscribeViewSet, basename='transcribe')
 router.register(r'transcribestart', views.TranscribeStartViewSet, basename='transcribestart')
+router.register(r'transcribecancel', views.TranscribeCancelViewSet, basename='transcribecancel')
 
 urlpatterns = [
 	url(r'^isofGeoProxy/', views.isofGeoProxy, name='IsofGeoProxy'),

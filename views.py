@@ -576,6 +576,8 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                     try:
                         transcribedrecord.save()
                         response_status = 'true'
+                        # Temporary transaction id:
+                        jsonData['changedate'] = str(transcribedrecord.changedate)
                         logger.debug("TranscribeStartViewSet data %s", jsonData)
                     except Exception as e:
                         logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
@@ -603,3 +605,65 @@ class TranscribeStartViewSet(viewsets.ViewSet):
 
         return [permission() for permission in permission_classes]
 
+class TranscribeCancelViewSet(viewsets.ViewSet):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+
+    def list(self, request):
+        return Response()
+
+    # I'm almost certain the DRF authentication middleware entirely ignores any such decorator. https://stackoverflow.com/questions/19897973/how-to-unset-csrf-in-modelviewset-of-django-rest-framework
+    # @method_decorator(csrf_exempt)
+    def post(self, request, format=None):
+        response_status = 'false'
+        response_message = None
+        # if request.data is not None:
+        if 'json' in request.data:
+            jsonData = json.loads(request.data['json'])
+            print(jsonData)
+            recordid = jsonData['recordid']
+
+            # find record
+            transcribedrecord = Records.objects.get(pk=recordid)
+            if transcribedrecord is not None:
+                changedate = 'None'
+                if 'changedate' in jsonData:
+                    changedate = jsonData['changedate']
+                # Changedate of record is not public in API
+                # If changedate of record the same probably the same client.
+                if str(transcribedrecord.changedate) in changedate:
+                    if transcribedrecord.transcriptionstatus == 'undertranscription':
+                        transcribedrecord.transcriptionstatus = 'readytotranscribe'
+                        transcribedrecord.transcriptiondate = Now()
+
+                        try:
+                            transcribedrecord.save()
+                            response_status = 'true'
+                            logger.debug("TranscribeStartViewSet data %s", jsonData)
+                        except Exception as e:
+                            logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
+                            print(e)
+                    else:
+                        response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
+                        statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
+                                                            'published']
+                        if transcribedrecord.transcriptionstatus == 'undertranscription':
+                            response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
+                        if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
+                            response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som sparar först vinner. Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
+                        if transcribedrecord.transcriptionstatus == 'untranscribed':
+                            response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
+                else:
+                    response_message = 'Ett oväntat fel: Posten finns men fel status!'
+            else:
+                response_message = 'Ett oväntat fel: Posten finns inte!'
+        else:
+            response_message = 'Ett oväntat fel: Error in request'
+        json_response = {'success': response_status, 'data': jsonData}
+        if response_message is not None:
+            json_response = {'success': response_status, 'data': jsonData, 'message': response_message}
+        return JsonResponse(json_response)
+
+    def get_permissions(self):
+        permission_classes = [permissions.AllowAny]
+
+        return [permission() for permission in permission_classes]
