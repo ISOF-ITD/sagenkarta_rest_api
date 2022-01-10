@@ -10,6 +10,7 @@ router.register(r'locations', views.LocationsViewSet, basename='locations')
 router.register(r'categories', views.CategoriesViewSet, basename='categories')
 router.register(r'feedback', views.FeedbackViewSet, basename='feedback')
 router.register(r'transcribe', views.TranscribeViewSet, basename='transcribe')
+router.register(r'transcribesave', views.TranscribeSaveViewSet, basename='transcribesave')
 router.register(r'transcribestart', views.TranscribeStartViewSet, basename='transcribestart')
 router.register(r'transcribecancel', views.TranscribeCancelViewSet, basename='transcribecancel')
 

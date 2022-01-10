@@ -368,61 +368,65 @@ class FeedbackViewSet(viewsets.ViewSet):
 
         return [permission() for permission in permission_classes]
 
+def save_transcription(request, response_message, response_status, set_status_to_transcribed):
+    if 'json' in request.data:
+        jsonData = json.loads(request.data['json'])
+        print(jsonData)
+        recordid = jsonData['recordid']
 
-class TranscribeViewSet(viewsets.ViewSet):
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+        # find record
+        # transcribed_record_arr = []
+        transcribedrecord = Records.objects.get(pk=recordid)
+        # transcribed_record_arr += transcribedrecord
+        # if len(transcribed_record_arr) == 1:
 
-    def list(self, request):
-        return Response()
+        # Check transcribe session id:
+        transcribesession_status = False
+        if 'transcribesession' in jsonData:
+            transcribesession = jsonData['transcribesession']
+            if str(transcribedrecord.changedate) in transcribesession:
+                transcribesession_status = True
+        # Temporarily avoid transcribesession_status:
+        transcribesession_status = True
+        # Check transcribesession_status:
+        if transcribesession_status != True:
+            transcribedrecord = None
 
-    # I'm almost certain the DRF authentication middleware entirely ignores any such decorator. https://stackoverflow.com/questions/19897973/how-to-unset-csrf-in-modelviewset-of-django-rest-framework
-    #@method_decorator(csrf_exempt)
-    def post(self, request, format=None):
-        # if request.data is not None:
-        response_status = 'false'
-        response_message = None
-        if 'json' in request.data:
-            jsonData = json.loads(request.data['json'])
-            print(jsonData)
-            recordid = jsonData['recordid']
+        # Check if transcribed (message)
+        if transcribedrecord is not None and 'message' in jsonData:
+            # Naive logic: First transcriber of a record saving WINS!
+            # TODO: Make transcription of same record less likely
+            statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
+                                                'published']
+            if transcribedrecord.transcriptionstatus == 'readytotranscribe':
+                response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Status avskrift av uppteckningen har inte aktiverats. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
+            if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
+                response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som sparar först vinner. Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
+            if transcribedrecord.transcriptionstatus == 'untranscribed':
+                response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
+            # Only possible to register transcription when status (not already transcribed):
+            # ('readytotranscribe'?),'undertranscription':
+            if transcribedrecord.transcriptionstatus == 'undertranscription':
+                user = User.objects.filter(username='restapi').first()
 
-            # find record
-            # transcribed_record_arr = []
-            transcribedrecord = Records.objects.get(pk=recordid)
-            # transcribed_record_arr += transcribedrecord
-            # if len(transcribed_record_arr) == 1:
-            # Check if transcribed (message)
-            if transcribedrecord is not None and 'message' in jsonData:
-                # Naive logic: First transcriber of a record saving WINS!
-                # TODO: Make transcription of same record less likely
-                statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved', 'published']
-                if transcribedrecord.transcriptionstatus == 'readytotranscribe':
-                    response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Status avskrift av uppteckningen har inte aktiverats. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
-                if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
-                    response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som sparar först vinner. Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
-                if transcribedrecord.transcriptionstatus == 'untranscribed':
-                    response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
-                # Only possible to register transcription when status (not already transcribed):
-                # ('readytotranscribe'?),'undertranscription':
-                if transcribedrecord.transcriptionstatus == 'undertranscription':
-                    user = User.objects.filter(username='restapi').first()
+                transcribedrecord.text = jsonData['message']
+                if 'recordtitle' in jsonData:
+                    # Validate the string
+                    recordtitle = jsonData['recordtitle']
+                    if validateString(recordtitle):
+                        transcribedrecord.title = recordtitle
 
-                    transcribedrecord.text = jsonData['message']
-                    if 'recordtitle' in jsonData:
-                        # Validate the string
-                        recordtitle = jsonData['recordtitle']
-                        if self.validateString(recordtitle):
-                            transcribedrecord.title = recordtitle
-
-                    if 'messageComment' in jsonData:
-                        # transcribedrecord.transcriptioncomment = jsonData['messageComment']
-                        if transcribedrecord.transcription_comment is None:
-                            transcribedrecord.transcription_comment = jsonData['messageComment']
-                        else:
-                            separator = ''
-                            if len(transcribedrecord.transcription_comment) > 0:
-                                separator = ';'
-                            transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + separator + jsonData['messageComment']
+                if 'messageComment' in jsonData:
+                    # transcribedrecord.transcriptioncomment = jsonData['messageComment']
+                    if transcribedrecord.transcription_comment is None:
+                        transcribedrecord.transcription_comment = jsonData['messageComment']
+                    else:
+                        separator = ''
+                        if len(transcribedrecord.transcription_comment) > 0:
+                            separator = ';'
+                        transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + separator + \
+                                                                  jsonData['messageComment']
+                if set_status_to_transcribed == True:
                     transcribedrecord.transcriptionstatus = 'transcribed'
                     transcribedrecord.transcriptiondate = Now()
 
@@ -444,7 +448,9 @@ class TranscribeViewSet(viewsets.ViewSet):
                         # Very likely same informant if:
                         # Name, birth year and birthplace exactly the same.
                         # 'Field under "informant"' is saved in person.transcriptioncomment
-                        existing_person = Persons.objects.filter(name=informant.name, birth_year=informant.birth_year,birthplace=informant.birthplace).first()
+                        existing_person = Persons.objects.filter(name=informant.name,
+                                                                 birth_year=informant.birth_year,
+                                                                 birthplace=informant.birthplace).first()
                         if existing_person is None:
                             print(informant)
                             informant.transcriptionstatus = 'transcribed'
@@ -478,7 +484,8 @@ class TranscribeViewSet(viewsets.ViewSet):
                                                                                 relation='i').first()
                         if existing_records_person is None:
                             # records_person = RecordsPersons()
-                            records_person = RecordsPersons(person=informant, record=transcribedrecord, relation='i')
+                            records_person = RecordsPersons(person=informant, record=transcribedrecord,
+                                                            relation='i')
                             # records_person.person = informant.id
                             # records_person.record = transcribedrecord.id
                             # records_person.relation = 'i'
@@ -497,13 +504,13 @@ class TranscribeViewSet(viewsets.ViewSet):
                         if 'from_email' in jsonData:
                             crowdsource_user.email = jsonData['from_email']
                             # Set "transcribed by" when published in admin interface:
-                            #transcribedrecord.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
+                            # transcribedrecord.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
 
                         if crowdsource_user.email is not None or crowdsource_user.name is not None:
 
                             # Check if crowdsource user already exists:
                             existing_crowdsource_user = CrowdSourceUsers.objects.filter(name=crowdsource_user.name,
-                                email=crowdsource_user.email).first()
+                                                                                        email=crowdsource_user.email).first()
                             if existing_crowdsource_user is None:
                                 # print(crowdsource_user)
                                 # Save new
@@ -520,28 +527,74 @@ class TranscribeViewSet(viewsets.ViewSet):
                         # TODO: if user undefined add anonymous user 'crowdsource-anonymous':
                         # if len(crowdsource_user.name) == 0 and len(crowdsource_user.email):
                         transcribedrecord.transcribedby = crowdsource_user
-                    try:
-                        transcribedrecord.save()
-                        response_status = 'true'
-                        logger.debug("TranscribeViewSet data %s", jsonData)
-                    except Exception as e:
-                        print(e)
-                else:
-                    if response_message is None:
-                        response_message = 'Ett oväntat fel: Inte redo för transkribering.'
+
+                # Save record
+                try:
+                    transcribedrecord.save()
+                    response_status = 'true'
+                    logger.debug("TranscribeViewSet data %s", jsonData)
+                except Exception as e:
+                    print(e)
             else:
-                response_message = 'Ett oväntat fel: Posten finns inte.'
+                if response_message is None:
+                    response_message = 'Ett oväntat fel: Inte redo för transkribering.'
         else:
-            response_message = 'Ett oväntat fel: Error in request'
+            response_message = 'Ett oväntat fel: Posten finns inte.'
+    else:
+        response_message = 'Ett oväntat fel: Error in request'
+    return jsonData, response_message, response_status
+
+def validateString(string):
+    if string is not None:
+        return isinstance(string, str) and len(string) > 0  # It is a string that is longer than 0.
+    return False
+
+class TranscribeViewSet(viewsets.ViewSet):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+
+    def list(self, request):
+        return Response()
+
+    # I'm almost certain the DRF authentication middleware entirely ignores any such decorator. https://stackoverflow.com/questions/19897973/how-to-unset-csrf-in-modelviewset-of-django-rest-framework
+    #@method_decorator(csrf_exempt)
+    def post(self, request, format=None):
+        # if request.data is not None:
+        response_status = 'false'
+        response_message = None
+        set_status_to_transcribed = True
+        jsonData, response_message, response_status = save_transcription(request, response_message,
+                                                                              response_status,
+                                                                              set_status_to_transcribed)
         json_response = {'success': response_status, 'data': jsonData}
         if response_message is not None:
             json_response = {'success': response_status, 'data': jsonData, 'message': response_message}
         return JsonResponse(json_response)
 
-    def validateString(self, title):
-        if title is not None:
-            return isinstance(title, str) and len(title) > 0  # It is a string that is longer than 0.
-        return False
+    def get_permissions(self):
+        permission_classes = [permissions.AllowAny]
+
+        return [permission() for permission in permission_classes]
+
+class TranscribeSaveViewSet(viewsets.ViewSet):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+
+    def list(self, request):
+        return Response()
+
+    # I'm almost certain the DRF authentication middleware entirely ignores any such decorator. https://stackoverflow.com/questions/19897973/how-to-unset-csrf-in-modelviewset-of-django-rest-framework
+    #@method_decorator(csrf_exempt)
+    def post(self, request, format=None):
+        # if request.data is not None:
+        response_status = 'false'
+        response_message = None
+        set_status_to_transcribed = False
+        jsonData, response_message, response_status = save_transcription(request, response_message,
+                                                                              response_status,
+                                                                              set_status_to_transcribed)
+        json_response = {'success': response_status, 'data': jsonData}
+        if response_message is not None:
+            json_response = {'success': response_status, 'data': jsonData, 'message': response_message}
+        return JsonResponse(json_response)
 
     def get_permissions(self):
         permission_classes = [permissions.AllowAny]
@@ -576,8 +629,8 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                     try:
                         transcribedrecord.save()
                         response_status = 'true'
-                        # Temporary transaction id:
-                        jsonData['changedate'] = str(transcribedrecord.changedate)
+                        # Temporary transcribe session id:
+                        jsonData['transcribesession'] = str(transcribedrecord.changedate)
                         logger.debug("TranscribeStartViewSet data %s", jsonData)
                     except Exception as e:
                         logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
@@ -626,11 +679,11 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
             transcribedrecord = Records.objects.get(pk=recordid)
             if transcribedrecord is not None:
                 changedate = 'None'
-                if 'changedate' in jsonData:
-                    changedate = jsonData['changedate']
+                if 'transcribesession' in jsonData:
+                    transcribesession = jsonData['transcribesession']
                 # Changedate of record is not public in API
                 # If changedate of record the same probably the same client.
-                if str(transcribedrecord.changedate) in changedate:
+                if str(transcribedrecord.changedate) in transcribesession:
                     if transcribedrecord.transcriptionstatus == 'undertranscription':
                         transcribedrecord.transcriptionstatus = 'readytotranscribe'
                         transcribedrecord.transcriptiondate = Now()
