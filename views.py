@@ -384,10 +384,11 @@ def save_transcription(request, response_message, response_status, set_status_to
         transcribesession_status = False
         if 'transcribesession' in jsonData:
             transcribesession = jsonData['transcribesession']
-            if str(transcribedrecord.changedate) in transcribesession:
+            # if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
+            if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
                 transcribesession_status = True
         # Temporarily avoid transcribesession_status:
-        transcribesession_status = True
+        # transcribesession_status = True
         # Check transcribesession_status:
         if transcribesession_status != True:
             transcribedrecord = None
@@ -630,7 +631,12 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                         transcribedrecord.save()
                         response_status = 'true'
                         # Temporary transcribe session id:
-                        jsonData['transcribesession'] = str(transcribedrecord.changedate)
+                        # jsonData['transcribesession'] = str(transcribedrecord.changedate)
+                        # Temporary transcribe session id: transcriptiondate
+                        # Get saved transcriptiondate from database:
+                        transcribedrecord2 = Records.objects.get(pk=recordid)
+                        if transcribedrecord2 is not None:
+                            jsonData['transcribesession'] = str(transcribedrecord2.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
                         logger.debug("TranscribeStartViewSet data %s", jsonData)
                     except Exception as e:
                         logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
@@ -681,12 +687,11 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                 changedate = 'None'
                 if 'transcribesession' in jsonData:
                     transcribesession = jsonData['transcribesession']
-                # Changedate of record is not public in API
-                # If changedate of record the same probably the same client.
-                if str(transcribedrecord.changedate) in transcribesession:
+                # Check transcription session:
+                # if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
+                if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
                     if transcribedrecord.transcriptionstatus == 'undertranscription':
                         transcribedrecord.transcriptionstatus = 'readytotranscribe'
-                        transcribedrecord.transcriptiondate = Now()
 
                         try:
                             transcribedrecord.save()
