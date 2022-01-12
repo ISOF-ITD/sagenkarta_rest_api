@@ -95,6 +95,18 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class PersonsSerializer(serializers.ModelSerializer):
 	places = SockenSerializer(many=True, read_only=True);
+	# Field image gets full path for some reason: amybe from imagefield or pillow
+	# imagepath as is from database:
+	imagepath = serializers.SerializerMethodField('image_url')
+
+	# Field image gets full path for some reason: maybe from imagefield or pillow
+	# image path as is from database
+	def image_url(self, obj):
+		url = None
+		if obj.image is not None:
+			url = str(obj.image)
+		# if obj.image == 'one_accession_row':
+		return url
 
 	class Meta:
 		model = Persons
@@ -108,6 +120,7 @@ class PersonsSerializer(serializers.ModelSerializer):
 			'address',
 			'biography',
 			'image',
+			'imagepath',
 			'places'
 		)
 
