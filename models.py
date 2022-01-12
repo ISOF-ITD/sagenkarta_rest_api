@@ -124,11 +124,13 @@ class CrowdSourceUsers(models.Model):
 
 class Records(models.Model):
 	transcription_statuses = [
+		('nottranscribable', 'Icke transkriberbar'),
 		('untranscribed', 'Ej transkriberad'),
 		('readytotranscribe', 'Publicerad för transkribering'),
 		('undertranscription', 'Under transkription'),
 		('transcribed', 'Transkriberad'),
 		('reviewing', 'Under granskning'),
+		('needsimprovement', 'Sparas för förbättring'),
 		('approved', 'Godkänd'),
 		('published', 'Publicerad')
 	]
@@ -181,6 +183,8 @@ class Records(models.Model):
 		text_to = None
 		if self.text is not None:
 			text_to = 'Denna text håller på att skrivas av, av en användare eller är under behandling.'
+			if self.transcriptionstatus == 'nottranscribable':
+				text_to = 'Denna text går inte att skriva av i nuläget.'
 			# Maybe later show current status of transcription, maybe point to current status in a status list:
 			# text_to = dict(self.transcription_statuses)[str(self.transcriptionstatus)]
 			if self.transcriptionstatus == 'published' or self.record_type == 'one_accession_row':
