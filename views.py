@@ -401,10 +401,10 @@ def save_transcription(request, response_message, response_status, set_status_to
                                                 'published']
             if transcribedrecord.transcriptionstatus == 'readytotranscribe':
                 response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Status avskrift av uppteckningen har inte aktiverats. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
-            if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
-                response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som sparar först vinner. Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
-            if transcribedrecord.transcriptionstatus == 'untranscribed':
-                response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
+                if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
+                    response_message = 'Uppteckningen skrivs av av en annan användare. Gå gärna tillbaka och välj en annan uppteckning.'
+                if transcribedrecord.transcriptionstatus == 'untranscribed':
+                    response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
             # Only possible to register transcription when status (not already transcribed):
             # ('readytotranscribe'?),'undertranscription':
             if transcribedrecord.transcriptionstatus == 'undertranscription':
@@ -651,7 +651,7 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                     if transcribedrecord.transcriptionstatus == 'untranscribed':
                         response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
             else:
-                response_message = 'Ett oväntat fel: Posten finns inte!'
+                response_message = 'Ett oväntat fel: Posten finns inte eller hör inte till avskriftsessionen!'
         else:
             response_message = 'Ett oväntat fel: Error in request'
         json_response = {'success': response_status, 'data': jsonData}
