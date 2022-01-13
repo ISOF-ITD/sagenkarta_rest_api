@@ -647,7 +647,7 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                     if transcribedrecord.transcriptionstatus == 'undertranscription':
                         response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
                     if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
-                        response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som sparar först vinner. Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
+                        response_message = 'Uppteckningen skrivs av av en annan användare. Gå gärna tillbaka och välj en annan uppteckning.'
                     if transcribedrecord.transcriptionstatus == 'untranscribed':
                         response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
             else:
@@ -707,7 +707,7 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                         if transcribedrecord.transcriptionstatus == 'undertranscription':
                             response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
                         if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
-                            response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som sparar först vinner. Uppteckningen avskriven av någon annan. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
+                            response_message = 'Uppteckningen skrivs av av en annan användare. Gå gärna tillbaka och välj en annan uppteckning.'
                         if transcribedrecord.transcriptionstatus == 'untranscribed':
                             response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
                 else:
