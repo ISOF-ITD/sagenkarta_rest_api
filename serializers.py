@@ -119,7 +119,9 @@ class PersonsSerializer(serializers.ModelSerializer):
 			'birthplace',
 			'address',
 			'biography',
-			'image',
+			# Default model field named image adds incorrect full path:
+			# 'image',
+			# Returns relative path as it is in the database:
 			'imagepath',
 			'places'
 		)
