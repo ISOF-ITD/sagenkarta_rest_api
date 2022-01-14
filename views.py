@@ -376,14 +376,18 @@ def save_transcription(request, response_message, response_status, set_status_to
 
         # find record
         # transcribed_record_arr = []
-        transcribedrecord = Records.objects.get(pk=recordid)
+        transcribedrecord = None
+        if Records.objects.filter(pk=recordid).exists():
+            transcribedrecord = Records.objects.get(pk=recordid)
         # transcribed_record_arr += transcribedrecord
         # if len(transcribed_record_arr) == 1:
 
         # Check transcribe session id:
         transcribesession_status = False
         if 'transcribesession' in jsonData:
-            transcribesession = jsonData['transcribesession']
+            transcribesession = None
+            if 'transcribesession' in jsonData:
+                transcribesession = jsonData['transcribesession']
             # if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
             if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
                 transcribesession_status = True
@@ -621,7 +625,9 @@ class TranscribeStartViewSet(viewsets.ViewSet):
             recordid = jsonData['recordid']
 
             # find record
-            transcribedrecord = Records.objects.get(pk=recordid)
+            transcribedrecord = None
+            if Records.objects.filter(pk=recordid).exists():
+                transcribedrecord = Records.objects.get(pk=recordid)
             if transcribedrecord is not None:
                 if transcribedrecord.transcriptionstatus == 'readytotranscribe':
                     transcribedrecord.transcriptionstatus = 'undertranscription'
@@ -682,34 +688,40 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
             recordid = jsonData['recordid']
 
             # find record
-            transcribedrecord = Records.objects.get(pk=recordid)
+            transcribedrecord = None
+            if Records.objects.filter(pk=recordid).exists():
+                transcribedrecord = Records.objects.get(pk=recordid)
             if transcribedrecord is not None:
+                transcribesession = None
                 changedate = 'None'
                 if 'transcribesession' in jsonData:
                     transcribesession = jsonData['transcribesession']
                 # Check transcription session:
-                # if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
-                if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
-                    if transcribedrecord.transcriptionstatus == 'undertranscription':
-                        transcribedrecord.transcriptionstatus = 'readytotranscribe'
-
-                        try:
-                            transcribedrecord.save()
-                            response_status = 'true'
-                            logger.debug("TranscribeStartViewSet data %s", jsonData)
-                        except Exception as e:
-                            logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
-                            print(e)
-                    else:
-                        response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
-                        statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
-                                                            'published']
+                if transcribesession is not None:
+                    # if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
+                    if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
                         if transcribedrecord.transcriptionstatus == 'undertranscription':
-                            response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
-                        if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
-                            response_message = 'Uppteckningen skrivs av av en annan användare. Gå gärna tillbaka och välj en annan uppteckning.'
-                        if transcribedrecord.transcriptionstatus == 'untranscribed':
-                            response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
+                            transcribedrecord.transcriptionstatus = 'readytotranscribe'
+
+                            try:
+                                transcribedrecord.save()
+                                response_status = 'true'
+                                logger.debug("TranscribeStartViewSet data %s", jsonData)
+                            except Exception as e:
+                                logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
+                                print(e)
+                        else:
+                            response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
+                            statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
+                                                                'published']
+                            if transcribedrecord.transcriptionstatus == 'undertranscription':
+                                response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
+                            if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
+                                response_message = 'Uppteckningen skrivs av av en annan användare. Gå gärna tillbaka och välj en annan uppteckning.'
+                            if transcribedrecord.transcriptionstatus == 'untranscribed':
+                                response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
+                    else:
+                        response_message = 'Ett oväntat fel: Posten finns men fel status!'
                 else:
                     response_message = 'Ett oväntat fel: Posten finns men fel status!'
             else:
