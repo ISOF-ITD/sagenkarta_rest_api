@@ -435,35 +435,36 @@ def save_transcription(request, response_message, response_status, set_status_to
                     transcribedrecord.transcriptionstatus = 'transcribed'
                     transcribedrecord.transcriptiondate = Now()
 
-                    # Save informant when there is an informant name
+                    # Save informant when there is an informant name (more than 1 letter)
                     if 'informantName' in jsonData:
-                        informant = Persons()
-                        informant.id = 'crwd' + recordid
-                        informant.name = jsonData['informantName']
-                        if 'informantBirthPlace' in jsonData:
-                            informant.birthplace = jsonData['informantBirthPlace']
-                            # informant.biography = 'BirthPlace: ' + jsonData['informantBirthPlace'] + 'Extra: ' + jsonData['informantInformation']
-                        if 'informantBirthDate' in jsonData:
-                            if jsonData['informantBirthDate'].isdigit():
-                                informant.birth_year = jsonData['informantBirthDate']
+                        if len(jsonData['informantName']) > 1:
+                            informant = Persons()
+                            informant.id = 'crwd' + recordid
+                            informant.name = jsonData['informantName']
+                            if 'informantBirthPlace' in jsonData:
+                                informant.birthplace = jsonData['informantBirthPlace']
+                                # informant.biography = 'BirthPlace: ' + jsonData['informantBirthPlace'] + 'Extra: ' + jsonData['informantInformation']
+                            if 'informantBirthDate' in jsonData:
+                                if jsonData['informantBirthDate'].isdigit():
+                                    informant.birth_year = jsonData['informantBirthDate']
 
-                        # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
-                        # Check if a informant that is crowdsourced already exists
-                        # to avoid lots of rows with the same informant data.
-                        # Very likely same informant if:
-                        # Name, birth year and birthplace exactly the same.
-                        # 'Field under "informant"' is saved in person.transcriptioncomment
-                        existing_person = Persons.objects.filter(name=informant.name,
-                                                                 birth_year=informant.birth_year,
-                                                                 birthplace=informant.birthplace).first()
-                        if existing_person is None:
-                            print(informant)
-                            informant.transcriptionstatus = 'transcribed'
-                            informant.createdby = user
-                            informant.editedby = user
-                        else:
-                            # Use existing informant
-                            informant = existing_person
+                            # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
+                            # Check if a informant that is crowdsourced already exists
+                            # to avoid lots of rows with the same informant data.
+                            # Very likely same informant if:
+                            # Name, birth year and birthplace exactly the same.
+                            # 'Field under "informant"' is saved in person.transcriptioncomment
+                            existing_person = Persons.objects.filter(name=informant.name,
+                                                                     birth_year=informant.birth_year,
+                                                                     birthplace=informant.birthplace).first()
+                            if existing_person is None:
+                                print(informant)
+                                informant.transcriptionstatus = 'transcribed'
+                                informant.createdby = user
+                                informant.editedby = user
+                            else:
+                                # Use existing informant
+                                informant = existing_person
 
                     if informant is not None:
                         if 'informantInformation' in jsonData:
