@@ -466,41 +466,42 @@ def save_transcription(request, response_message, response_status, set_status_to
                                 # Use existing informant
                                 informant = existing_person
 
-                    if informant is not None:
-                        if 'informantInformation' in jsonData:
-                            informantInformation = jsonData['informantInformation']
-                            if informant.transcriptioncomment is None:
-                                informant.transcriptioncomment = informantInformation
-                            else:
-                                separator = ''
-                                if len(informant.transcriptioncomment) > 0:
-                                    separator = ';'
-                                informant.transcriptioncomment = informant.transcriptioncomment + separator + informantInformation
+                            if informant is not None:
+                                if 'informantInformation' in jsonData:
+                                    informantInformation = jsonData['informantInformation']
+                                    if informant.transcriptioncomment is None:
+                                        informant.transcriptioncomment = informantInformation
+                                    else:
+                                        separator = ''
+                                        if len(informant.transcriptioncomment) > 0:
+                                            separator = ';'
+                                        informant.transcriptioncomment = informant.transcriptioncomment + separator + informantInformation
 
-                        # Save new or updated informant
-                        try:
-                            # informant.createdate = Now()
-                            informant.save()
-                        except Exception as e:
-                            print(e)
+                                # Save new or updated informant
+                                try:
+                                    # informant.createdate = Now()
+                                    informant.save()
+                                except Exception as e:
+                                    print(e)
 
-                        # Check if records_person relation already exists:
-                        existing_records_person = RecordsPersons.objects.filter(person=informant,
-                                                                                record=transcribedrecord,
-                                                                                relation='i').first()
-                        if existing_records_person is None:
-                            # records_person = RecordsPersons()
-                            records_person = RecordsPersons(person=informant, record=transcribedrecord,
-                                                            relation='i')
-                            # records_person.person = informant.id
-                            # records_person.record = transcribedrecord.id
-                            # records_person.relation = 'i'
-                            try:
-                                records_person.save()
-                            except Exception as e:
-                                print(e)
+                                # Check if records_person relation already exists:
+                                existing_records_person = RecordsPersons.objects.filter(person=informant,
+                                                                                        record=transcribedrecord,
+                                                                                        relation='i').first()
+                                if existing_records_person is None:
+                                    # records_person = RecordsPersons()
+                                    records_person = RecordsPersons(person=informant, record=transcribedrecord,
+                                                                    relation='i')
+                                    # records_person.person = informant.id
+                                    # records_person.record = transcribedrecord.id
+                                    # records_person.relation = 'i'
+                                    try:
+                                        records_person.save()
+                                    except Exception as e:
+                                        print(e)
 
-                        # transcribedrecord.records_persons = records_person
+                                # transcribedrecord.records_persons = records_person
+
                     crowdsource_user = None
                     if 'from_name' in jsonData:
                         crowdsource_user = CrowdSourceUsers()
