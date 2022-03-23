@@ -462,6 +462,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                                 informant.transcriptionstatus = 'transcribed'
                                 informant.createdby = user
                                 informant.editedby = user
+                                informant.createdate = Now()
                             else:
                                 # Use existing informant
                                 informant = existing_person

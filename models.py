@@ -46,6 +46,7 @@ class Harad(models.Model):
 
 
 class Socken(models.Model):
+	archive_row = models.IntegerField(default=None, blank=True, null=True)
 	name = models.CharField(max_length=200)
 	harad = models.ForeignKey(Harad, db_column='harad', on_delete=DO_NOTHING)
 	lat = models.FloatField()
@@ -65,6 +66,7 @@ class Socken(models.Model):
 
 
 class Persons(models.Model):
+	archive_row = models.IntegerField(default=None, blank=True, null=True)
 	id = models.CharField(primary_key=True, max_length=50)
 	name = models.CharField(max_length=255)
 	gender = models.CharField(max_length=8, choices=[('female', 'Kvinna'), ('male', 'Man'), ('unknown', 'Okänd')])
@@ -197,6 +199,7 @@ class Records(models.Model):
 
 
 class RecordsPersons(models.Model): #ingredient
+	archive_row = models.IntegerField(default=None, blank=True, null=True)
 	record = models.ForeignKey(Records, db_column='record', related_name='persons', on_delete=DO_NOTHING)
 	person = models.ForeignKey(Persons, db_column='person', on_delete=DO_NOTHING)
 	relation = models.CharField(max_length=5, blank=True, null=True)
@@ -209,6 +212,7 @@ class RecordsPersons(models.Model): #ingredient
 
 
 class RecordsMedia(models.Model):
+	archive_row = models.IntegerField(default=None, blank=True, null=True)
 	record = models.ForeignKey(Records, db_column='record', related_name='media', on_delete=DO_NOTHING)
 	type = models.CharField(max_length=50, blank=True, null=True)
 	store = models.CharField(max_length=20, blank=False, null=False, default='unknown')
@@ -233,6 +237,7 @@ class RecordsMetadata(models.Model):
 
 
 class RecordsPlaces(models.Model):
+	archive_row = models.IntegerField(default=None, blank=True, null=True)
 	record = models.ForeignKey(Records, db_column='record', on_delete=DO_NOTHING, related_name='places')
 	place = models.ForeignKey(Socken, db_column='place', on_delete=DO_NOTHING)
 	type = models.CharField(max_length=20, blank=True, null=True)

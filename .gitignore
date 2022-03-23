@@ -1,5 +1,6 @@
-manage.py
-db.sqlite3
 __pycache__/
-config.py
-/secrets.py
+
+# Python virtual environment dirs
+env
+venv
+/settings.py
