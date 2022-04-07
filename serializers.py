@@ -248,6 +248,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 		return {
 			'archive_id': obj.archive_id,
 			'archive_row': obj.archive_row,
+			'archive_id_row': str(obj.archive_id) + '_' + str(obj.archive_row),
 			'page': obj.archive_page,
 			'total_pages': obj.total_pages,
 			'country': obj.country,
