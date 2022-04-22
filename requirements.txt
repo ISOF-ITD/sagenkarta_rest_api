@@ -1,4 +1,4 @@
-Django==2.2.24
+Django==2.2.28
 # mysqlclient==1.4.2 # Kanske fungerade utan felmeddelande?
 mysqlclient==1.4.6 # ubuntu-py3.8 works even this error: error: invalid command 'bdist_wheel' ERROR: Failed building wheel for mysqlclient
 # Remove django models.ImageField in models-class if needed!
