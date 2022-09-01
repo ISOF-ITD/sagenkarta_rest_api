@@ -155,6 +155,7 @@ class Records(models.Model):
 	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING)
 	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new', choices=transcription_statuses)
 	publishstatus = models.CharField(max_length=20, blank=False, null=False, default='unpublished')
+	update_status = models.CharField(max_length=20, blank=True, null=True, verbose_name='Uppdateringsstatus', help_text='Utvalda för uppdatering')
 	language = models.CharField(max_length=50)
 	copyright_license = models.TextField(blank=True, verbose_name='Datalicens')
 	# Track changes:

@@ -275,6 +275,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'metadata',
 			'media',
 			'publishstatus',
+			'update_status',
 			'transcriptionstatus',
 			# Show only transcriptiondate when publishstatus = published:
 			# 'transcriptiondate',
