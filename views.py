@@ -94,6 +94,11 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
             publishstatus_values = publishstatus.split(',')
             filters['publishstatus__in'] = publishstatus_values
 
+        update_status = self.request.query_params.get('update_status', None)
+        if update_status is not None:
+            update_status_values = update_status.split(',')
+            filters['update_status__in'] = update_status_values
+
         person = self.request.query_params.get('person', None)
         if person is not None:
             filters['records_persons__id'] = person
