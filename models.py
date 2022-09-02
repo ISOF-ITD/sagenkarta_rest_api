@@ -143,6 +143,7 @@ class Records(models.Model):
 	year = models.DateField(blank=True, null=True)
 	archive = models.CharField(max_length=255, blank=True)
 	archive_id = models.CharField(max_length=255, blank=True)
+	archive_row = models.IntegerField(blank=False, null=True)
 	type = models.CharField(max_length=20)
 	record_type = models.CharField(max_length=255, blank=True, null=True)
 	archive_page = models.CharField(max_length=20, blank=True, null=True)

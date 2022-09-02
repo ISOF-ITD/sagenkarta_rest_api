@@ -223,14 +223,14 @@ class RecordsSerializer(serializers.ModelSerializer):
 		serializer = RecordsPersonsSerializer(instance=qs, many=True)
 		return serializer.data
 
-	# number_of_one_records (number of records with type one_record)
+	# number_of_one_record (number of records with type one_record)
 	# for records of type one_accession_row with same record.archive_id
 	def number_of_one_record(self, obj):
 		count = 0
 		if obj.record_type == 'one_accession_row':
 			# Get only published "tradark" one_record instances for this archive_id
 			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
-			count = Records.objects.filter(publishstatus='published', record_type='one_record', taxonomy__type='tradark',archive_id__iexact=obj.archive_id.lower()).count()
+			count = Records.objects.filter(publishstatus='published', record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
 			# OLD: that also is imported directly from accessionsregistret (id starts with acc)
 			# count = Records.objects.filter(record_type='one_record', id__istartswith='acc',archive_id=obj.archive_id).count()
 		return count
@@ -247,6 +247,8 @@ class RecordsSerializer(serializers.ModelSerializer):
 	def get_archive_object(self, obj):
 		return {
 			'archive_id': obj.archive_id,
+			'archive_row': obj.archive_row,
+			'archive_id_row': str(obj.archive_id) + '_' + str(obj.archive_row),
 			'page': obj.archive_page,
 			'total_pages': obj.total_pages,
 			'country': obj.country,
