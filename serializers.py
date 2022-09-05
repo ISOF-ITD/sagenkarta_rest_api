@@ -261,8 +261,10 @@ class RecordsSerializer(serializers.ModelSerializer):
 		fields = (
 			'id', 
 			'title', 
-			'text', 
+			'text',
 			'year',
+			'contents',
+			'headwords',
 			'taxonomy', 
 			'archive', 
 			'language',

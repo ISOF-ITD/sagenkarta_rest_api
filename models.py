@@ -64,6 +64,52 @@ class Socken(models.Model):
 		managed = False
 		db_table = 'socken'
 
+class Places(models.Model):
+	source_choices = [
+		('none', 'Ingen'),
+		('LM-SockenStad', 'LM-SockenStad'),
+		('NFS', 'NFS'),
+		('SLS', 'SLS'),
+	]
+	polygon_type_choices = [
+		('none', 'Ingen'),
+		('LM-SockenStad', 'LM-SockenStad'),
+		('other', 'Annan'),
+	]
+	mapping_status_choices = [
+		('not_reviewed', 'Ej granskad'),
+		('to_be_reviewed', 'Bör kontrolleras'),
+		('reviewed', 'Granskad'),
+	]
+	id = models.IntegerField(primary_key=True)
+	# socken = models.ForeignKey(Socken, null=True, blank=True, unique=True, db_column='socken', on_delete=DO_NOTHING, help_text='Folke unikt sockenid')
+	socken = models.ForeignKey(Socken, null=True, blank=True, db_column='socken', on_delete=DO_NOTHING, help_text='Folke unikt sockenid')
+	source = models.CharField(max_length=255, choices=source_choices, verbose_name="Datakälla", help_text='Ursprunglig databas')
+	comment = models.TextField(blank=True, null=True, verbose_name="Datakällskommentar")
+	polygon_type = models.CharField(max_length=255, choices=polygon_type_choices, verbose_name="Polygontyp")
+	geography_comment = models.TextField(blank=True, null=True, verbose_name="Geografikommentar", help_text='Geografikommentar fritext')
+	evidence = models.TextField(blank=True, null=True, verbose_name="Belägg", help_text='Källor/belägg för val av "plats med yta".')
+	# Mapping check example:
+	# Check LM SockenStad -> folke.place. Fields socken.lmid, socken.lmname; folke socken.name, harad.name (through places)
+	mapping_check = models.CharField(max_length=255, null=True, blank=True, verbose_name="Check", help_text='Matchningscheck LM socken -> folke.socken')
+	mapping_check_previous = models.CharField(max_length=255, null=True, blank=True, verbose_name="Check föregående", help_text='Matchningscheck LM socken -> folke.socken föregående')
+	mapping_check_change_date = models.DateTimeField(blank=True, null=True, verbose_name="Check datum", help_text='Matchningscheck datum')
+	mapping_check_previous_change_date = models.DateTimeField(blank=True, null=True, verbose_name="Check föregående datum", help_text='Matchningscheck föregående datum')
+	# Geography check example: Contains point in polygon
+	geography_check = models.CharField(max_length=255, null=True, blank=True, verbose_name="Geocheck", help_text='Geo matchningscheck accessionsregister socken -> folke.places')
+	geography_check_previous = models.CharField(max_length=255, null=True, blank=True, verbose_name="Geocheck föregående", help_text=' Geo matchningscheck accessionsregister socken -> folke.places föregående')
+	geography_check_change_date = models.DateTimeField(blank=True, null=True, verbose_name="Geocheck datum", help_text='Geo matchningscheck datum')
+	geography_check_previous_change_date = models.DateTimeField(blank=True, null=True, verbose_name="Geocheck föregående datum", help_text='Geo matchningscheck föregående datum')
+	mapping_status = models.CharField(max_length=255, null=True, blank=True, default='not_reviewed', choices=mapping_status_choices, verbose_name="Matchningsstatus")
+	records_row_count = models.IntegerField(default=None, blank=True, null=True, verbose_name="#poster", help_text='Antal records')
+
+	def __str__(self):
+		return str(self.socken)+' ('+str(self.id)+') '
+	class Meta:
+		managed = True
+		db_table = 'places'
+		verbose_name = 'Plats med yta'
+		verbose_name_plural = 'Plats med yta'
 
 class Persons(models.Model):
 	archive_row = models.IntegerField(default=None, blank=True, null=True)
@@ -140,6 +186,8 @@ class Records(models.Model):
 	id = models.CharField(max_length=50, primary_key=True)
 	title = models.CharField(max_length=300, verbose_name='Titel', blank=True, null=True)
 	text = models.TextField(blank=True, null=True)
+	contents = models.TextField(blank=True, null=True)
+	headwords = models.TextField(blank=True, null=True)
 	year = models.DateField(blank=True, null=True)
 	archive = models.CharField(max_length=255, blank=True)
 	archive_id = models.CharField(max_length=255, blank=True)
@@ -159,6 +207,12 @@ class Records(models.Model):
 	update_status = models.CharField(max_length=20, blank=True, null=True, verbose_name='Uppdateringsstatus', help_text='Utvalda för uppdatering')
 	language = models.CharField(max_length=50)
 	copyright_license = models.TextField(blank=True, verbose_name='Datalicens')
+	pages_transcribed = models.IntegerField(blank=True, null=True, default=0)
+	#archive_metadata_publish_level = models.CharField(max_length=20, blank=False, null=False, default='none',
+	#												  choices=archive_metadata_publish_levels)
+	#archive_material_publish_level = models.CharField(max_length=20, blank=False, null=False, default='none',
+	#												  choices=archive_material_publish_levels)
+
 	# Track changes:
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
 	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
