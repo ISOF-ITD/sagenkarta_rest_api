@@ -423,9 +423,15 @@ def save_transcription(request, response_message, response_status, set_status_to
                     transcribe_time = datetime.now() - transcribedrecord.transcriptiondate
                 if transcribe_time.total_seconds() > 0:
                     if transcribedrecord.transcribe_time is None:
-                        transcribedrecord.transcribe_time = int(transcribe_time.total_seconds())
+                        transcribedrecord.transcribe_time = int(transcribe_time.total_seconds() / 60)
                     else:
-                        transcribedrecord.transcribe_time = transcribedrecord.transcribe_time + transcribe_time
+                        # Not using "saves before last transcribed":
+                        transcribedrecord.transcribe_time = int(transcribe_time.total_seconds() / 60)
+                        # Note: To handle "saves before last transcribed":
+                        # 1. When first save for this session: make sure transcribe_time starts from zero
+                        # HOW TO: Identify first save for this session?
+                        # 2. Add transcribe times:
+                        # transcribedrecord.transcribe_time = transcribedrecord.transcribe_time + int(transcribe_time.total_seconds() / 60)
                 transcribedrecord.text = jsonData['message']
                 if 'recordtitle' in jsonData:
                     # Validate the string
