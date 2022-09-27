@@ -208,6 +208,8 @@ class Records(models.Model):
 	language = models.CharField(max_length=50)
 	copyright_license = models.TextField(blank=True, verbose_name='Datalicens')
 	pages_transcribed = models.IntegerField(blank=True, null=True, default=0)
+	transcribe_time = models.IntegerField(blank=True, null=True, verbose_name='Tid att transkribera',
+										  help_text='Tid att transkribera i minuter')
 	#archive_metadata_publish_level = models.CharField(max_length=20, blank=False, null=False, default='none',
 	#												  choices=archive_metadata_publish_levels)
 	#archive_material_publish_level = models.CharField(max_length=20, blank=False, null=False, default='none',

@@ -1,5 +1,5 @@
 from django.db.models.functions import Now
-
+from datetime import datetime
 from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers
 from django.contrib.auth.models import User
 import requests
@@ -418,7 +418,14 @@ def save_transcription(request, response_message, response_status, set_status_to
             # ('readytotranscribe'?),'undertranscription':
             if transcribedrecord.transcriptionstatus == 'undertranscription':
                 user = User.objects.filter(username='restapi').first()
-
+                transcribe_time = 0
+                if transcribedrecord.transcriptiondate is not None:
+                    transcribe_time = datetime.now() - transcribedrecord.transcriptiondate
+                if transcribe_time.total_seconds() > 0:
+                    if transcribedrecord.transcribe_time is None:
+                        transcribedrecord.transcribe_time = int(transcribe_time.total_seconds())
+                    else:
+                        transcribedrecord.transcribe_time = transcribedrecord.transcribe_time + transcribe_time
                 transcribedrecord.text = jsonData['message']
                 if 'recordtitle' in jsonData:
                     # Validate the string
@@ -552,7 +559,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                 if response_message is None:
                     response_message = 'Ett oväntat fel: Inte redo för transkribering.'
         else:
-            response_message = 'Ett oväntat fel: Posten finns inte.'
+            response_message = 'Ett oväntat fel: Posten finns inte, felaktigt sessions-id eller inget json-data.'
     else:
         response_message = 'Ett oväntat fel: Error in request'
     return jsonData, response_message, response_status
@@ -729,7 +736,7 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                             if transcribedrecord.transcriptionstatus == 'untranscribed':
                                 response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
                     else:
-                        response_message = 'Ett oväntat fel: Posten finns men fel status!'
+                        response_message = 'Ett oväntat fel: Posten finns men i annan användarsession!'
                 else:
                     response_message = 'Ett oväntat fel: Posten finns men fel status!'
             else:
