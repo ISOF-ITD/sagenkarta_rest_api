@@ -209,6 +209,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	text = serializers.CharField(source='text_to_publish')
 	copyrightlicense = serializers.CharField(source='copyright_license')
 	numberofonerecord = serializers.SerializerMethodField('number_of_one_record')
+	numberoftranscribedonerecord = serializers.SerializerMethodField('number_of_transcribed_one_record')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
 	# Return persons according to filter:
 	persons = serializers.SerializerMethodField('get_persons')
@@ -233,6 +234,17 @@ class RecordsSerializer(serializers.ModelSerializer):
 			count = Records.objects.filter(publishstatus='published', record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
 			# OLD: that also is imported directly from accessionsregistret (id starts with acc)
 			# count = Records.objects.filter(record_type='one_record', id__istartswith='acc',archive_id=obj.archive_id).count()
+		return count
+
+	# number_of_trasnscribed_one_record (number of records with type one_record and transcriptionstatus=published)
+	# for records of type one_accession_row with same record.archive_id
+	def number_of_transcribed_one_record(self, obj):
+		# return False
+		count = 0
+		if obj.record_type == 'one_accession_row':
+			# Get only published "tradark" one_record instances for this archive_id
+			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
+			count = Records.objects.filter(publishstatus='published', transcriptionstatus='published', record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
 		return count
 
 	# transcribed_by is shown if transcriptionstatus is published
@@ -270,6 +282,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'language',
 			'materialtype',
 			'numberofonerecord',
+			'numberoftranscribedonerecord',
 			'recordtype',
 			'copyrightlicense',
 			'source', 
