@@ -294,6 +294,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'publishstatus',
 			'update_status',
 			'transcriptionstatus',
+			'transcriptiontype',
 			# Show only transcriptiondate when publishstatus = published:
 			# 'transcriptiondate',
 			'transcribedby'

@@ -183,6 +183,11 @@ class Records(models.Model):
 		('published', 'Publicerad')
 	]
 
+	transcriptiontype_choices = [
+        ('fritext', 'Fritext'),
+        ('uppteckningsblankett', 'Uppteckningsblankett'),
+    ]
+
 	id = models.CharField(max_length=50, primary_key=True)
 	title = models.CharField(max_length=300, verbose_name='Titel', blank=True, null=True)
 	text = models.TextField(blank=True, null=True)
@@ -201,6 +206,7 @@ class Records(models.Model):
 	transcription_comment = models.TextField(blank=True)
 	country = models.CharField(max_length=50)
 	transcriptiondate = models.DateTimeField(blank=True, verbose_name="Transkriptionsdatum")
+	transcriptiontype = models.CharField(max_length=20, blank=True, null=True, default=None, choices=transcriptiontype_choices)
 	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING)
 	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new', choices=transcription_statuses)
 	publishstatus = models.CharField(max_length=20, blank=False, null=False, default='unpublished')
