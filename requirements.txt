@@ -1,24 +1,24 @@
-Django==2.2.24
+Django==3.2
 # mysqlclient==1.4.2 # Kanske fungerade utan felmeddelande?
-mysqlclient==1.4.6 # ubuntu-py3.8 works even this error: error: invalid command 'bdist_wheel' ERROR: Failed building wheel for mysqlclient
+mysqlclient==2.1.1 # ubuntu-py3.8 works even this error: error: invalid command 'bdist_wheel' ERROR: Failed building wheel for mysqlclient
 # Remove django models.ImageField in models-class if needed!
 # Pillow is used by models.ImageField: used in Sagenkarta-Rest-API and TradarkAdmin!
 # For django models.ImageField: (Sagenkarta-Rest-API.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
 #Old: Pillow==5.0.0
 #Newest: Pillow==8.2.0
-Pillow==8.3.2
+Pillow==9.4.0
 # djangorestframework is used by Sagenkarta-ES-API
 # djangorestframework==3.7.3
 # Version in PlaceNameService:
 #djangorestframework==3.11.0
-djangorestframework==3.12.4
+djangorestframework==3.14.0
 # requests is used by Sagenkarta-Rest-API
 # requests ONLY? used for test of proxy to isof-geoserver in isofGeoProxy:
 # Old version for testing:
 # requests==2.18.4
 # Newer version not yet tested:
-requests==2.25.1
-django-cors-headers==3.7.0
+requests==2.28.1
+django-cors-headers==3.13.0
 # Test: Handle: Denied by X-Frame-Option directive set to "SAME-ORIGIN":
 # django-csp==3.6
 # Used in external proxy services as LantmaterietProxyView:
@@ -38,7 +38,7 @@ django-revproxy==0.10.0
 # urllib3==1.16
 # Version in PlaceNameService:
 #urllib3==1.25.9
-urllib3==1.26.6
+urllib3==1.26.14
 # ERROR: requests 2.18.4 has requirement urllib3<1.23,>=1.21.1, but you'll have urllib3 1.17 which is incompatible.
 # Latest supporting module requests 2.18.4:
 #urllib3==1.21.1

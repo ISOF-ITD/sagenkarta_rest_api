@@ -1,6 +1,6 @@
-from . import secrets
+from . import secrets_env
 
-host = secrets.host
+host = secrets_env.host
 index_name = 'isof-publik'
 protocol = 'http://'
 cert_file = False
@@ -12,8 +12,8 @@ LantmaterietNedtonadEpsg3857Proxy = 'http://maps.lantmateriet.se/topowebb/v1/wmt
 LantmaterietOrtoProxy = 'http://maps.lantmateriet.se/ortofoto/wms/v1.3/'
 LantmaterietHistOrtoProxy = 'https://api.lantmateriet.se/historiska-ortofoton/wms/v1/'
 #LantmaterietHistOrtoProxy = 'https://api.lantmateriet.se/historiska-ortofoton/wms/v1/token/'
-LantmaterietProxy_access = secrets.LantmaterietProxy_access
-LantmaterietProxy_access_opendata = secrets.LantmaterietProxy_access_opendata
+LantmaterietProxy_access = secrets_env.LantmaterietProxy_access
+LantmaterietProxy_access_opendata = secrets_env.LantmaterietProxy_access_opendata
 IsofGeoProxy = 'https://oden-test.isof.se/geoserver/'
 IsofHomepage = 'https://www.isof.se/'
 FriggStatic = 'https://frigg.isof.se/static/'
