@@ -26,5 +26,8 @@ urlpatterns = [
 	url(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
 	url(r'^frigg_static/(?P<path>.*)$', views.FriggStaticView.as_view()),
 	url(r'^filemaker_proxy/(?P<path>.*)$', views.FilemakerProxyView.as_view()),
+	# we can also create one single proxy view for all matomo api calls and use the path parameter to route the request to the correct api method
+	# however, we start like this to make it easier to debug
+	url(r'^matomo_api_proxy/(?P<path>.*)$', views.MatomoApiProxyView.as_view()),
 	url(r'^', include(router.urls)),
 ]

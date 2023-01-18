@@ -17,6 +17,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 # from csp.decorators import csp
 
 from . import config
+from . import secrets_env
 
 import logging
 logger = logging.getLogger(__name__)
@@ -234,6 +235,34 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = SockenSerializer
 
+class MatomoApiProxyView(ProxyView):
+    token_auth = secrets_env.MATOMO_TOKEN_AUTH
+    # upstream = "http://example.com"
+    matomo_path = "https://matomo.isof.se/"
+    upstream = matomo_path + '?' + '&'.join(
+        [
+            "module=API",
+            "method=Actions.getSiteSearchKeywords",
+            "idSite=17",
+            "period=range",
+            "date=2022-01-01,today",
+            "format=JSON",
+            "filter_limit=5",
+            f"token_auth={token_auth}",
+        ]
+    )
+
+    # def get_request_headers(self):
+    #     headers = super(MatomoApiProxyView, self).get_request_headers()
+    #     return headers
+
+    # def get_request_headers(self):
+    #     headers = super(MatomoApiProxyView, self).get_request_headers()
+
+    #     # authHeaderHash = b64encode(config.MatomoProxy_access.encode()).decode("ascii")
+
+    #     # headers['
+    #     return headers
 
 class LantmaterietProxyView(ProxyView):
     upstream = config.LantmaterietProxy
