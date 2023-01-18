@@ -2,17 +2,17 @@ Django==3.2
 # mysqlclient==1.4.2 # Kanske fungerade utan felmeddelande?
 mysqlclient==2.1.1 # ubuntu-py3.8 works even this error: error: invalid command 'bdist_wheel' ERROR: Failed building wheel for mysqlclient
 # Remove django models.ImageField in models-class if needed!
-# Pillow is used by models.ImageField: used in Sagenkarta_Rest_API and TradarkAdmin!
-# For django models.ImageField: (Sagenkarta_Rest_API.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
+# Pillow is used by models.ImageField: used in sagenkarta_rest_api and TradarkAdmin!
+# For django models.ImageField: (sagenkarta_rest_api.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
 #Old: Pillow==5.0.0
 #Newest: Pillow==8.2.0
-Pillow==8.4.0
+Pillow==8.2.0
 # djangorestframework is used by Sagenkarta-ES-API
 # djangorestframework==3.7.3
 # Version in PlaceNameService:
 #djangorestframework==3.11.0
 djangorestframework==3.14.0
-# requests is used by Sagenkarta_Rest_API
+# requests is used by sagenkarta_rest_api
 # requests ONLY? used for test of proxy to isof-geoserver in isofGeoProxy:
 # Old version for testing:
 # requests==2.18.4
@@ -23,9 +23,11 @@ django-cors-headers==3.10.1
 # django-csp==3.6
 # Used in external proxy services as LantmaterietProxyView:
 # django-revproxy==0.9.13
+# Newer version not yet tested:
+# django-revproxy==0.10.0
 -e git+https://git@github.com/jazzband/django-revproxy@master#egg=django-revproxy
 # Testing error
-# File "/home/perla331/sagendatabas/Sagenkarta_Rest_API/urls.py", line 7, in <module>
+# File "/home/perla331/sagendatabas/sagenkarta_rest_api/urls.py", line 7, in <module>
 #    router.register(r'records', views.RecordsViewSet, base_name='record')
 # TypeError: register() got an unexpected keyword argument 'base_name'
 # Global py3 in frigg-test:
