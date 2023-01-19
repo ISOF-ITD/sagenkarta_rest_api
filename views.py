@@ -11,10 +11,9 @@ from django.shortcuts import get_object_or_404
 from revproxy.views import ProxyView
 from base64 import b64encode
 from django.core.mail import send_mail
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import json
 from django.views.decorators.clickjacking import xframe_options_exempt
-import urllib 
 # from csp.decorators import csp
 
 from . import config
@@ -236,35 +235,18 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = SockenSerializer
 
-class MatomoApiProxyView(ProxyView):
-    # Matomo reporting API reference:
+def matomo_api_proxy(request):
+    # link to matomo api docs:
     # https://developer.matomo.org/api-reference/reporting-api
-    token_auth = secrets_env.MATOMO_TOKEN_AUTH
-    matomo_url= "https://matomo.isof.se/"
-    params = {
-        "date": "2022-01-01,today",
-        "format": "JSON",
-        "idSite": "17",
-        "method": "Actions.getSiteSearchKeywords",
-        "module": "API",
-        "period": "range",
-        "token_auth": token_auth,
-        # "filter_limit": "100", # default is 100
-    }
-    upstream = matomo_url + "?" + urllib.parse.urlencode(params)
-    
+    url = "https://matomo.isof.se/"
+    params = request.GET.copy()
+    params['token_auth'] = secrets_env.MATOMO_TOKEN_AUTH
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return JsonResponse(response.json(), safe=False)
+    else:
+        return HttpResponse(status=response.status_code)
 
-    # def get_request_headers(self):
-    #     headers = super(MatomoApiProxyView, self).get_request_headers()
-    #     return headers
-
-    # def get_request_headers(self):
-    #     headers = super(MatomoApiProxyView, self).get_request_headers()
-
-    #     # authHeaderHash = b64encode(config.MatomoProxy_access.encode()).decode("ascii")
-
-    #     # headers['
-    #     return headers
 
 class LantmaterietProxyView(ProxyView):
     upstream = config.LantmaterietProxy

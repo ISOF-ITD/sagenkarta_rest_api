@@ -28,6 +28,6 @@ urlpatterns = [
 	url(r'^filemaker_proxy/(?P<path>.*)$', views.FilemakerProxyView.as_view()),
 	# we can also create one single proxy view for all matomo api calls and use the path parameter to route the request to the correct api method
 	# however, we start like this to make it easier to debug
-	url(r'^matomo_api_proxy/(?P<path>.*)$', views.MatomoApiProxyView.as_view()),
+	url('matomo_api_proxy/', views.matomo_api_proxy, name='matomo_api_proxy'),
 	url(r'^', include(router.urls)),
 ]
