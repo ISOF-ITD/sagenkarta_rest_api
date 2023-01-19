@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 import json
 from django.views.decorators.clickjacking import xframe_options_exempt
+import urllib 
 # from csp.decorators import csp
 
 from . import config
@@ -236,21 +237,22 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SockenSerializer
 
 class MatomoApiProxyView(ProxyView):
+    # Matomo reporting API reference:
+    # https://developer.matomo.org/api-reference/reporting-api
     token_auth = secrets_env.MATOMO_TOKEN_AUTH
-    # upstream = "http://example.com"
-    matomo_path = "https://matomo.isof.se/"
-    upstream = matomo_path + '?' + '&'.join(
-        [
-            "module=API",
-            "method=Actions.getSiteSearchKeywords",
-            "idSite=17",
-            "period=range",
-            "date=2022-01-01,today",
-            "format=JSON",
-            "filter_limit=5",
-            f"token_auth={token_auth}",
-        ]
-    )
+    matomo_url= "https://matomo.isof.se/"
+    params = {
+        "date": "2022-01-01,today",
+        "format": "JSON",
+        "idSite": "17",
+        "method": "Actions.getSiteSearchKeywords",
+        "module": "API",
+        "period": "range",
+        "token_auth": token_auth,
+        # "filter_limit": "100", # default is 100
+    }
+    upstream = matomo_url + "?" + urllib.parse.urlencode(params)
+    
 
     # def get_request_headers(self):
     #     headers = super(MatomoApiProxyView, self).get_request_headers()
