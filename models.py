@@ -120,7 +120,7 @@ class Persons(models.Model):
 	address = models.CharField(blank=True, null=True, max_length=255)
 	birthplace = models.CharField(blank=True, null=True, max_length=255, verbose_name='Födelseort')
 	biography = models.TextField(blank=True, null=True)
-	# Pillow is used by models.ImageField: used in Sagenkarta-Rest-API and TradarkAdmin!:
+	# Pillow is used by models.ImageField: used in Sagenkarta_Rest_API and TradarkAdmin!:
 	image = models.ImageField(blank=True, null=True, verbose_name='Bildfil', upload_to='personer')
 	import_row_id = models.IntegerField(default=0, blank=False, null=False)
 	transcriptioncomment = models.CharField(max_length=255, verbose_name='Kommentarer', default='')
@@ -222,6 +222,8 @@ class Records(models.Model):
 	#												  choices=archive_material_publish_levels)
 
 	# Track changes:
+	approvedby = models.ForeignKey(User, db_column='approvedby', null=True, blank=True, editable=False, on_delete=DO_NOTHING, verbose_name='Godkänd av')
+	approvedate = models.DateTimeField(null=True, blank=True, verbose_name="Godkänd datum")
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
 	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
 	createdby = models.ForeignKey(User, db_column='createdby', related_name='records_created', null=True, blank=True,
