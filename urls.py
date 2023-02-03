@@ -1,7 +1,6 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 from . import views
-from revproxy.views import ProxyView
 
 router = routers.DefaultRouter()
 router.register(r'records', views.RecordsViewSet, basename='record')
@@ -26,8 +25,5 @@ urlpatterns = [
 	url(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
 	url(r'^frigg_static/(?P<path>.*)$', views.FriggStaticView.as_view()),
 	url(r'^filemaker_proxy/(?P<path>.*)$', views.FilemakerProxyView.as_view()),
-	# we can also create one single proxy view for all matomo api calls and use the path parameter to route the request to the correct api method
-	# however, we start like this to make it easier to debug
-	url('matomo_api_proxy/', views.matomo_api_proxy, name='matomo_api_proxy'),
 	url(r'^', include(router.urls)),
 ]

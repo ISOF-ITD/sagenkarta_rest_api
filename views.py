@@ -235,19 +235,6 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = SockenSerializer
 
-def matomo_api_proxy(request):
-    # link to matomo api docs:
-    # https://developer.matomo.org/api-reference/reporting-api
-    url = "https://matomo.isof.se/"
-    params = request.GET.copy()
-    params['token_auth'] = secrets_env.MATOMO_TOKEN_AUTH
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        return JsonResponse(response.json(), safe=False)
-    else:
-        return HttpResponse(status=response.status_code)
-
-
 class LantmaterietProxyView(ProxyView):
     upstream = config.LantmaterietProxy
 
