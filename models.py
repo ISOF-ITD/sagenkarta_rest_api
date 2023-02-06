@@ -153,9 +153,15 @@ class PersonsPlaces(models.Model):
 		db_table = 'persons_places'
 
 class CrowdSourceUsers(models.Model):
+	roles = [
+		('unknown', 'Okänd'),
+		('supertranscriber', 'Supertranskriberare')
+	]
+
 	userid = models.CharField(primary_key=True, max_length=150)
 	name = models.CharField(max_length=255)
 	email = models.EmailField()
+	role = models.CharField(max_length=20, blank=False, null=False, default='unknown', choices=roles)
 	# Track changes:
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
 	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
@@ -180,7 +186,8 @@ class Records(models.Model):
 		('reviewing', 'Under granskning'),
 		('needsimprovement', 'Sparas för förbättring'),
 		('approved', 'Godkänd'),
-		('published', 'Publicerad')
+		('published', 'Publicerad'),
+		('autopublished', 'Autopublicerad')
 	]
 
 	transcriptiontype_choices = [

@@ -373,6 +373,13 @@ class FeedbackViewSet(viewsets.ViewSet):
 
         return [permission() for permission in permission_classes]
 
+"""
+Common method for save transcription
+
+Parameters
+response_status
+set_status_to_transcribed Boolean: True if transcription is finished, i.e. "sent", otherwise only saved temporarily
+"""
 def save_transcription(request, response_message, response_status, set_status_to_transcribed):
     if 'json' in request.data:
         jsonData = json.loads(request.data['json'])
@@ -553,6 +560,13 @@ def save_transcription(request, response_message, response_status, set_status_to
                         # TODO: if user undefined add anonymous user 'crowdsource-anonymous':
                         # if len(crowdsource_user.name) == 0 and len(crowdsource_user.email):
                         transcribedrecord.transcribedby = crowdsource_user
+
+                # Check if transcribed record should be automatically published
+                # If crowdsource user has role supertranscriber:
+                if crowdsource_user is not None:
+                    if "supertranscriber" in crowdsource_user.role:
+                        transcribedrecord.transcriptionstatus = "autopublished"
+                        transcribedrecord.publishstatus = "published"
 
                 # Save record
                 try:
