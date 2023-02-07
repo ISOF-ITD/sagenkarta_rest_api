@@ -424,6 +424,7 @@ def save_transcription(request, response_message, response_status, set_status_to
             # Only possible to register transcription when status (not already transcribed):
             # ('readytotranscribe'?),'undertranscription':
             if transcribedrecord.transcriptionstatus == 'undertranscription':
+                informant = None
                 user = User.objects.filter(username='restapi').first()
                 transcribe_time = 0
                 if transcribedrecord.transcriptiondate is not None:
@@ -483,7 +484,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                                                                      birth_year=informant.birth_year,
                                                                      birthplace=informant.birthplace).first()
                             if existing_person is None:
-                                print(informant)
+                                logger.warning(informant)
                                 informant.transcriptionstatus = 'transcribed'
                                 informant.createdby = user
                                 informant.editedby = user
@@ -568,6 +569,9 @@ def save_transcription(request, response_message, response_status, set_status_to
                     if "supertranscriber" in crowdsource_user.role:
                         transcribedrecord.transcriptionstatus = "autopublished"
                         transcribedrecord.publishstatus = "published"
+                        if informant is not None:
+                            informant.transcriptionstatus = 'published'
+                            informant.save()
 
                 # Save record
                 try:
