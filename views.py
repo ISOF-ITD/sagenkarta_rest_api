@@ -533,6 +533,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                         crowdsource_user = CrowdSourceUsers()
                         # TODO: Find unique id if transcription rejected and new user starts with same recordid
                         crowdsource_user.userid = 'rid' + recordid
+                        # crowdsource_user gets default values for: role
                         crowdsource_user.name = jsonData['from_name']
                         if 'from_email' in jsonData:
                             crowdsource_user.email = jsonData['from_email']
