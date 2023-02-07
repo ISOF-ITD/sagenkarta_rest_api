@@ -123,7 +123,7 @@ class Persons(models.Model):
 	# Pillow is used by models.ImageField: used in Sagenkarta_Rest_API and TradarkAdmin!:
 	image = models.ImageField(blank=True, null=True, verbose_name='Bildfil', upload_to='personer')
 	import_row_id = models.IntegerField(default=0, blank=False, null=False)
-	transcriptioncomment = models.CharField(max_length=255, verbose_name='Kommentarer', default='')
+	transcriptioncomment = models.CharField(max_length=50000, verbose_name='Kommentarer', default='')
 	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new')
 	# changedate = models.DateTimeField()
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
