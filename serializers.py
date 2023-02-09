@@ -220,7 +220,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 
 	# Filter to return only published persons
 	def get_persons(self, record):
-		qs = RecordsPersons.objects.filter(person__transcriptionstatus='published', record=record)
+		qs = RecordsPersons.objects.filter(person__transcriptionstatus__in=['published', 'autopublished'], record=record)
 		# testing:
 		# qs = RecordsPersons.objects.filter(person__gender='female', person__transcriptionstatus='published', record=record)
 		serializer = RecordsPersonsSerializer(instance=qs, many=True)
