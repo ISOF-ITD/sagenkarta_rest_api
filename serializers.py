@@ -211,6 +211,8 @@ class RecordsSerializer(serializers.ModelSerializer):
 	numberofonerecord = serializers.SerializerMethodField('number_of_one_record')
 	numberoftranscribedonerecord = serializers.SerializerMethodField('number_of_transcribed_one_record')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
+	# Return only public transcription statuses:
+	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
 	# Return persons according to filter:
 	persons = serializers.SerializerMethodField('get_persons')
 	# OLD: Return all persons:
@@ -266,6 +268,15 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'country': obj.country,
 			'archive': obj.archive
 		}
+
+	"""
+	Only show public transcriptionstatuses
+	"""
+	def public_transcriptionstatus(self, obj):
+		text = obj.transcriptionstatus
+		if obj.transcriptionstatus == 'autopublished':
+			text = 'published'
+		return text
 
 	class Meta:
 		model = Records
