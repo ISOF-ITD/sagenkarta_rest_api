@@ -570,8 +570,10 @@ def save_transcription(request, response_message, response_status, set_status_to
                         transcribedrecord.transcriptionstatus = "autopublished"
                         transcribedrecord.publishstatus = "published"
                         if informant is not None:
-                            informant.transcriptionstatus = 'published'
-                            informant.save()
+                            # Set autopublish for informants not published
+                            if informant.transcriptionstatus != 'published':
+                                informant.transcriptionstatus = 'autopublished'
+                                informant.save()
 
                 # Save record
                 try:
