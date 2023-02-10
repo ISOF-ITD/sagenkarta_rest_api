@@ -246,13 +246,13 @@ class RecordsSerializer(serializers.ModelSerializer):
 		if obj.record_type == 'one_accession_row':
 			# Get only published "tradark" one_record instances for this archive_id
 			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
-			count = Records.objects.filter(publishstatus='published', transcriptionstatus='published', record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
+			count = Records.objects.filter(publishstatus='published', transcriptionstatus__in=['published', 'autopublished'] , record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
 		return count
 
 	# transcribed_by is shown if transcriptionstatus is published
 	def transcribed_by(self, obj):
 		text = None
-		if obj.record_type == 'one_record' and obj.transcriptionstatus == 'published':
+		if obj.record_type == 'one_record' and obj.transcriptionstatus in ['published', 'autopublished']:
 			if obj.transcribedby is not None:
 				if obj.transcribedby.name is not None:
 					text = str(obj.transcribedby.name)
