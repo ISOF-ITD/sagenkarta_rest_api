@@ -412,7 +412,7 @@ def save_transcription(request, response_message, response_status, set_status_to
         # Check if transcribed (message)
         if transcribedrecord is not None and 'message' in jsonData:
             # Naive logic: First transcriber of a record saving WINS!
-            # TODO: Make transcription of same record less likely
+            # Idea for improvement: Somehow make transcription of same record less likely
             statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
                                                 'published', 'autopublished']
             if transcribedrecord.transcriptionstatus == 'readytotranscribe':
@@ -691,7 +691,7 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                         print(e)
                 else:
                     response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
-                    statuses_for_already_transcribed = ['transcribed', 'reviewing', 'approved', 'published']
+                    statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved', 'published', 'autopublished']
                     if transcribedrecord.transcriptionstatus == 'undertranscription':
                         response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
                     if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
@@ -755,7 +755,7 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                         else:
                             response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
                             statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
-                                                                'published']
+                                                                'published', 'autopublished']
                             if transcribedrecord.transcriptionstatus == 'undertranscription':
                                 response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
                             if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
