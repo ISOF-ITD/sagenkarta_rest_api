@@ -211,6 +211,8 @@ class RecordsSerializer(serializers.ModelSerializer):
 	numberofonerecord = serializers.SerializerMethodField('number_of_one_record')
 	numberoftranscribedonerecord = serializers.SerializerMethodField('number_of_transcribed_one_record')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
+	# Return only public transcription statuses:
+	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
 	# Return persons according to filter:
 	persons = serializers.SerializerMethodField('get_persons')
 	# OLD: Return all persons:
@@ -218,7 +220,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 
 	# Filter to return only published persons
 	def get_persons(self, record):
-		qs = RecordsPersons.objects.filter(person__transcriptionstatus='published', record=record)
+		qs = RecordsPersons.objects.filter(person__transcriptionstatus__in=['published', 'autopublished'], record=record)
 		# testing:
 		# qs = RecordsPersons.objects.filter(person__gender='female', person__transcriptionstatus='published', record=record)
 		serializer = RecordsPersonsSerializer(instance=qs, many=True)
@@ -244,13 +246,13 @@ class RecordsSerializer(serializers.ModelSerializer):
 		if obj.record_type == 'one_accession_row':
 			# Get only published "tradark" one_record instances for this archive_id
 			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
-			count = Records.objects.filter(publishstatus='published', transcriptionstatus='published', record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
+			count = Records.objects.filter(publishstatus='published', transcriptionstatus__in=['published', 'autopublished'] , record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
 		return count
 
 	# transcribed_by is shown if transcriptionstatus is published
 	def transcribed_by(self, obj):
 		text = None
-		if obj.record_type == 'one_record' and obj.transcriptionstatus == 'published':
+		if obj.record_type == 'one_record' and obj.transcriptionstatus in ['published', 'autopublished']:
 			if obj.transcribedby is not None:
 				if obj.transcribedby.name is not None:
 					text = str(obj.transcribedby.name)
@@ -266,6 +268,15 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'country': obj.country,
 			'archive': obj.archive
 		}
+
+	"""
+	Only show public transcriptionstatuses
+	"""
+	def public_transcriptionstatus(self, obj):
+		text = obj.transcriptionstatus
+		if obj.transcriptionstatus == 'autopublished':
+			text = 'published'
+		return text
 
 	class Meta:
 		model = Records

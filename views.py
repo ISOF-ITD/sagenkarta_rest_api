@@ -412,9 +412,9 @@ def save_transcription(request, response_message, response_status, set_status_to
         # Check if transcribed (message)
         if transcribedrecord is not None and 'message' in jsonData:
             # Naive logic: First transcriber of a record saving WINS!
-            # TODO: Make transcription of same record less likely
+            # Idea for improvement: Somehow make transcription of same record less likely
             statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
-                                                'published']
+                                                'published', 'autopublished']
             if transcribedrecord.transcriptionstatus == 'readytotranscribe':
                 response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Status avskrift av uppteckningen har inte aktiverats. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
                 if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
@@ -424,6 +424,7 @@ def save_transcription(request, response_message, response_status, set_status_to
             # Only possible to register transcription when status (not already transcribed):
             # ('readytotranscribe'?),'undertranscription':
             if transcribedrecord.transcriptionstatus == 'undertranscription':
+                informant = None
                 user = User.objects.filter(username='restapi').first()
                 transcribe_time = 0
                 if transcribedrecord.transcriptiondate is not None:
@@ -483,7 +484,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                                                                      birth_year=informant.birth_year,
                                                                      birthplace=informant.birthplace).first()
                             if existing_person is None:
-                                print(informant)
+                                logger.warning(informant)
                                 informant.transcriptionstatus = 'transcribed'
                                 informant.createdby = user
                                 informant.editedby = user
@@ -544,6 +545,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                         crowdsource_user = CrowdSourceUsers()
                         # TODO: Find unique id if transcription rejected and new user starts with same recordid
                         crowdsource_user.userid = 'rid' + recordid
+                        # crowdsource_user gets default values for: role
                         crowdsource_user.name = jsonData['from_name']
                         if 'from_email' in jsonData:
                             crowdsource_user.email = jsonData['from_email']
@@ -578,6 +580,11 @@ def save_transcription(request, response_message, response_status, set_status_to
                     if "supertranscriber" in crowdsource_user.role:
                         transcribedrecord.transcriptionstatus = "autopublished"
                         transcribedrecord.publishstatus = "published"
+                        if informant is not None:
+                            # Set autopublish for informants not published
+                            if informant.transcriptionstatus != 'published':
+                                informant.transcriptionstatus = 'autopublished'
+                                informant.save()
 
                 # Save record
                 try:
@@ -695,7 +702,7 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                         print(e)
                 else:
                     response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
-                    statuses_for_already_transcribed = ['transcribed', 'reviewing', 'approved', 'published']
+                    statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved', 'published', 'autopublished']
                     if transcribedrecord.transcriptionstatus == 'undertranscription':
                         response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
                     if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
@@ -759,7 +766,7 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                         else:
                             response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
                             statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
-                                                                'published']
+                                                                'published', 'autopublished']
                             if transcribedrecord.transcriptionstatus == 'undertranscription':
                                 response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
                             if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
