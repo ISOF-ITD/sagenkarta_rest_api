@@ -556,13 +556,24 @@ def save_transcription(request, response_message, response_status, set_status_to
                             if informant is not None:
                                 if 'informantInformation' in jsonData:
                                     informantInformation = jsonData['informantInformation']
+                                    # Check if informant.transcriptioncomment is empty
                                     if informant.transcriptioncomment is None:
+                                        # Set informant.transcriptioncomment to informantInformation
                                         informant.transcriptioncomment = informantInformation
+                                    # Else: informant.transcriptioncomment is not empty
                                     else:
-                                        separator = ''
-                                        if len(informant.transcriptioncomment) > 0:
-                                            separator = ';'
-                                        informant.transcriptioncomment = informant.transcriptioncomment + separator + informantInformation
+                                        # check if informantInformation already exists as substring in informant.transcriptioncomment
+                                        if informantInformation not in informant.transcriptioncomment:
+                                            # Append informantInformation to informant.transcriptioncomment, separated by ';'
+                                            informant.transcriptioncomment = informant.transcriptioncomment + ';' + informantInformation
+                                            # cut off any leading or trailing spaces or ';'
+                                            informant.transcriptioncomment = informant.transcriptioncomment.strip()
+                                            informant.transcriptioncomment = informant.transcriptioncomment.strip(';')
+                                    
+                                    # cut off informant.transcriptioncomment if longer than 255 characters and add '...'
+                                    if len(informant.transcriptioncomment) > 250:
+                                        informant.transcriptioncomment = informant.transcriptioncomment[:250] + '...'
+
 
                                 # Save new or updated informant
                                 try:
