@@ -235,6 +235,66 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = SockenSerializer
 
+"""
+Simple Lantmäteriet service proxy using basic request module
+
+NOTE: NOT YET WORKING:
+b'<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n<html><head>\n<title>401 Unauthorized</title>\n</head><body>\n<h1>Unauthorized</h1>\n<p>This server could not verify that you\nare authorized to access the document\nrequested.  Either you supplied the wrong\ncredentials (e.g., bad password), or your\nbrowser doesn\'t understand how to supply\nthe credentials required.</p>\n</body></html>\n'
+
+https://frigg.isof.se/sagendatabas/api/lm_epsg3857_proxy/9/151/277.png
+https://frigg.isof.se/sagendatabas/api/simple_lm_proxy/9/151/277.png
+http://localhost:8000/api/simple_lm_proxy/9/151/277.png
+"""
+def SimpleLantmaterietProxy(request):
+    import requests
+
+    print(request)
+    print(request.path)
+    print(request.GET)
+
+    access = config.LantmaterietProxy_access. split(":")
+    username = access[0]
+    password = access[1]
+
+    # username = b64encode(username.encode()).decode("ascii")
+    # password = b64encode(password.encode()).decode("ascii")
+
+    path = request.path.split("simple_lm_proxy")[1]
+    url = config.LantmaterietProxy + path[1:]
+
+    from requests.auth import HTTPBasicAuth
+    #res = requests.get(url, auth=HTTPBasicAuth('user', 'password'))
+    #res = requests.get(url, auth=(username, password))
+    #print(res)
+
+    #response = requests.get(url, params=request.GET)
+    headers = None
+    if headers in request:
+        headers=request.headers
+
+        authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
+        headers['Authorization'] = 'Basic %s' % authHeaderHash
+    else:
+        authHeaderHash = b64encode(config.LantmaterietProxy_access.encode()).decode("ascii")
+        authHeaderHash = config.LantmaterietProxy_access
+        headers = {
+            'Authorization': 'Basic %s' % authHeaderHash,
+        }
+
+    # response = requests.get(url, auth=(username, password))
+    # response = requests.get(url, headers=headers, auth=(username, password))
+    response = requests.get(url, headers=headers)
+    # , params=request.GET)
+
+    print(url)
+    print(response)
+    print(response.headers)
+    print(response.content)
+    # print(response.GET)
+
+    return response
+
+
 class LantmaterietProxyView(ProxyView):
     upstream = config.LantmaterietProxy
 

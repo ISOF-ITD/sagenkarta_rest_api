@@ -16,6 +16,7 @@ router.register(r'transcribecancel', views.TranscribeCancelViewSet, basename='tr
 urlpatterns = [
 	url(r'^isofGeoProxy/', views.isofGeoProxy, name='IsofGeoProxy'),
 
+	url(r'^simple_lm_proxy/', views.SimpleLantmaterietProxy,  name='SimpleLantmaterietProxy'),
 	url(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
 	url(r'^lm_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietEpsg3857ProxyView.as_view()),
 	url(r'^lm_nedtonad_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietNedtonadEpsg3857ProxyView.as_view()),
