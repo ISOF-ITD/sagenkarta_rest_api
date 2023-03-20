@@ -233,7 +233,12 @@ class RecordsSerializer(serializers.ModelSerializer):
 		if obj.record_type == 'one_accession_row':
 			# Get only published "tradark" one_record instances for this archive_id
 			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
-			count = Records.objects.filter(publishstatus='published', record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
+			count = Records.objects.filter(
+				publishstatus='published',
+				record_type='one_record',
+				taxonomy__type='tradark',
+				id__startswith=obj.id
+				).distinct().count()
 			# OLD: that also is imported directly from accessionsregistret (id starts with acc)
 			# count = Records.objects.filter(record_type='one_record', id__istartswith='acc',archive_id=obj.archive_id).count()
 		return count
@@ -246,7 +251,12 @@ class RecordsSerializer(serializers.ModelSerializer):
 		if obj.record_type == 'one_accession_row':
 			# Get only published "tradark" one_record instances for this archive_id
 			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
-			count = Records.objects.filter(publishstatus='published', transcriptionstatus__in=['published', 'autopublished'] , record_type='one_record', taxonomy__type='tradark',id__startswith=obj.id).count()
+			count = Records.objects.filter(
+				publishstatus='published',
+				transcriptionstatus__in=['published', 'autopublished'] ,
+				record_type='one_record',
+				taxonomy__type='tradark',id__startswith=obj.id
+				).distinct().count()
 		return count
 
 	# transcribed_by is shown if transcriptionstatus is published
