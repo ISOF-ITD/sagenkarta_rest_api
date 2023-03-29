@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces
+from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces, Places
 
 
 class HaradSerializer(serializers.ModelSerializer):
@@ -13,6 +13,7 @@ class HaradSerializer(serializers.ModelSerializer):
 		)
 
 class RecordsPlacesSerializer(serializers.ModelSerializer):
+	#  här betyder place egentligen socken (modell socken)
 	id = serializers.CharField(source='place.id')
 	name = serializers.CharField(source='place.name')
 	harad = serializers.CharField(source='place.harad.name')
@@ -21,6 +22,7 @@ class RecordsPlacesSerializer(serializers.ModelSerializer):
 	county = serializers.CharField(source='place.harad.lan')
 	lm_id = serializers.CharField(source='place.lmId')
 	fylke = serializers.CharField(source='place.fylke')
+	comment = serializers.SerializerMethodField('get_comment')
 
 	location = serializers.SerializerMethodField('get_location_object')
 
@@ -34,6 +36,15 @@ class RecordsPlacesSerializer(serializers.ModelSerializer):
 			location = {}
 
 		return location
+	
+	def get_comment(self, obj):
+		place = Places.objects.filter(
+			socken = obj.place.id,
+		).first()
+		if place is not None:
+			return place.comment
+		else:
+			return None
 
 	class Meta:
 		model = RecordsPlaces
@@ -48,7 +59,8 @@ class RecordsPlacesSerializer(serializers.ModelSerializer):
 			'county',
 			'lm_id',
 			'fylke',
-			'type'
+			'type',
+			'comment',
 		)
 
 class SockenSerializer(serializers.ModelSerializer):
@@ -60,12 +72,22 @@ class SockenSerializer(serializers.ModelSerializer):
 	fylke = serializers.CharField()
 
 	location = serializers.SerializerMethodField('get_location_object')
+	comment = serializers.SerializerMethodField('get_comment')
 
 	def get_location_object(self, obj):
 		return {
 			'lat': obj.lat,
 			'lon': obj.lng
 		}
+	
+	def get_comment(self, obj):
+		place = Places.objects.filter(
+			socken = obj.id,
+		).first()
+		if place is not None:
+			return place.comment
+		else:
+			return None
 
 	class Meta:
 		model = Socken
@@ -79,7 +101,8 @@ class SockenSerializer(serializers.ModelSerializer):
 			'landskap',
 			'county',
 			'lm_id',
-			'fylke'
+			'fylke',
+			'comment',
 		)
 
 class CategorySerializer(serializers.ModelSerializer):
