@@ -238,8 +238,16 @@ class RecordsSerializer(serializers.ModelSerializer):
 	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
 	# Return persons according to filter:
 	persons = serializers.SerializerMethodField('get_persons')
+	headwords = serializers.SerializerMethodField('get_headwords')
 	# OLD: Return all persons:
 	#persons = RecordsPersonsSerializer(many=True, read_only=True);
+
+	# return headwords only if record_type is one_record, otherwise return None
+	def get_headwords(self, obj):
+		if obj.record_type == 'one_record':
+			return obj.headwords
+		else:
+			return None
 
 	# Filter to return only published persons
 	def get_persons(self, record):
