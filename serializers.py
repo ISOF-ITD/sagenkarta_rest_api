@@ -239,13 +239,21 @@ class RecordsSerializer(serializers.ModelSerializer):
 	# Return persons according to filter:
 	persons = serializers.SerializerMethodField('get_persons')
 	headwords = serializers.SerializerMethodField('get_headwords')
+	contents = serializers.SerializerMethodField('get_contents')
 	# OLD: Return all persons:
 	#persons = RecordsPersonsSerializer(many=True, read_only=True);
 
-	# return headwords only if record_type is one_record, otherwise return None
+	# return headwords only if record_type is one_accession_row, otherwise return None
 	def get_headwords(self, obj):
-		if obj.record_type == 'one_record':
+		if obj.record_type == 'one_accession_row':
 			return obj.headwords
+		else:
+			return None
+		
+	# return contents only if record_type is one_accession_row, otherwise return None
+	def get_contents(self, obj):
+		if obj.record_type == 'one_accession_row':
+			return obj.contents
 		else:
 			return None
 
