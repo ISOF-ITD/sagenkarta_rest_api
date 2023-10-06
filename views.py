@@ -585,14 +585,14 @@ def save_transcription(request, response_message, response_status, set_status_to
                                 # Check if records_person relation already exists:
                                 existing_records_person = RecordsPersons.objects.filter(person=informant,
                                                                                         record=transcribedrecord,
-                                                                                        relation='i').first()
+                                                                                        relation__in=['i', 'informant']).first()
                                 if existing_records_person is None:
                                     # records_person = RecordsPersons()
                                     records_person = RecordsPersons(person=informant, record=transcribedrecord,
-                                                                    relation='i')
+                                                                    relation='informant')
                                     # records_person.person = informant.id
                                     # records_person.record = transcribedrecord.id
-                                    # records_person.relation = 'i'
+                                    # records_person.relation = 'informant'
                                     try:
                                         records_person.save()
                                     except Exception as e:
