@@ -21,6 +21,9 @@ from django.db.models.deletion import *
 from . import config
 
 import logging
+
+from .models_accessionsregister import Accessionsregister_FormLista
+
 logger = logging.getLogger(__name__)
 
 class Categories(models.Model):

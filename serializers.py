@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces, Places
+from .models_accessionsregister import Accessionsregister_FormLista
 
 
 class HaradSerializer(serializers.ModelSerializer):
@@ -219,6 +220,30 @@ class RecordsCategorySerializer(serializers.ModelSerializer):
 			'type'
 		)
 
+
+class AccessionsFormListaSerializer(serializers.ModelSerializer):
+	specified_type = serializers.CharField(source='typtext')
+	type = serializers.CharField(source='formgrundtext')
+	media = serializers.CharField(source='formdetaljtext')
+	count = serializers.CharField(source='omfang_antal')
+	count_description = serializers.CharField(source='omfang')
+	language = serializers.CharField(source='spr')
+	questionnaire = serializers.CharField(source='frgl')
+
+	class Meta:
+		model = Accessionsregister_FormLista
+
+		fields = (
+			'specified_type',
+			'type',
+			'media',
+			'count',
+			'count_description',
+			'language',
+			'questionnaire',
+		)
+
+
 class RecordsSerializer(serializers.ModelSerializer):
 	#places = SockenSerializer(many=True, read_only=True);
 	places = RecordsPlacesSerializer(many=True, read_only=True);
@@ -243,6 +268,10 @@ class RecordsSerializer(serializers.ModelSerializer):
 	# OLD: Return all persons:
 	#persons = RecordsPersonsSerializer(many=True, read_only=True);
 
+	# physical_media direct from source form table in accessionsregister:
+	# Activate WHEN mapping added to index:
+	# physical_media = serializers.SerializerMethodField('get_physical_media')
+
 	# return headwords only if record_type is one_accession_row, otherwise return None
 	def get_headwords(self, obj):
 		if obj.record_type == 'one_accession_row':
@@ -263,6 +292,12 @@ class RecordsSerializer(serializers.ModelSerializer):
 		# testing:
 		# qs = RecordsPersons.objects.filter(person__gender='female', person__transcriptionstatus='published', record=record)
 		serializer = RecordsPersonsSerializer(instance=qs, many=True)
+		return serializer.data
+
+	# Get physical media data from source database (Accessionsregister form table)
+	def get_physical_media(self, record):
+		qs = Accessionsregister_FormLista.objects.filter(accid=record.archive_row)
+		serializer = AccessionsFormListaSerializer(instance=qs, many=True)
 		return serializer.data
 
 	# number_of_one_record (number of records with type one_record)
@@ -351,6 +386,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'persons',
 			'metadata',
 			'media',
+			# 'physical_media',
 			'publishstatus',
 			'update_status',
 			'transcriptionstatus',
