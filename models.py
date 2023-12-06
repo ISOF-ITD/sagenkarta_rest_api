@@ -204,6 +204,10 @@ class Records(models.Model):
 	contents = models.TextField(blank=True, null=True)
 	headwords = models.TextField(blank=True, null=True)
 	year = models.DateField(blank=True, null=True)
+	# Archives not yet needed in API:
+	#archive_org = models.ForeignKey(Archives, db_column="archive_org", blank=True, null=True, editable=False,
+	#								on_delete=DO_NOTHING, verbose_name='Arkiv-org')
+	archive_org = models.IntegerField(blank=False, null=True)
 	archive = models.CharField(max_length=255, blank=True)
 	archive_id = models.CharField(max_length=255, blank=True)
 	archive_row = models.IntegerField(blank=False, null=True)

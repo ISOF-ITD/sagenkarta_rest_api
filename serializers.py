@@ -270,7 +270,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 
 	# physical_media direct from source form table in accessionsregister:
 	# Activate WHEN mapping added to index:
-	# physical_media = serializers.SerializerMethodField('get_physical_media')
+	physical_media = serializers.SerializerMethodField('get_physical_media')
 
 	# return headwords only if record_type is one_accession_row, otherwise return None
 	def get_headwords(self, obj):
@@ -343,6 +343,17 @@ class RecordsSerializer(serializers.ModelSerializer):
 		return text
 
 	def get_archive_object(self, obj):
+		source_organisation = {
+			0: 'Okänt',
+			1: 'Lund',
+			2: 'Göteborg',
+			3: 'Uppsala',
+			4: 'Umeå',
+			5: 'Språkrådet',
+			100: 'Norsk folkeminnesamling',
+			200: 'Svenska litteratursällskapet i Finland (SLS)',
+		}
+
 		return {
 			'archive_id': obj.archive_id,
 			'archive_row': obj.archive_row,
@@ -350,7 +361,8 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'page': obj.archive_page,
 			'total_pages': obj.total_pages,
 			'country': obj.country,
-			'archive': obj.archive
+			'archive': obj.archive,
+			'archive_org': source_organisation[obj.archive_org]
 		}
 
 	"""
@@ -386,7 +398,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'persons',
 			'metadata',
 			'media',
-			# 'physical_media',
+			'physical_media',
 			'publishstatus',
 			'update_status',
 			'transcriptionstatus',
