@@ -350,8 +350,10 @@ class RecordsSerializer(serializers.ModelSerializer):
 			3: 'Uppsala',
 			4: 'Umeå',
 			5: 'Språkrådet',
-			100: 'Norsk folkeminnesamling',
-			200: 'Svenska litteratursällskapet i Finland (SLS)',
+			100: 'NFS',
+			200: 'SLS',
+			#100: 'Norsk folkeminnesamling (NFS)',
+			#200: 'Svenska litteratursällskapet i Finland (SLS)',
 		}
 
 		return {
@@ -362,7 +364,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'total_pages': obj.total_pages,
 			'country': obj.country,
 			'archive': obj.archive,
-			'archive_org': source_organisation[obj.archive_org]
+			'archive_org': source_organisation[obj.archive_org] if obj.archive_org is not None else None
 		}
 
 	"""
