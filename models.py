@@ -339,7 +339,7 @@ def records_post_saved(sender, **kwargs):
 	def save_es_model():
 		logger.debug('records_post_saved start')
 		modelId = kwargs['instance'].id
-		print('print records_post_saved start')
+		# print('print records_post_saved start')
 
 		restUrl = config.restApiRecordUrl+str(modelId)
 		modelResponseData = requests.get(restUrl, verify=False)

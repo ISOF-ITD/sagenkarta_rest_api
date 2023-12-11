@@ -544,7 +544,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                                                                      birth_year=informant.birth_year,
                                                                      birthplace=informant.birthplace).first()
                             if existing_person is None:
-                                logger.warning(informant)
+                                logger.debug(informant)
                                 informant.transcriptionstatus = 'transcribed'
                                 informant.createdby = user
                                 informant.editedby = user
