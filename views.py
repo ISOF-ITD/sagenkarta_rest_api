@@ -145,7 +145,8 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
         # processed_query = processed_query.replace('INNER JOIN', 'LEFT JOIN')
         # queryset.raw(processed_query)
 
-        print(queryset.query)
+        logger.debug("RecordsViewSet queryset.query:" + str(queryset.query))
+        # print(queryset.query)
 
         return queryset
 
@@ -226,7 +227,8 @@ class _LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
         queryset = queryset.filter(**filters).distinct()
 
-        print(queryset.query)
+        logger.debug("_LocationsViewSet queryset.query:" + str(queryset.query))
+        # print(queryset.query)
 
         return queryset
 
@@ -346,7 +348,8 @@ class LantmaterietHistOrtoProxyView(ProxyView):
         headers = super(LantmaterietHistOrtoProxyView, self).get_request_headers()
 
         authHeaderHash = config.LantmaterietProxy_access_opendata.encode().decode("ascii")
-        print(authHeaderHash)
+        logger.debug(authHeaderHash)
+        # print(authHeaderHash)
 
         headers['Authorization'] = authHeaderHash
         return headers
@@ -395,7 +398,11 @@ class FeedbackViewSet(viewsets.ViewSet):
     def post(self, request, format=None):
         if 'json' in request.data:
             jsonData = json.loads(request.data['json'])
-            print(jsonData['from_email'])
+            email = None
+            if 'from_email' in jsonData:
+                email = jsonData['from_email']
+            logger.debug("FeedbackViewSet email:" + email)
+            # print(jsonData['from_email'])
 
             recordid = None
             send_to_user = User.objects.filter(username='supportisof').first()
@@ -443,7 +450,8 @@ set_status_to_transcribed Boolean: True if transcription is finished, i.e. "sent
 def save_transcription(request, response_message, response_status, set_status_to_transcribed):
     if 'json' in request.data:
         jsonData = json.loads(request.data['json'])
-        print(jsonData)
+        # print(jsonData)
+        logger.debug("save_transcription post " + str(jsonData))
         recordid = jsonData['recordid']
 
         # find record
@@ -580,7 +588,9 @@ def save_transcription(request, response_message, response_status, set_status_to
                                     # informant.createdate = Now()
                                     informant.save()
                                 except Exception as e:
-                                    print(e)
+                                    logger.debug("save_transcription informant.save() data %s", str(jsonData))
+                                    logger.error(e)
+                                    # print(e)
 
                                 # Check if records_person relation already exists:
                                 existing_records_person = RecordsPersons.objects.filter(person=informant,
@@ -596,7 +606,9 @@ def save_transcription(request, response_message, response_status, set_status_to
                                     try:
                                         records_person.save()
                                     except Exception as e:
-                                        print(e)
+                                        logger.debug("save_transcription records_person.save() data %s", str(jsonData))
+                                        logger.error(e)
+                                        # print(e)
 
                                 # transcribedrecord.records_persons = records_person
 
@@ -650,9 +662,11 @@ def save_transcription(request, response_message, response_status, set_status_to
                 try:
                     transcribedrecord.save()
                     response_status = 'true'
-                    logger.debug("TranscribeViewSet data %s", jsonData)
+                    logger.debug("save_transcription data %s", str(jsonData))
                 except Exception as e:
-                    print(e)
+                    logger.error("save_transcription data %s", str(jsonData))
+                    logger.error(e)
+                    # print(e)
             else:
                 if response_message is None:
                     response_message = 'Ett oväntat fel: Inte redo för transkribering.'
@@ -734,7 +748,8 @@ class TranscribeStartViewSet(viewsets.ViewSet):
         #if request.data is not None:
         if 'json' in request.data:
             jsonData = json.loads(request.data['json'])
-            print(jsonData)
+            #print(jsonData)
+            logger.debug("TranscribeStartViewSet post " + str(jsonData))
             recordid = jsonData['recordid']
 
             # find record
@@ -758,8 +773,9 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                             jsonData['transcribesession'] = str(transcribedrecord2.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
                         logger.debug("TranscribeStartViewSet data %s", jsonData)
                     except Exception as e:
-                        logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
-                        print(e)
+                        logger.error("TranscribeStartViewSet Exception: %s", str(jsonData))
+                        logger.error(e)
+                        # print(e)
                 else:
                     response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
                     statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved', 'published', 'autopublished']
@@ -797,7 +813,8 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
         # if request.data is not None:
         if 'json' in request.data:
             jsonData = json.loads(request.data['json'])
-            print(jsonData)
+            # print(jsonData)
+            logger.debug("TranscribeCancelViewSet post " + str(jsonData))
             recordid = jsonData['recordid']
 
             # find record
@@ -819,10 +836,11 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                             try:
                                 transcribedrecord.save()
                                 response_status = 'true'
-                                logger.debug("TranscribeStartViewSet data %s", jsonData)
+                                logger.debug("TranscribeCancelViewSet data %s", jsonData)
                             except Exception as e:
-                                logger.debug("TranscribeStartViewSet Exception: %s", jsonData)
-                                print(e)
+                                logger.error("TranscribeCancelViewSet Exception: %s", str(jsonData))
+                                logger.error(e)
+                                # print(e)
                         else:
                             response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
                             statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',

@@ -377,7 +377,7 @@ def records_post_saved(sender, **kwargs):
 
 		# TODO Is put really needed? (Guess it was to do update if insert failed)
 		# if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
-		if esResponse is not None:
+		if esResponse is not None and modelJson is not None:
 			esResponse = requests.put(esUrl, data=json.dumps(modelJson).encode('utf-8'), verify=False)
 			logger.debug("records_post_saved put: url, esResponse %s %s", esUrl, esResponse.text)
 
