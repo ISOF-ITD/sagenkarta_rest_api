@@ -815,7 +815,11 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
             jsonData = json.loads(request.data['json'])
             # print(jsonData)
             logger.debug("TranscribeCancelViewSet post " + str(jsonData))
-            recordid = jsonData['recordid']
+            recordid = None
+            if 'recordid' in jsonData:
+                recordid = jsonData['recordid']
+            else:
+                logger.error("TranscribeCancelViewSet No recordid data %s", str(jsonData))
 
             # find record
             transcribedrecord = None
@@ -836,7 +840,7 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                             try:
                                 transcribedrecord.save()
                                 response_status = 'true'
-                                logger.debug("TranscribeCancelViewSet data %s", jsonData)
+                                logger.debug("TranscribeCancelViewSet data %s", str(jsonData))
                             except Exception as e:
                                 logger.error("TranscribeCancelViewSet Exception: %s", str(jsonData))
                                 logger.error(e)
