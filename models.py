@@ -342,15 +342,20 @@ def records_post_saved(sender, **kwargs):
 		# print('print records_post_saved start')
 
 		restUrl = config.restApiRecordUrl+str(modelId)
-		modelResponseData = requests.get(restUrl, verify=False)
-		modelResponseData.encoding = 'utf-8'
-		modelJson = modelResponseData.json()
+		logger.debug('records_post_saved get json: ' + restUrl)
+		try:
+			modelResponseData = requests.get(restUrl, verify=False)
+			modelResponseData.encoding = 'utf-8'
+			modelJson = modelResponseData.json()
 
-		document = {
-			#'doc': modelJson
-		}
-		#ES7 Do not add top element to json:
-		document = modelJson
+			document = {
+				#'doc': modelJson
+			}
+			#ES7 Do not add top element to json:
+			document = modelJson
+		except Exception as e:
+			logger.debug("records_post_saved post Exception: %s", modelResponseData)
+			print(e)
 		logger.debug("records_post_saved url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
 		# Do not use ES-mapping-type for ES >6
@@ -365,11 +370,13 @@ def records_post_saved(sender, **kwargs):
 		try:
 			esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False, headers=headers)
 		except Exception as e:
-			logger.debug("records_post_saved post Exception: %s", jsonData)
-			print(e)
-		logger.debug("records_post_saved post: url, esResponse %s %s", esUrl, esResponse.text)
+			logger.error("records_post_saved post: Exception: %s", json)
+			logger.error(e)
+		logger.debug("records_post_saved post: url, status_code %s %s ", esUrl, esResponse)
 
-		if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
+		# TODO Is put really needed? (Guess it was to do update if insert failed)
+		# if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
+		if esResponse is not None:
 			esResponse = requests.put(esUrl, data=json.dumps(modelJson).encode('utf-8'), verify=False)
 			logger.debug("records_post_saved put: url, esResponse %s %s", esUrl, esResponse.text)
 
