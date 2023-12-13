@@ -344,6 +344,7 @@ def records_post_saved(sender, **kwargs):
 		restUrl = config.restApiRecordUrl+str(modelId)
 		logger.debug('records_post_saved get json: ' + restUrl)
 		document = {}
+		modelJson = None
 		try:
 			modelResponseData = requests.get(restUrl, verify=False)
 			modelResponseData.encoding = 'utf-8'
