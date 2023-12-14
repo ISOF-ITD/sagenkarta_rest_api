@@ -356,9 +356,9 @@ def records_post_saved(sender, **kwargs):
 			#ES7 Do not add top element to json:
 			document = modelJson
 		except Exception as e:
-			logger.debug("records_post_saved post Exception: %s", modelResponseData)
-			print(e)
-		logger.debug("records_post_saved url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
+			logger.debug("records_post_saved get Exception: %s", modelResponseData)
+			logger.debug("records_post_saved get Exception: %s",e)
+		logger.debug("records_post_saved get: url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
 		# Do not use ES-mapping-type for ES >6
 		es_mapping_type = ''
@@ -372,23 +372,28 @@ def records_post_saved(sender, **kwargs):
 		try:
 			esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False, headers=headers)
 		except Exception as e:
-			logger.error("records_post_saved post: Exception: %s", json)
-			logger.error(e)
-		logger.debug("records_post_saved post: url, status_code %s %s ", esUrl, esResponse)
+			logger.error("records_post_saved post: Exception: %s", str(document))
+			logger.error("records_post_saved post: Exception: %s",e)
+		logger.debug("records_post_saved post: url, esResponse %s %s ", esUrl, esResponse)
 
 		# TODO Is put really needed? (Guess it was to do update if insert failed)
 		# if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
 		if esResponse is not None:
 			if 'status' in esResponse.json() and esResponse.status_code == 404:
 				logger.debug("records_post_saved put url %s ", esUrl)
-				esResponse = requests.put(config.protocol + (
-					config.user + ':' + config.password + '@' if hasattr(config,
-																			   'user') else '') + config.host + '/' + config.index_name + '/_doc/' + str(
-					modelId), data=json.dumps(modelJson).encode('utf-8'), verify=False, headers=headers)
+				try:
+					esResponse = requests.put(config.protocol + (
+						config.user + ':' + config.password + '@' if hasattr(config,
+																				   'user') else '') + config.host + '/' + config.index_name + '/_doc/' + str(
+						modelId), data=json.dumps(modelJson).encode('utf-8'), verify=False, headers=headers)
+				except Exception as e:
+					logger.error("records_post_saved put: Exception: %s", str(document))
+					logger.error("records_post_saved put: Exception: %s", e)
 			else:
-				logger.error("records_post_saved post: \"'status' in esResponse.json() and esResponse.status_code == 404\" == False.")
+				# Normally not an error!?:
+				logger.debug("records_post_saved put: \"'status' in esResponse.json() and esResponse.status_code == 404\" == False." + str(json))
 		else:
-			logger.error("records_post_saved post: esResponse is None = 'No response from ES'.")
+			logger.error("records_post_saved put: esResponse is None = 'No response from ES'." + str(document))
 
 	t = Timer(5, save_es_model)
 	t.start()
