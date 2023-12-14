@@ -427,6 +427,7 @@ class FeedbackViewSet(viewsets.ViewSet):
 #                            send_to = user.email
 #            logger.debug(send_to)
 
+            logger.debug("FeedbackViewSet: " + str(send_to) + " jsonData:" + str(jsonData))
             send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
                 send_to if send_to is not None else config.feedbackEmail],
                       fail_silently=False)
