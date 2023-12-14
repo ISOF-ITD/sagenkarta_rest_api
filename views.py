@@ -428,9 +428,14 @@ class FeedbackViewSet(viewsets.ViewSet):
 #            logger.debug(send_to)
 
             logger.debug("FeedbackViewSet: " + str(send_to) + " jsonData:" + str(jsonData))
-            send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
-                send_to if send_to is not None else config.feedbackEmail],
-                      fail_silently=False)
+            try:
+                send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
+                    send_to if send_to is not None else config.feedbackEmail],
+                          fail_silently=False)
+            except Exception as e:
+                logger.error("FeedbackViewSet post Exception: %s", str(jsonData))
+                logger.error("FeedbackViewSet post Exception: %s", e)
+
             # send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
             #    jsonData['send_to'] + '@sprakochfolkminnen.se' if 'send_to' in jsonData else config.feedbackEmail],
             #          fail_silently=False)
