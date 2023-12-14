@@ -360,40 +360,42 @@ def records_post_saved(sender, **kwargs):
 			logger.debug("records_post_saved get Exception: %s",e)
 		logger.debug("records_post_saved get: url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
-		# Do not use ES-mapping-type for ES >6
-		es_mapping_type = ''
-		# Old ES-mapping-type:
-		#es_mapping_type = 'legend/'
-		#Use Index API  _doc (Update API _update seems not to work here in ES7):
-		esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_doc/'+str(modelId)
-		# Elasticsearch 6 seems to need headers:
-		headers = {'Accept': 'application/json', 'content-type': 'application/json'}
+		# Check if not empty
+		if len(document > 0):
+			# Do not use ES-mapping-type for ES >6
+			es_mapping_type = ''
+			# Old ES-mapping-type:
+			#es_mapping_type = 'legend/'
+			#Use Index API  _doc (Update API _update seems not to work here in ES7):
+			esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_doc/'+str(modelId)
+			# Elasticsearch 6 seems to need headers:
+			headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
-		try:
-			esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False, headers=headers)
-		except Exception as e:
-			logger.error("records_post_saved post: Exception: %s", str(document))
-			logger.error("records_post_saved post: Exception: %s",e)
-		logger.debug("records_post_saved post: url, esResponse %s %s ", esUrl, esResponse)
+			try:
+				esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False, headers=headers)
+			except Exception as e:
+				logger.error("records_post_saved post: Exception: %s", str(document))
+				logger.error("records_post_saved post: Exception: %s",e)
+			logger.debug("records_post_saved post: url, esResponse %s %s ", esUrl, esResponse)
 
-		# TODO Is put really needed? (Guess it was to do update if insert failed)
-		# if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
-		if esResponse is not None:
-			if 'status' in esResponse.json() and esResponse.status_code == 404:
-				logger.debug("records_post_saved put url %s ", esUrl)
-				try:
-					esResponse = requests.put(config.protocol + (
-						config.user + ':' + config.password + '@' if hasattr(config,
-																				   'user') else '') + config.host + '/' + config.index_name + '/_doc/' + str(
-						modelId), data=json.dumps(modelJson).encode('utf-8'), verify=False, headers=headers)
-				except Exception as e:
-					logger.error("records_post_saved put: Exception: %s", str(document))
-					logger.error("records_post_saved put: Exception: %s", e)
+			# TODO Is put really needed? (Guess it was to do update if insert failed)
+			# if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
+			if esResponse is not None:
+				if 'status' in esResponse.json() and esResponse.status_code == 404:
+					logger.debug("records_post_saved put url %s ", esUrl)
+					try:
+						esResponse = requests.put(config.protocol + (
+							config.user + ':' + config.password + '@' if hasattr(config,
+																					   'user') else '') + config.host + '/' + config.index_name + '/_doc/' + str(
+							modelId), data=json.dumps(modelJson).encode('utf-8'), verify=False, headers=headers)
+					except Exception as e:
+						logger.error("records_post_saved put: Exception: %s", str(document))
+						logger.error("records_post_saved put: Exception: %s", e)
+				else:
+					# Normally not an error!?:
+					logger.debug("records_post_saved put: \"'status' in esResponse.json() and esResponse.status_code == 404\" == False." + str(json))
 			else:
-				# Normally not an error!?:
-				logger.debug("records_post_saved put: \"'status' in esResponse.json() and esResponse.status_code == 404\" == False." + str(json))
-		else:
-			logger.error("records_post_saved put: esResponse is None = 'No response from ES'." + str(document))
+				logger.error("records_post_saved put: esResponse is None = 'No response from ES'." + str(document))
 
 	t = Timer(5, save_es_model)
 	t.start()
