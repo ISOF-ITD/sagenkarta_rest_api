@@ -4,7 +4,7 @@ host = secrets_env.host
 index_name = 'isof-publik'
 protocol = 'http://'
 cert_file = False
-restApiRecordUrl = 'https://frigg-test.isof.se/sagendatabas/api/records/'
+restApiRecordUrl = 'https://garm-test.isof.se/folkeservice/api/records/'
 feedbackEmail = 'fredrik.skott@isof.se'
 LantmaterietProxy = 'http://maps.lantmateriet.se/topowebb/v1/wmts/1.0.0/topowebb/default/3006/'
 LantmaterietEpsg3857Proxy = 'http://maps.lantmateriet.se/topowebb/v1/wmts/1.0.0/topowebb/default/3857/'
@@ -16,6 +16,6 @@ LantmaterietProxy_access = secrets_env.LantmaterietProxy_access
 LantmaterietProxy_access_opendata = secrets_env.LantmaterietProxy_access_opendata
 IsofGeoProxy = 'https://oden-test.isof.se/geoserver/'
 IsofHomepage = 'https://www.isof.se/'
-FriggStatic = 'https://frigg-test.isof.se/static/'
+FriggStatic = 'https://garm-test.isof.se/static/'
 FilemakerProxy = 'https://filemaker.isof.se/'
 
