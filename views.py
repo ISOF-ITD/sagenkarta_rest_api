@@ -589,8 +589,8 @@ def save_transcription(request, response_message, response_status, set_status_to
                                     # informant.createdate = Now()
                                     informant.save()
                                 except Exception as e:
-                                    logger.debug("save_transcription informant.save() data %s", str(jsonData))
-                                    logger.error(e)
+                                    logger.error("save_transcription informant.save() Exception data %s", str(jsonData))
+                                    logger.error("save_transcription informant.save() Exception %s",e)
                                     # print(e)
 
                                 # Check if records_person relation already exists:
@@ -607,8 +607,8 @@ def save_transcription(request, response_message, response_status, set_status_to
                                     try:
                                         records_person.save()
                                     except Exception as e:
-                                        logger.debug("save_transcription records_person.save() data %s", str(jsonData))
-                                        logger.error(e)
+                                        logger.debug("save_transcription records_person.save() Exception data %s", str(jsonData))
+                                        logger.error("save_transcription records_person.save() Exception %s",e)
                                         # print(e)
 
                                 # transcribedrecord.records_persons = records_person
@@ -663,10 +663,10 @@ def save_transcription(request, response_message, response_status, set_status_to
                 try:
                     transcribedrecord.save()
                     response_status = 'true'
-                    logger.debug("save_transcription data %s", str(jsonData))
+                    logger.info("save_transcription transcribedrecord.save() data %s", str(jsonData))
                 except Exception as e:
-                    logger.error("save_transcription data %s", str(jsonData))
-                    logger.error(e)
+                    logger.error("save_transcription transcribedrecord.save() Exception data %s", str(jsonData))
+                    logger.error("save_transcription transcribedrecord.save() Exception %s", e)
                     # print(e)
             else:
                 if response_message is None:

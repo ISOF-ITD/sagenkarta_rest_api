@@ -342,7 +342,7 @@ def records_post_saved(sender, **kwargs):
 		# print('print records_post_saved start')
 
 		restUrl = config.restApiRecordUrl+str(modelId)
-		logger.debug('records_post_saved get json: ' + restUrl)
+		logger.info('records_post_saved get json: ' + restUrl)
 		document = {}
 		modelJson = None
 		try:
@@ -358,7 +358,7 @@ def records_post_saved(sender, **kwargs):
 		except Exception as e:
 			logger.debug("records_post_saved get Exception: %s", modelResponseData)
 			logger.debug("records_post_saved get Exception: %s",e)
-		logger.debug("records_post_saved get: url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
+		logger.info("records_post_saved get: url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
 		# Check if not empty
 		if len(document) > 0:
@@ -376,7 +376,7 @@ def records_post_saved(sender, **kwargs):
 			except Exception as e:
 				logger.error("records_post_saved post: Exception: %s", str(document))
 				logger.error("records_post_saved post: Exception: %s",e)
-			logger.debug("records_post_saved post: url, esResponse %s %s ", esUrl, esResponse)
+			logger.info("records_post_saved post: url, esResponse %s %s ", esUrl, esResponse)
 
 			# TODO Is put really needed? (Guess it was to do update if insert failed)
 			# if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
