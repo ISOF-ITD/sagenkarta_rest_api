@@ -396,6 +396,7 @@ class FeedbackViewSet(viewsets.ViewSet):
         return Response()
 
     def post(self, request, format=None):
+        success = False
         if 'json' in request.data:
             jsonData = json.loads(request.data['json'])
             email = None
@@ -432,14 +433,19 @@ class FeedbackViewSet(viewsets.ViewSet):
                 send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
                     send_to if send_to is not None else config.feedbackEmail],
                           fail_silently=False)
+                success = True
             except Exception as e:
+                success = False
                 logger.error("FeedbackViewSet post Exception: %s", str(jsonData))
                 logger.error("FeedbackViewSet post Exception: %s", e)
 
             # send_mail(jsonData['subject'], jsonData['message'], jsonData['from_email'], [
             #    jsonData['send_to'] + '@sprakochfolkminnen.se' if 'send_to' in jsonData else config.feedbackEmail],
             #          fail_silently=False)
-        return JsonResponse({'success': 'true', 'data': jsonData})
+        success_string = 'false'
+        if success:
+            success_string = 'true'
+        return JsonResponse({'success': success_string, 'data': jsonData})
 
     def get_permissions(self):
         permission_classes = [permissions.AllowAny]
