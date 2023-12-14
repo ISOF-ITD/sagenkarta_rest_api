@@ -361,7 +361,7 @@ def records_post_saved(sender, **kwargs):
 		logger.debug("records_post_saved get: url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
 		# Check if not empty
-		if len(document > 0):
+		if len(document) > 0:
 			# Do not use ES-mapping-type for ES >6
 			es_mapping_type = ''
 			# Old ES-mapping-type:
