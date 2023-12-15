@@ -66,6 +66,10 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
         if country is not None:
             filters['country__iexact'] = country
 
+        archive_org = self.request.query_params.get('archive_org', None)
+        if archive_org is not None:
+            filters['archive_org__iexact'] = archive_org
+
         only_categories = self.request.query_params.get('only_categories', None)
         if only_categories is not None:
             queryset = queryset.exclude(category='')
