@@ -308,9 +308,14 @@ class RecordsSerializer(serializers.ModelSerializer):
 
 	# Get physical media data from source database (Accessionsregister form table)
 	def get_physical_media(self, record):
-		qs = Accessionsregister_FormLista.objects.filter(accid=record.archive_row)
-		serializer = AccessionsFormListaSerializer(instance=qs, many=True)
-		return serializer.data
+		data = None
+		# Only get physical media if archive_row > 0 (0 can be "no value")
+		if record.archive_row is not None:
+			if record.archive_row > 0:
+				qs = Accessionsregister_FormLista.objects.filter(accid=record.archive_row)
+				serializer = AccessionsFormListaSerializer(instance=qs, many=True)
+				data = serializer.data
+		return data
 
 	# number_of_one_record (number of records with type one_record)
 	# for records of type one_accession_row with same record.archive_id
