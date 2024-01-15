@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces, Places
 from .models_accessionsregister import Accessionsregister_FormLista
 
+import logging
+logger = logging.getLogger(__name__)
 
 class HaradSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -39,9 +41,19 @@ class RecordsPlacesSerializer(serializers.ModelSerializer):
 		return location
 	
 	def get_comment(self, obj):
-		place = Places.objects.filter(
-			socken = obj.place.id,
-		).first()
+		place = None
+		try:
+			if obj is not None:
+				if obj.place is not None:
+					if obj.place.id is not None:
+						if Places.objects.filter(socken = obj.place.id).exists():
+							place = Places.objects.filter(
+								socken = obj.place.id,
+							).first()
+		except Exception as e:
+			# logger.info as this error can happen if records_places row exists with a socken that does not exist
+			logger.info("RecordsPlacesSerializer get_comment %s Exception: %s", str(obj), e)
+
 		if place is not None:
 			return place.comment
 		else:
