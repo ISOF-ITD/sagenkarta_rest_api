@@ -378,9 +378,14 @@ def records_post_saved(sender, **kwargs):
 				logger.error("records_post_saved post: Exception: %s",e)
 			logger.info("records_post_saved post: url, esResponse %s %s ", esUrl, esResponse)
 
-			# TODO Is put really needed? (Guess it was to do update if insert failed)
-			# if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
 			if esResponse is not None:
+				# Log errors
+				if esResponse.status_code != 200:
+					logger.debug("records_post_saved post: Exception %s ", esResponse.text)
+					if esResponse.json() is not None:
+						logger.debug("records_post_saved post: Exception json %s ", esResponse.json())
+				# TODO Is put really needed? (Guess it was to do update if insert failed)
+				# if 'status' in esResponse.json() and esResponse.json()['status'] == 404:
 				if 'status' in esResponse.json() and esResponse.status_code == 404:
 					logger.debug("records_post_saved put url %s ", esUrl)
 					try:
