@@ -531,16 +531,6 @@ def save_transcription(request, response_message, response_status, set_status_to
                     if validateString(recordtitle):
                         transcribedrecord.title = recordtitle
 
-                if 'messageComment' in jsonData:
-                    # transcribedrecord.transcriptioncomment = jsonData['messageComment']
-                    if transcribedrecord.transcription_comment is None:
-                        transcribedrecord.transcription_comment = jsonData['messageComment']
-                    else:
-                        separator = ''
-                        if len(transcribedrecord.transcription_comment) > 0:
-                            separator = ';'
-                        transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + separator + \
-                                                                  jsonData['messageComment']
                 if set_status_to_transcribed == True:
                     transcribedrecord.transcriptionstatus = 'transcribed'
                     transcribedrecord.transcriptiondate = Now()
@@ -664,8 +654,10 @@ def save_transcription(request, response_message, response_status, set_status_to
 
                 # Check if transcribed record should be automatically published
                 # If crowdsource user has role supertranscriber:
+                supertranscriber = False
                 if crowdsource_user is not None:
                     if "supertranscriber" in crowdsource_user.role:
+                        supertranscriber = True
                         transcribedrecord.transcriptionstatus = "autopublished"
                         transcribedrecord.publishstatus = "published"
                         if informant is not None:
@@ -673,6 +665,30 @@ def save_transcription(request, response_message, response_status, set_status_to
                             if informant.transcriptionstatus != 'published':
                                 informant.transcriptionstatus = 'autopublished'
                                 informant.save()
+                if 'messageComment' in jsonData:
+                    if len(jsonData['messageComment']) > 0:
+                        if supertranscriber:
+                            if transcribedrecord.comment is None or len(transcribedrecord.comment) < 1:
+                                # If comment empty
+                                transcribedrecord.comment = jsonData['messageComment']
+                            else:
+                                # If comment exists
+                                separator = ';'
+                                # If not already registered
+                                if not jsonData['messageComment'] in transcribedrecord.comment:
+                                    transcribedrecord.comment = transcribedrecord.comment + separator + \
+                                                                              jsonData['messageComment']
+                        else:
+                            if transcribedrecord.transcription_comment is None or len(transcribedrecord.transcription_comment) < 1:
+                                # If comment empty
+                                transcribedrecord.transcription_comment = jsonData['messageComment']
+                            else:
+                                # If comment exists
+                                separator = ';'
+                                # If not already registered
+                                if not jsonData['messageComment'] in transcribedrecord.transcription_comment:
+                                    transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + separator + \
+                                                                              jsonData['messageComment']
 
                 # Save record
                 try:
