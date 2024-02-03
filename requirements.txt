@@ -1,6 +1,6 @@
 # For openapi/swagger view:
-#coreapi == 2.3.3
-#coreschema == 0.0.4
+coreapi == 2.3.3
+coreschema == 0.0.4
 #Django==3.2
 # mysqlclient==1.4.2 # Kanske fungerade utan felmeddelande?
 mysqlclient==2.1.1 # ubuntu-py3.8 works even this error: error: invalid command 'bdist_wheel' ERROR: Failed building wheel for mysqlclient
@@ -15,7 +15,7 @@ Pillow==8.2.0
 # Version in PlaceNameService:
 #djangorestframework==3.11.0
 djangorestframework==3.14.0
-#django-rest-swagger == 2.2.0
+django-rest-swagger == 2.2.0
 # requests is used by sagenkarta_rest_api
 # requests ONLY? used for test of proxy to isof-geoserver in isofGeoProxy:
 # Old version for testing:
