@@ -13,6 +13,10 @@ router.register(r'transcribesave', views.TranscribeSaveViewSet, basename='transc
 router.register(r'transcribestart', views.TranscribeStartViewSet, basename='transcribestart')
 router.register(r'transcribecancel', views.TranscribeCancelViewSet, basename='transcribecancel')
 
+# App name must be specified,
+# otherwise Django will complain about the URL's.
+app_name = 'api'
+
 urlpatterns = [
 	url(r'^isofGeoProxy/', views.isofGeoProxy, name='IsofGeoProxy'),
 
