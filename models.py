@@ -235,6 +235,8 @@ class Records(models.Model):
 	#archive_material_publish_level = models.CharField(max_length=20, blank=False, null=False, default='none',
 	#												  choices=archive_material_publish_levels)
 
+	import_batch = models.IntegerField(blank=True, null=True, verbose_name='Importbatch')
+
 	# Track changes:
 	approvedby = models.ForeignKey(User, db_column='approvedby', null=True, blank=True, editable=False, on_delete=DO_NOTHING, verbose_name='Godkänd av')
 	approvedate = models.DateTimeField(null=True, blank=True, verbose_name="Godkänd datum")

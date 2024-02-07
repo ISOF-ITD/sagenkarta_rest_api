@@ -94,6 +94,11 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
             recordtype_values = recordtype.split(',')
             filters['record_type__in'] = recordtype_values
 
+        import_batch = self.request.query_params.get('import_batch', None)
+        if import_batch is not None:
+            import_batch_values = import_batch.split(',')
+            filters['import_batch__in'] = import_batch_values
+
         publishstatus = self.request.query_params.get('publishstatus', None)
         if publishstatus is not None:
             publishstatus_values = publishstatus.split(',')
