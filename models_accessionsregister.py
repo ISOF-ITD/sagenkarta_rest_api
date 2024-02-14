@@ -74,3 +74,40 @@ class Accessionsregister_FormLista(models.Model):
         db_table = 'accessionsregister_formlista_vy'
         verbose_name_plural = LEVEL1 + 'accessionsregister_formlista_vy'
 
+class Accessionsregister_pers(models.Model):
+    id = models.IntegerField(primary_key=True)
+    # Might be primary key i origin:
+    # persid = models.IntegerField(primary_key=True, verbose_name="PersID")
+    persid = models.IntegerField(verbose_name="PersID")
+
+    # batch_id = models.AutoField(primary_key=True, null=False, editable=False)
+    namn = models.TextField(blank=True, null=True,verbose_name="Namn")
+    fodd = models.TextField(blank=True, null=True,verbose_name="Född")
+    # fodd_ar: extra column in view returning only a year. NOT a column in main table!
+    fodd_ar = models.TextField(blank=True, null=True,verbose_name="Född år")
+    osaker = models.TextField(blank=True, null=True, verbose_name="Osäker uppgift med ev. förklaring")
+    titel = models.TextField(blank=True, null=True, verbose_name="Titel")
+    kon = models.TextField(blank=True, null=True, verbose_name="Kön")
+    personalia = models.TextField(blank=True, null=True, verbose_name="Personalia")
+
+    # Might be foreign keys:
+    org = models.IntegerField(verbose_name="!Org")
+    acc = models.IntegerField(verbose_name="!Acc")
+    roll = models.IntegerField(verbose_name="!Roll")
+
+    # Should be link (and text?) but column type Binär. Might be empty?
+    personalia_dokument = models.TextField(blank=True, null=True,verbose_name="Personalia dokument")
+    fotografi = models.TextField(blank=True, null=True,verbose_name="Fotografi")
+
+    import_batch = models.IntegerField( blank=True, null=True, verbose_name="Importbatch")
+
+    # Track data changes
+    postskapad = models.DateTimeField(auto_now_add=True, verbose_name="PostSkapad")
+    postandrad = models.DateTimeField(auto_now=True, blank=True, verbose_name="PostÄndrad")
+    anvandradav = models.IntegerField(blank=True, null=True, verbose_name="!AnvÄndradAv")
+    anvskapadav = models.IntegerField(blank=True, null=True, verbose_name="!AnvSkapadAv")
+
+    class Meta:
+        managed = False
+        db_table = 'accessionsregister_pers_vy'
+        verbose_name_plural = LEVEL1 + 'accessionsregister_pers_vy'

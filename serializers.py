@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces, Places
-from .models_accessionsregister import Accessionsregister_FormLista
+from .models_accessionsregister import Accessionsregister_FormLista, Accessionsregister_pers
 
 import logging
 logger = logging.getLogger(__name__)
@@ -134,6 +134,7 @@ class PersonsSerializer(serializers.ModelSerializer):
 	# Field image gets full path for some reason: amybe from imagefield or pillow
 	# imagepath as is from database:
 	imagepath = serializers.SerializerMethodField('image_url')
+	source_data = serializers.SerializerMethodField('get_source_data')
 
 	# Field image gets full path for some reason: maybe from imagefield or pillow
 	# image path as is from database
@@ -143,6 +144,17 @@ class PersonsSerializer(serializers.ModelSerializer):
 			url = str(obj.image)
 		# if obj.image == 'one_accession_row':
 		return url
+
+	# Get physical media data from source database (Accessionsregister form table)
+	def get_source_data(self, person):
+		data = None
+		# Only get physical media if archive_row > 0 (0 can be "no value")
+		if person.archive_row is not None:
+			if person.archive_row > 0:
+				qs = Accessionsregister_pers.objects.filter(persid=person.archive_row)
+				serializer = AccessionsPersSerializer(instance=qs, many=True)
+				data = serializer.data
+		return data
 
 	class Meta:
 		model = Persons
@@ -159,7 +171,8 @@ class PersonsSerializer(serializers.ModelSerializer):
 			# 'image',
 			# Returns relative path as it is in the database:
 			'imagepath',
-			'places'
+			'places',
+			'source_data'
 		)
 
 class PersonsMinimalSerializer(serializers.ModelSerializer):
@@ -253,6 +266,30 @@ class AccessionsFormListaSerializer(serializers.ModelSerializer):
 			'count_description',
 			'language',
 			'questionnaire',
+		)
+
+class AccessionsPersSerializer(serializers.ModelSerializer):
+	namn = serializers.CharField()
+	fodd = serializers.CharField()
+	fodd_ar = serializers.IntegerField()
+	kon = serializers.CharField()
+	titel = serializers.CharField()
+	osaker = serializers.CharField()
+	personalia = serializers.CharField()
+	roll = serializers.IntegerField()
+
+	class Meta:
+		model = Accessionsregister_FormLista
+
+		fields = (
+			'namn',
+			'fodd',
+			'fodd_ar',
+			'kon',
+			'titel',
+			'osaker',
+			'personalia',
+			'roll',
 		)
 
 
