@@ -152,8 +152,9 @@ class PersonsSerializer(serializers.ModelSerializer):
 		if person.archive_row is not None:
 			if person.archive_row > 0:
 				qs = Accessionsregister_pers.objects.filter(persid=person.archive_row)
-				serializer = AccessionsPersSerializer(instance=qs, many=True)
-				data = serializer.data
+				if len(qs) > 0:
+					serializer = AccessionsPersSerializer(instance=qs, many=True)
+					data = serializer.data
 		return data
 
 	class Meta:
