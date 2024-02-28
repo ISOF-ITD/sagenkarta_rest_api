@@ -300,6 +300,27 @@ class RecordsMedia(models.Model):
 	store = models.CharField(max_length=20, blank=False, null=False, default='unknown')
 	source = models.CharField(max_length=255, blank=True, null=True)
 	title = models.CharField(max_length=255, blank=True, null=True)
+	text = models.TextField(blank=True, null=True)
+
+	# Transcription task
+	transcriptiontype = models.CharField(max_length=20, blank=True, null=True, default=None, verbose_name='Transkriptionstyp', help_text='Typ av formulär för transkribering')
+	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, verbose_name='Transkriptionstatus', help_text='OBS: one_accession_row ska ha "accession"')
+	transcriptiondate = models.DateTimeField(blank=True, null=True, verbose_name="Transkriptionsdatum")
+	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING, )
+	approvedate = models.DateTimeField(null=True, blank=True, verbose_name="Godkänd datum")
+
+	#Only publish text when transcriptionstatus published
+	def text_to_publish(self):
+		text_to = None
+		if self.text is not None:
+			text_to = 'Denna text håller på att skrivas av, av en användare eller är under behandling.'
+			if self.transcriptionstatus == 'nottranscribable':
+				text_to = 'Denna text går inte att skriva av i nuläget.'
+			# Maybe later show current status of transcription, maybe point to current status in a status list:
+			# text_to = dict(self.transcription_statuses)[str(self.transcriptionstatus)]
+			if self.transcriptionstatus in ['published', 'autopublished'] or self.record_type == 'one_accession_row':
+				text_to = str(self.text)
+		return text_to
 
 	class Meta:
 		managed = False

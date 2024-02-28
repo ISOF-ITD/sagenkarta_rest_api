@@ -221,7 +221,39 @@ class RecordsMetadataSerializer(serializers.ModelSerializer):
 			'value'
 		)
 
+"""
+Serialize RecordsMedia
+
+Title for file type:
+pdf, audio: not transcribed (at all?)
+image: may be transcribed?
+
+Transcription data follow same state logic as serializer for records
+"""
 class RecordsMediaSerializer(serializers.ModelSerializer):
+	text = serializers.CharField(source='text_to_publish')
+	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
+	transcribedby = serializers.SerializerMethodField('transcribed_by')
+
+	"""
+	Only show public transcriptionstatuses
+	"""
+	def public_transcriptionstatus(self, obj):
+		text = obj.transcriptionstatus
+		if obj.transcriptionstatus == 'autopublished':
+			text = 'published'
+		return text
+
+	# transcribed_by is shown if transcriptionstatus is published
+	def transcribed_by(self, obj):
+		text = None
+		# Type image might be transcribed
+		if obj.type == 'image' and obj.transcriptionstatus in ['published', 'autopublished']:
+			if obj.transcribedby is not None:
+				if obj.transcribedby.name is not None:
+					text = str(obj.transcribedby.name)
+		return text
+
 	class Meta:
 		model = RecordsMedia
 
@@ -229,7 +261,14 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 			'type',
 			'source',
 			'store',
-			'title'
+			'title',
+			# Transcription:
+			'text',
+			'transcriptionstatus',
+			'transcriptiontype',
+			'transcribedby',
+			'transcriptiondate',
+			'approvedate'
 		)
 
 class RecordsCategorySerializer(serializers.ModelSerializer):
