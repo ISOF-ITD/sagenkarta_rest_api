@@ -1,6 +1,6 @@
 from django.db.models.functions import Now
 from datetime import datetime
-from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers
+from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers, RecordsMedia
 from django.contrib.auth.models import User
 import requests
 from rest_framework import viewsets, permissions
@@ -461,26 +461,58 @@ class FeedbackViewSet(viewsets.ViewSet):
 
         return [permission() for permission in permission_classes]
 
-"""
-Common method for save transcription
-
-Parameters
-response_status
-set_status_to_transcribed Boolean: True if transcription is finished, i.e. "sent", otherwise only saved temporarily
-"""
 def save_transcription(request, response_message, response_status, set_status_to_transcribed):
+    """
+    Common method for save transcription
+
+    Transcription is save in:
+    -Records if no "page" parameter in request
+    -RecordsMedia if "page" parameter in request
+
+    Parameters in json in request:
+    - recordid: (records.id)
+    - page: filename and path of page (recordsmedia.source)
+    - transcribesession:
+    New data:
+    -message: records.text
+    -recordtitle: records.title
+    -informantName: Persons.name
+    -informantBirthPlace: Persons.birthplace
+    -informantBirthDate: Persons.birth_year
+    -informantInformation: Persons.transcriptioncomment
+    -messageComment: records.comment/records.transcription_comment (even for "page by page" never recordsmedia.comment/recordsmedia.transcription_comment)
+    Transcribed by:
+    -from_name: CrowdSourceUsers.name
+    -from_email: CrowdSourceUsers.email
+
+    Parameters:
+    response_status
+    set_status_to_transcribed Boolean: True if transcription is finished, i.e. "sent", otherwise only saved temporarily
+    """
     if 'json' in request.data:
         jsonData = json.loads(request.data['json'])
         # print(jsonData)
         logger.debug("save_transcription post " + str(jsonData))
         recordid = jsonData['recordid']
+        page_id = None
+        if 'page' in jsonData:
+            page_id = jsonData['page']
 
-        # find record
-        # transcribed_record_arr = []
-        transcribedrecord = None
-        if Records.objects.filter(pk=recordid).exists():
-            transcribedrecord = Records.objects.get(pk=recordid)
-        # transcribed_record_arr += transcribedrecord
+        # find record to transcribe (transcribed_object)
+        transcribed_object = None
+        transcribed_object_parent = None
+        if page_id is None:
+            # find record to transcribe (transcribed_object) as Records-object
+            if Records.objects.filter(pk=recordid).exists():
+                transcribed_object = Records.objects.get(pk=recordid)
+                transcribed_object_parent = transcribed_object
+        else:
+            # find record to transcribe (transcribed_object) as RecordsMedia-object
+            if RecordsMedia.objects.filter(record=recordid, source=page_id).exists():
+                transcribed_object = RecordsMedia.objects.get(record=recordid, source=page_id)
+                transcribed_object_parent = Records.objects.get(pk=recordid)
+
+        # transcribed_record_arr += transcribed_object
         # if len(transcribed_record_arr) == 1:
 
         # Check transcribe session id:
@@ -489,56 +521,57 @@ def save_transcription(request, response_message, response_status, set_status_to
             transcribesession = None
             if 'transcribesession' in jsonData:
                 transcribesession = jsonData['transcribesession']
-            # if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
-            if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+            # if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
+            if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
                 transcribesession_status = True
         # Temporarily avoid transcribesession_status:
         # transcribesession_status = True
         # Check transcribesession_status:
         if transcribesession_status != True:
-            transcribedrecord = None
+            transcribed_object = None
 
         # Check if transcribed (message)
-        if transcribedrecord is not None and 'message' in jsonData:
+        if transcribed_object is not None and 'message' in jsonData:
             # Naive logic: First transcriber of a record saving WINS!
             # Idea for improvement: Somehow make transcription of same record less likely
             statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
                                                 'published', 'autopublished']
-            if transcribedrecord.transcriptionstatus == 'readytotranscribe':
+            if transcribed_object.transcriptionstatus == 'readytotranscribe':
                 response_message = 'OBS: BETAVERSION med begränsat stöd för avskriftstatus: Status avskrift av uppteckningen har inte aktiverats. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
-                if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
+                if transcribed_object.transcriptionstatus in statuses_for_already_transcribed:
                     response_message = 'Uppteckningen skrivs av av en annan användare. Gå gärna tillbaka och välj en annan uppteckning.'
-                if transcribedrecord.transcriptionstatus == 'untranscribed':
+                if transcribed_object.transcriptionstatus == 'untranscribed':
                     response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
             # Only possible to register transcription when status (not already transcribed):
             # ('readytotranscribe'?),'undertranscription':
-            if transcribedrecord.transcriptionstatus == 'undertranscription':
+            if transcribed_object.transcriptionstatus == 'undertranscription':
                 informant = None
                 user = User.objects.filter(username='restapi').first()
                 transcribe_time = 0
-                if transcribedrecord.transcriptiondate is not None:
-                    transcribe_time = datetime.now() - transcribedrecord.transcriptiondate
-                if transcribe_time.total_seconds() > 0:
-                    if transcribedrecord.transcribe_time is None:
-                        transcribedrecord.transcribe_time = int(transcribe_time.total_seconds() / 60)
-                    else:
-                        # Not using "saves before last transcribed":
-                        transcribedrecord.transcribe_time = int(transcribe_time.total_seconds() / 60)
-                        # Note: To handle "saves before last transcribed":
-                        # 1. When first save for this session: make sure transcribe_time starts from zero
-                        # HOW TO: Identify first save for this session?
-                        # 2. Add transcribe times:
-                        # transcribedrecord.transcribe_time = transcribedrecord.transcribe_time + int(transcribe_time.total_seconds() / 60)
-                transcribedrecord.text = jsonData['message']
+                if page_id is None:
+                    if transcribed_object.transcriptiondate is not None:
+                        transcribe_time = datetime.now() - transcribed_object.transcriptiondate
+                    if transcribe_time.total_seconds() > 0:
+                        if transcribed_object.transcribe_time is None:
+                            transcribed_object.transcribe_time = int(transcribe_time.total_seconds() / 60)
+                        else:
+                            # Not using "saves before last transcribed":
+                            transcribed_object.transcribe_time = int(transcribe_time.total_seconds() / 60)
+                            # Note: To handle "saves before last transcribed":
+                            # 1. When first save for this session: make sure transcribe_time starts from zero
+                            # HOW TO: Identify first save for this session?
+                            # 2. Add transcribe times:
+                            # transcribed_object.transcribe_time = transcribed_object.transcribe_time + int(transcribe_time.total_seconds() / 60)
+                transcribed_object.text = jsonData['message']
                 if 'recordtitle' in jsonData:
                     # Validate the string
                     recordtitle = jsonData['recordtitle']
                     if validateString(recordtitle):
-                        transcribedrecord.title = recordtitle
+                        transcribed_object.title = recordtitle
 
                 if set_status_to_transcribed == True:
-                    transcribedrecord.transcriptionstatus = 'transcribed'
-                    transcribedrecord.transcriptiondate = Now()
+                    transcribed_object.transcriptionstatus = 'transcribed'
+                    transcribed_object.transcriptiondate = Now()
 
                     # Save informant when there is an informant name (more than 1 letter)
                     if 'informantName' in jsonData:
@@ -605,14 +638,14 @@ def save_transcription(request, response_message, response_status, set_status_to
 
                                 # Check if records_person relation already exists:
                                 existing_records_person = RecordsPersons.objects.filter(person=informant,
-                                                                                        record=transcribedrecord,
+                                                                                        record=transcribed_object,
                                                                                         relation__in=['i', 'informant']).first()
                                 if existing_records_person is None:
                                     # records_person = RecordsPersons()
-                                    records_person = RecordsPersons(person=informant, record=transcribedrecord,
+                                    records_person = RecordsPersons(person=informant, record=transcribed_object,
                                                                     relation='informant')
                                     # records_person.person = informant.id
-                                    # records_person.record = transcribedrecord.id
+                                    # records_person.record = transcribed_object.id
                                     # records_person.relation = 'informant'
                                     try:
                                         records_person.save()
@@ -621,7 +654,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                                         logger.error("save_transcription records_person.save() Exception %s",e)
                                         # print(e)
 
-                                # transcribedrecord.records_persons = records_person
+                                # transcribed_object.records_persons = records_person
 
                     crowdsource_user = None
                     if 'from_name' in jsonData:
@@ -633,7 +666,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                         if 'from_email' in jsonData:
                             crowdsource_user.email = jsonData['from_email']
                             # Set "transcribed by" when published in admin interface:
-                            # transcribedrecord.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
+                            # transcribed_object.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
 
                         if crowdsource_user.email is not None or crowdsource_user.name is not None:
 
@@ -648,14 +681,14 @@ def save_transcription(request, response_message, response_status, set_status_to
                                 # Use existing
                                 crowdsource_user = existing_crowdsource_user
 
-                        # print(transcribedrecord)
+                        # print(transcribed_object)
                     else:
                         # Add anonymous user:
                         crowdsource_user = CrowdSourceUsers.objects.filter(userid='crowdsource-anonymous').first()
                     if crowdsource_user is not None:
                         # TODO: if user undefined add anonymous user 'crowdsource-anonymous':
                         # if len(crowdsource_user.name) == 0 and len(crowdsource_user.email):
-                        transcribedrecord.transcribedby = crowdsource_user
+                        transcribed_object.transcribedby = crowdsource_user
 
                 # Check if transcribed record should be automatically published
                 # If crowdsource user has role supertranscriber:
@@ -663,8 +696,8 @@ def save_transcription(request, response_message, response_status, set_status_to
                 if crowdsource_user is not None:
                     if "supertranscriber" in crowdsource_user.role:
                         supertranscriber = True
-                        transcribedrecord.transcriptionstatus = "autopublished"
-                        transcribedrecord.publishstatus = "published"
+                        transcribed_object.transcriptionstatus = "autopublished"
+                        transcribed_object.publishstatus = "published"
                         if informant is not None:
                             # Set autopublish for informants not published
                             if informant.transcriptionstatus != 'published':
@@ -673,36 +706,38 @@ def save_transcription(request, response_message, response_status, set_status_to
                 if 'messageComment' in jsonData:
                     if len(jsonData['messageComment']) > 0:
                         if supertranscriber:
-                            if transcribedrecord.comment is None or len(transcribedrecord.comment) < 1:
+                            if transcribed_object_parent.comment is None or len(transcribed_object_parent.comment) < 1:
                                 # If comment empty
-                                transcribedrecord.comment = jsonData['messageComment']
+                                transcribed_object_parent.comment = jsonData['messageComment']
                             else:
                                 # If comment exists
                                 separator = ';'
                                 # If not already registered
-                                if not jsonData['messageComment'] in transcribedrecord.comment:
-                                    transcribedrecord.comment = transcribedrecord.comment + separator + \
+                                if not jsonData['messageComment'] in transcribed_object_parent.comment:
+                                    transcribed_object_parent.comment = transcribed_object_parent.comment + separator + \
                                                                               jsonData['messageComment']
                         else:
-                            if transcribedrecord.transcription_comment is None or len(transcribedrecord.transcription_comment) < 1:
+                            if transcribed_object_parent.transcription_comment is None or len(transcribed_object_parent.transcription_comment) < 1:
                                 # If comment empty
-                                transcribedrecord.transcription_comment = jsonData['messageComment']
+                                transcribed_object_parent.transcription_comment = jsonData['messageComment']
                             else:
                                 # If comment exists
                                 separator = ';'
                                 # If not already registered
-                                if not jsonData['messageComment'] in transcribedrecord.transcription_comment:
-                                    transcribedrecord.transcription_comment = transcribedrecord.transcription_comment + separator + \
+                                if not jsonData['messageComment'] in transcribed_object_parent.transcription_comment:
+                                    transcribed_object_parent.transcription_comment = transcribed_object_parent.transcription_comment + separator + \
                                                                               jsonData['messageComment']
 
                 # Save record
                 try:
-                    transcribedrecord.save()
+                    transcribed_object.save()
+                    if page_id is not None:
+                        transcribed_object_parent.save()
                     response_status = 'true'
-                    logger.info("save_transcription transcribedrecord.save() data %s", str(jsonData))
+                    logger.info("save_transcription transcribed_object.save() data %s", str(jsonData))
                 except Exception as e:
-                    logger.error("save_transcription transcribedrecord.save() Exception data %s", str(jsonData))
-                    logger.error("save_transcription transcribedrecord.save() Exception %s", e)
+                    logger.error("save_transcription transcribed_object.save() Exception data %s", str(jsonData))
+                    logger.error("save_transcription transcribed_object.save() Exception %s", e)
                     # print(e)
             else:
                 if response_message is None:
@@ -719,6 +754,13 @@ def validateString(string):
     return False
 
 class TranscribeViewSet(viewsets.ViewSet):
+    """
+    Save and terminate transcribe session with session id
+
+    Transcription is saved in:
+    -Records if no "page" parameter in request
+    -RecordsMedia if "page" parameter in request
+    """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
@@ -745,6 +787,13 @@ class TranscribeViewSet(viewsets.ViewSet):
         return [permission() for permission in permission_classes]
 
 class TranscribeSaveViewSet(viewsets.ViewSet):
+    """
+    Save without terminating transcribe session with session id
+
+    Transcription is saved in:
+    -Records if no "page" parameter in request
+    -RecordsMedia if "page" parameter in request
+    """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
@@ -772,6 +821,18 @@ class TranscribeSaveViewSet(viewsets.ViewSet):
 
 
 class TranscribeStartViewSet(viewsets.ViewSet):
+    """
+    Start transcribe session with session id
+
+    Transcription is saved in:
+    -Records if no "page" parameter in request
+    -RecordsMedia if "page" parameter in request
+
+    Parameters in json in request:
+    - recordid: (records.id)
+    - page: filename and path of page (recordsmedia.source)
+    - transcribesession:
+    """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
@@ -789,23 +850,38 @@ class TranscribeStartViewSet(viewsets.ViewSet):
             logger.debug("TranscribeStartViewSet post " + str(jsonData))
             recordid = jsonData['recordid']
 
-            # find record
-            transcribedrecord = None
-            if Records.objects.filter(pk=recordid).exists():
-                transcribedrecord = Records.objects.get(pk=recordid)
-            if transcribedrecord is not None:
-                if transcribedrecord.transcriptionstatus == 'readytotranscribe':
-                    transcribedrecord.transcriptionstatus = 'undertranscription'
-                    transcribedrecord.transcriptiondate = Now()
+            page_id = None
+            if 'page' in jsonData:
+                page_id = jsonData['page']
+
+            # find record to transcribe (transcribed_object)
+            transcribed_object = None
+            if page_id is None:
+                # find record to transcribe (transcribed_object) as Records-object
+                if Records.objects.filter(pk=recordid).exists():
+                    transcribed_object = Records.objects.get(pk=recordid)
+            else:
+                # find record to transcribe (transcribed_object) as RecordsMedia-object
+                if RecordsMedia.objects.filter(record=recordid, source=page_id).exists():
+                    transcribed_object = RecordsMedia.objects.get(record=recordid, source=page_id)
+
+            if transcribed_object is not None:
+                if transcribed_object.transcriptionstatus == 'readytotranscribe':
+                    transcribed_object.transcriptionstatus = 'undertranscription'
+                    transcribed_object.transcriptiondate = Now()
 
                     try:
-                        transcribedrecord.save()
+                        transcribed_object.save()
                         response_status = 'true'
                         # Temporary transcribe session id:
-                        # jsonData['transcribesession'] = str(transcribedrecord.changedate)
+                        # jsonData['transcribesession'] = str(transcribed_object.changedate)
                         # Temporary transcribe session id: transcriptiondate
                         # Get saved transcriptiondate from database:
-                        transcribedrecord2 = Records.objects.get(pk=recordid)
+                        if page_id is None:
+                            transcribedrecord2 = Records.objects.get(pk=recordid)
+                        else:
+                            transcribedrecord2 = RecordsMedia.objects.get(record=recordid, source=page_id)
+
                         if transcribedrecord2 is not None:
                             jsonData['transcribesession'] = str(transcribedrecord2.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
                         logger.debug("TranscribeStartViewSet data %s", jsonData)
@@ -816,11 +892,11 @@ class TranscribeStartViewSet(viewsets.ViewSet):
                 else:
                     response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
                     statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved', 'published', 'autopublished']
-                    if transcribedrecord.transcriptionstatus == 'undertranscription':
+                    if transcribed_object.transcriptionstatus == 'undertranscription':
                         response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
-                    if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
+                    if transcribed_object.transcriptionstatus in statuses_for_already_transcribed:
                         response_message = 'Uppteckningen skrivs av av en annan användare. Gå gärna tillbaka och välj en annan uppteckning.'
-                    if transcribedrecord.transcriptionstatus == 'untranscribed':
+                    if transcribed_object.transcriptionstatus == 'untranscribed':
                         response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
             else:
                 response_message = 'Ett oväntat fel: Posten finns inte eller hör inte till avskriftsessionen!'
@@ -837,6 +913,18 @@ class TranscribeStartViewSet(viewsets.ViewSet):
         return [permission() for permission in permission_classes]
 
 class TranscribeCancelViewSet(viewsets.ViewSet):
+    """
+    Cancel transcribe session with session id
+
+    Transcription is saved in:
+    -Records if no "page" parameter in request
+    -RecordsMedia if "page" parameter in request
+
+    Parameters in json in request:
+    - recordid: (records.id)
+    - page: filename and path of page (recordsmedia.source)
+    - transcribesession:
+    """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
@@ -852,30 +940,39 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
             jsonData = json.loads(request.data['json'])
             # print(jsonData)
             logger.debug("TranscribeCancelViewSet post " + str(jsonData))
+
             recordid = None
             if 'recordid' in jsonData:
                 recordid = jsonData['recordid']
-            else:
-                logger.error("TranscribeCancelViewSet No recordid data %s", str(jsonData))
+            page_id = None
+            if 'page' in jsonData:
+                page_id = jsonData['page']
 
-            # find record
-            transcribedrecord = None
-            if Records.objects.filter(pk=recordid).exists():
-                transcribedrecord = Records.objects.get(pk=recordid)
-            if transcribedrecord is not None:
+            # find record to transcribe (transcribed_object)
+            transcribed_object = None
+            if page_id is None:
+                # find record to transcribe (transcribed_object) as Records-object
+                if Records.objects.filter(pk=recordid).exists():
+                    transcribed_object = Records.objects.get(pk=recordid)
+            else:
+                # find record to transcribe (transcribed_object) as RecordsMedia-object
+                if RecordsMedia.objects.filter(record=recordid, source=page_id).exists():
+                    transcribed_object = RecordsMedia.objects.get(record=recordid, source=page_id) #.first()
+
+            if transcribed_object is not None:
                 transcribesession = None
                 changedate = 'None'
                 if 'transcribesession' in jsonData:
                     transcribesession = jsonData['transcribesession']
                 # Check transcription session:
                 if transcribesession is not None:
-                    # if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
-                    if str(transcribedrecord.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
-                        if transcribedrecord.transcriptionstatus == 'undertranscription':
-                            transcribedrecord.transcriptionstatus = 'readytotranscribe'
+                    # if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
+                    if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                        if transcribed_object.transcriptionstatus == 'undertranscription':
+                            transcribed_object.transcriptionstatus = 'readytotranscribe'
 
                             try:
-                                transcribedrecord.save()
+                                transcribed_object.save()
                                 response_status = 'true'
                                 logger.debug("TranscribeCancelViewSet data %s", str(jsonData))
                             except Exception as e:
@@ -886,11 +983,11 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                             response_message = 'OBS BETAVERSION! Åtgärdsförslag finns för att undvika detta: Posten är redan avskriven och under behandling.'
                             statuses_for_already_transcribed = ['transcribed', 'reviewing', 'needsimprovement', 'approved',
                                                                 'published', 'autopublished']
-                            if transcribedrecord.transcriptionstatus == 'undertranscription':
+                            if transcribed_object.transcriptionstatus == 'undertranscription':
                                 response_message = 'Enkel konfliktlösning vid förhoppning om ett minimum av konflikter: Den som börjar först vinner. Om detta händer och du vill meddela isof: Tryck "Frågor och synpunkter" och förklara i meddelandetexten.'
-                            if transcribedrecord.transcriptionstatus in statuses_for_already_transcribed:
+                            if transcribed_object.transcriptionstatus in statuses_for_already_transcribed:
                                 response_message = 'Uppteckningen skrivs av av en annan användare. Gå gärna tillbaka och välj en annan uppteckning.'
-                            if transcribedrecord.transcriptionstatus == 'untranscribed':
+                            if transcribed_object.transcriptionstatus == 'untranscribed':
                                 response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
                     else:
                         response_message = 'Ett oväntat fel: Posten finns men i annan användarsession!'
