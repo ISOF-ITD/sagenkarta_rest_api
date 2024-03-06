@@ -318,7 +318,7 @@ class RecordsMedia(models.Model):
 				text_to = 'Denna text går inte att skriva av i nuläget.'
 			# Maybe later show current status of transcription, maybe point to current status in a status list:
 			# text_to = dict(self.transcription_statuses)[str(self.transcriptionstatus)]
-			if self.transcriptionstatus in ['published', 'autopublished'] or self.record_type == 'one_accession_row':
+			if self.transcriptionstatus in ['published', 'autopublished']:
 				text_to = str(self.text)
 		return text_to
 
