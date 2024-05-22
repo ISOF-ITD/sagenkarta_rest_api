@@ -747,6 +747,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                     response_message = 'Ett oväntat fel: Inte redo för transkribering.'
         else:
             response_message = 'Ett oväntat fel: ' + ('transcribed_object saknas' if transcribed_object is None else '') + '. felaktigt sessions-id eller inget json-data.'
+            + 'transcribesession_status är: ' + str(transcribesession_status)
     else:
         response_message = 'Ett oväntat fel: Error in request'
     return jsonData, response_message, response_status
