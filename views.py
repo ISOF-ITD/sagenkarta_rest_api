@@ -527,6 +527,10 @@ def save_transcription(request, response_message, response_status, set_status_to
         # Temporarily avoid transcribesession_status:
         # transcribesession_status = True
         # Check transcribesession_status:
+        compare_sessions = [
+            str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')),
+            transcribesession
+        ]
         if transcribesession_status != True:
             transcribed_object = None
 
@@ -746,7 +750,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                 if response_message is None:
                     response_message = 'Ett oväntat fel: Inte redo för transkribering.'
         else:
-            response_message = 'Ett oväntat fel: ' + ('transcribed_object saknas' if transcribed_object is None else '') + '. felaktigt sessions-id eller inget json-data.' + 'transcribesession_status är: ' + str(transcribesession_status)
+            response_message = 'Ett oväntat fel: ' + ('transcribed_object saknas' if transcribed_object is None else '') + '. felaktigt sessions-id eller inget json-data. ' + 'transcribesession_status är: ' + str(transcribesession_status) + ' compare_sessions: ' + str(compare_sessions)
     else:
         response_message = 'Ett oväntat fel: Error in request'
     return jsonData, response_message, response_status
