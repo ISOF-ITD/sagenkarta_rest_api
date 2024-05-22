@@ -544,7 +544,10 @@ def save_transcription(request, response_message, response_status, set_status_to
                     response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
             # Only possible to register transcription when status (not already transcribed):
             # ('readytotranscribe'?),'undertranscription':
-            if transcribed_object.transcriptionstatus == 'undertranscription':
+            
+            # följande gäller bara hela dokument. på sidnivå finns inte "undertranscription" eftersom vi inte låser på sidnivå. man
+            # ska istället kolla om det är "readytotranscribe" och hela dokumentet är "undertranscription".
+            if (page_id is None and transcribed_object.transcriptionstatus == 'undertranscription') or (page_id is not None and transcribed_object.transcriptionstatus == 'readytotranscribe' and transcribed_object_parent.transcriptionstatus == 'undertranscription'):
                 informant = None
                 user = User.objects.filter(username='restapi').first()
                 transcribe_time = 0
