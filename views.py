@@ -522,20 +522,20 @@ def save_transcription(request, response_message, response_status, set_status_to
             if 'transcribesession' in jsonData:
                 transcribesession = jsonData['transcribesession']
             # if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
-            if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
-                transcribesession_status = True
+            if page_id is None:
+                if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                    transcribesession_status = True
+            else:
+                if str(transcribed_object_parent.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                    transcribesession_status = True
         # Temporarily avoid transcribesession_status:
         # transcribesession_status = True
         # Check transcribesession_status:
         compare_sessions = [
             str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')),
+            transcribed_object_parent.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S'),
             transcribesession
         ]
-        # show me all properties
-        transcribed_object_as_string = str({
-            'archive_id': transcribed_object.archive_id,
-            'archive_id_row': transcribed_object.archive_id_row,
-            })
         if transcribesession_status != True:
             transcribed_object = None
 
@@ -755,7 +755,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                 if response_message is None:
                     response_message = 'Ett oväntat fel: Inte redo för transkribering.'
         else:
-            response_message = 'Ett oväntat fel: ' + ('transcribed_object saknas' if transcribed_object is None else '') + '. felaktigt sessions-id eller inget json-data. ' + 'transcribesession_status är: ' + str(transcribesession_status) + ' compare_sessions: ' + str(compare_sessions) + ' transcribed_object_as_string: ' + str(transcribed_object_as_string)
+            response_message = 'Ett oväntat fel: ' + ('transcribed_object saknas' if transcribed_object is None else '') + '. felaktigt sessions-id eller inget json-data. ' + 'transcribesession_status är: ' + str(transcribesession_status) + ' compare_sessions: ' + str(compare_sessions) 
     else:
         response_message = 'Ett oväntat fel: Error in request'
     return jsonData, response_message, response_status
