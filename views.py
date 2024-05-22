@@ -533,9 +533,8 @@ def save_transcription(request, response_message, response_status, set_status_to
         ]
         # show me all properties
         transcribed_object_as_string = str({
-            'recordid': transcribed_object.id,
-            'recordtitle': transcribed_object.title,
-            'recordtext': transcribed_object.text,
+            'archive_id': transcribed_object.archive_id,
+            'archive_id_row': transcribed_object.archive_id_row,
             })
         if transcribesession_status != True:
             transcribed_object = None
