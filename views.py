@@ -531,7 +531,12 @@ def save_transcription(request, response_message, response_status, set_status_to
             str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')),
             transcribesession
         ]
-        transcribed_object_as_string = str(transcribed_object)
+        # show me all properties
+        transcribed_object_as_string = str({
+            'recordid': transcribed_object.id,
+            'recordtitle': transcribed_object.title,
+            'recordtext': transcribed_object.text,
+            })
         if transcribesession_status != True:
             transcribed_object = None
 
