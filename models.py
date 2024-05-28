@@ -312,7 +312,7 @@ class RecordsMedia(models.Model):
 	#Only publish text when transcriptionstatus published
 	def text_to_publish(self):
 		text_to = None
-		if self.text is not None:
+		if self.text is not None or self.text is not '':
 			text_to = 'Denna text håller på att skrivas av, av en användare eller är under behandling.'
 			if self.transcriptionstatus == 'nottranscribable':
 				text_to = 'Denna text går inte att skriva av i nuläget.'
