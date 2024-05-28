@@ -688,6 +688,8 @@ def save_transcription(request, response_message, response_status, set_status_to
                             if existing_crowdsource_user is None:
                                 # print(crowdsource_user)
                                 # Save new
+                                # (1048, "Column 'createdate' cannot be null")
+                                crowdsource_user.createdate = Now()
                                 crowdsource_user.save()
                             else:
                                 # Use existing
