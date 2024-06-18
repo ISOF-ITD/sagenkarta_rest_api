@@ -11,7 +11,7 @@ mysqlclient==2.1.1 # ubuntu-py3.8 works even this error: error: invalid command 
 #Pillow==8.2.0
 #python 3.8:
 Pillow==9.4.0
-# djangorestframework is used by Sagenkarta-ES-API
+# djangorestframework is used by sagenkarta_rest_api and  sagendatabas_es_api
 # djangorestframework==3.7.3
 # Version in PlaceNameService:
 #djangorestframework==3.11.0
@@ -27,9 +27,8 @@ django-cors-headers==3.10.1
 # django-csp==3.6
 # Used in external proxy services as LantmaterietProxyView:
 # django-revproxy==0.9.13
-# Newer version not yet tested:
-# django-revproxy==0.10.0
--e git+https://git@github.com/jazzband/django-revproxy@master#egg=django-revproxy
+django-revproxy==0.12.0
+# -e git+https://git@github.com/jazzband/django-revproxy@master#egg=django-revproxy
 # Testing error
 # File "/home/perla331/sagendatabas/sagenkarta_rest_api/urls.py", line 7, in <module>
 #    router.register(r'records', views.RecordsViewSet, base_name='record')
