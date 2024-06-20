@@ -17,6 +17,7 @@ from string import Template
 
 from django.db import models
 from django.db.models.deletion import *
+from requests.auth import HTTPBasicAuth
 
 from . import config
 
@@ -389,13 +390,32 @@ def records_post_saved(sender, **kwargs):
 			es_mapping_type = ''
 			# Old ES-mapping-type:
 			#es_mapping_type = 'legend/'
+			host = config.host
+			protocol = config.protocol
+			index_name = config.index_name
+			user = None
+			password = None
+			if hasattr(config, 'user'):
+				user = config.user
+				password = config.password
+			authentication_type_ES8 = False
+			if hasattr(config, 'es_version'):
+				if (config.es_version == '8'):
+					authentication_type_ES8 = True
+
 			#Use Index API  _doc (Update API _update seems not to work here in ES7):
-			esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_doc/'+str(modelId)
+			#esUrl = config.protocol+(config.user+':'+config.password+'@' if hasattr(config, 'user') else '')+config.host+'/'+config.index_name+'/_doc/'+str(modelId)
+			#Authentication not in url from ES8:
+			esUrl = protocol + host + '/' + index_name + '/_doc/' + str(modelId)
 			# Elasticsearch 6 seems to need headers:
 			headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 			try:
-				esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False, headers=headers)
+				if authentication_type_ES8 == True and user is not None:
+					esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False, headers=headers, auth=HTTPBasicAuth(user, password))
+				else:
+					esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False,
+											   headers=headers)
 			except Exception as e:
 				logger.error("records_post_saved post: Exception: %s", str(document))
 				logger.error("records_post_saved post: Exception: %s",e)
