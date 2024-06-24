@@ -417,7 +417,7 @@ def records_post_saved(sender, **kwargs):
 					esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False,
 											   headers=headers)
 			except Exception as e:
-				logger.error("records_post_saved post: Exception: %s %s", str(document))
+				logger.error("records_post_saved post: Exception: %s %s", e, str(document))
 				logger.error("records_post_saved post: Exception: %s",e)
 			logger.info("records_post_saved post: url, user, authentication_type_ES8, esResponse %s %s %s %s ", esUrl, user, authentication_type_ES8, esResponse)
 
