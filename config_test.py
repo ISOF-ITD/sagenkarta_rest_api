@@ -1,6 +1,9 @@
 from . import secrets_env
 
 host = secrets_env.host
+user = secrets_env.user
+password = secrets_env.password
+es_version = '8'
 index_name = 'isof-publik'
 protocol = 'http://'
 cert_file = False
