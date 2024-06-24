@@ -409,7 +409,7 @@ def records_post_saved(sender, **kwargs):
 			esUrl = protocol + host + '/' + index_name + '/_doc/' + str(modelId)
 			# Elasticsearch 6 seems to need headers:
 			headers = {'Accept': 'application/json', 'content-type': 'application/json'}
-
+			esResponse = None
 			try:
 				if authentication_type_ES8 == True and user is not None:
 					esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False, headers=headers, auth=HTTPBasicAuth(user, password))
@@ -417,9 +417,9 @@ def records_post_saved(sender, **kwargs):
 					esResponse = requests.post(esUrl, data=json.dumps(document).encode('utf-8'), verify=False,
 											   headers=headers)
 			except Exception as e:
-				logger.error("records_post_saved post: Exception: %s", str(document))
+				logger.error("records_post_saved post: Exception: %s %s", str(document))
 				logger.error("records_post_saved post: Exception: %s",e)
-			logger.info("records_post_saved post: url, esResponse %s %s ", esUrl, esResponse)
+			logger.info("records_post_saved post: url, user, authentication_type_ES8, esResponse %s %s ", esUrl, user, authentication_type_ES8, esResponse)
 
 			if esResponse is not None:
 				# Log errors
