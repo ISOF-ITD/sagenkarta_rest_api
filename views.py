@@ -94,6 +94,11 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
             recordtype_values = recordtype.split(',')
             filters['record_type__in'] = recordtype_values
 
+        transcriptionstatus = self.request.query_params.get('transcriptionstatus', None)
+        if transcriptionstatus is not None:
+            transcriptionstatus_values = transcriptionstatus.split(',')
+            filters['transcriptionstatus__in'] = transcriptionstatus_values
+
         import_batch = self.request.query_params.get('import_batch', None)
         if import_batch is not None:
             import_batch_values = import_batch.split(',')
@@ -108,6 +113,13 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
         if update_status is not None:
             update_status_values = update_status.split(',')
             filters['update_status__in'] = update_status_values
+
+        # http://localhost:8000/api/records/?offset=0&transcriptiondate_after=2024-01-01
+        # http://localhost:8000/api/records/?offset=0&transcriptionstatus=published,autopublished&transcriptiondate_after=2024-01-01
+        transcriptiondate_after = self.request.query_params.get('transcriptiondate_after', None)
+        if transcriptiondate_after is not None:
+            # Add the date filter to your existing filters
+            filters['transcriptiondate__gte'] = transcriptiondate_after
 
         person = self.request.query_params.get('person', None)
         if person is not None:
