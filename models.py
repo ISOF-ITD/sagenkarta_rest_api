@@ -419,7 +419,7 @@ def records_post_saved(sender, **kwargs):
 			except Exception as e:
 				logger.error("records_post_saved post: Exception: %s %s", str(document))
 				logger.error("records_post_saved post: Exception: %s",e)
-			logger.info("records_post_saved post: url, user, authentication_type_ES8, esResponse %s %s ", esUrl, user, authentication_type_ES8, esResponse)
+			logger.info("records_post_saved post: url, user, authentication_type_ES8, esResponse %s %s %s %s ", esUrl, user, authentication_type_ES8, esResponse)
 
 			if esResponse is not None:
 				# Log errors
