@@ -475,7 +475,7 @@ class FeedbackViewSet(viewsets.ViewSet):
 
 def save_transcription(request, response_message, response_status, set_status_to_transcribed):
     """
-    Common method for save transcription
+    Shared method for save transcription
 
     Transcription is save in:
     -Records if no "page" parameter in request
@@ -568,24 +568,15 @@ def save_transcription(request, response_message, response_status, set_status_to
             
             # följande gäller bara hela dokument. på sidnivå finns inte "undertranscription" eftersom vi inte låser på sidnivå. man
             # ska istället kolla om det är "readytotranscribe" och hela dokumentet är "undertranscription".
+            # Regel:
+            # 1. Om "sida för sida": Kolla att status är undertranscription
+            # 2. Om inte "sida för sida": Kolla att transcriptionstatus på record är undertranscription samt sidans transcriptionstatus ska vara readytotranscribe
             if (page_id is None and transcribed_object.transcriptionstatus == 'undertranscription') or (page_id is not None and transcribed_object.transcriptionstatus == 'readytotranscribe' and transcribed_object_parent.transcriptionstatus == 'undertranscription'):
                 informant = None
                 user = User.objects.filter(username='restapi').first()
-                transcribe_time = 0
-                if page_id is None:
-                    if transcribed_object.transcriptiondate is not None:
-                        transcribe_time = datetime.now() - transcribed_object.transcriptiondate
-                    if transcribe_time.total_seconds() > 0:
-                        if transcribed_object.transcribe_time is None:
-                            transcribed_object.transcribe_time = int(transcribe_time.total_seconds() / 60)
-                        else:
-                            # Not using "saves before last transcribed":
-                            transcribed_object.transcribe_time = int(transcribe_time.total_seconds() / 60)
-                            # Note: To handle "saves before last transcribed":
-                            # 1. When first save for this session: make sure transcribe_time starts from zero
-                            # HOW TO: Identify first save for this session?
-                            # 2. Add transcribe times:
-                            # transcribed_object.transcribe_time = transcribed_object.transcribe_time + int(transcribe_time.total_seconds() / 60)
+                calculate_transcribe_time(page_id, transcribed_object)
+
+                # Set data from json
                 transcribed_object.text = jsonData['message']
                 if 'recordtitle' in jsonData:
                     # Validate the string
@@ -599,115 +590,12 @@ def save_transcription(request, response_message, response_status, set_status_to
 
                     # Save informant when there is an informant name (more than 1 letter)
                     if 'informantName' in jsonData:
-                        if len(jsonData['informantName']) > 1:
-                            informant = Persons()
-                            informant.id = 'crwd' + recordid
-                            informant.name = jsonData['informantName']
-                            if 'informantBirthPlace' in jsonData:
-                                informant.birthplace = jsonData['informantBirthPlace']
-                                # informant.biography = 'BirthPlace: ' + jsonData['informantBirthPlace'] + 'Extra: ' + jsonData['informantInformation']
-                            if 'informantBirthDate' in jsonData:
-                                if jsonData['informantBirthDate'].isdigit():
-                                    informant.birth_year = jsonData['informantBirthDate']
-
-                            # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
-                            # Check if a informant that is crowdsourced already exists
-                            # to avoid lots of rows with the same informant data.
-                            # Very likely same informant if:
-                            # Name, birth year and birthplace exactly the same.
-                            # 'Field under "informant"' is saved in person.transcriptioncomment
-                            existing_person = Persons.objects.filter(name=informant.name,
-                                                                     birth_year=informant.birth_year,
-                                                                     birthplace=informant.birthplace).first()
-                            if existing_person is None:
-                                logger.debug(informant)
-                                informant.transcriptionstatus = 'transcribed'
-                                informant.createdby = user
-                                informant.editedby = user
-                                informant.createdate = Now()
-                            else:
-                                # Use existing informant
-                                informant = existing_person
-
-                            if informant is not None:
-                                if 'informantInformation' in jsonData:
-                                    informantInformation = jsonData['informantInformation']
-                                    # Check if informant.transcriptioncomment is empty
-                                    if informant.transcriptioncomment is None:
-                                        # Set informant.transcriptioncomment to informantInformation
-                                        informant.transcriptioncomment = informantInformation
-                                    # Else: informant.transcriptioncomment is not empty
-                                    else:
-                                        # check if informantInformation already exists as substring in informant.transcriptioncomment
-                                        if informantInformation not in informant.transcriptioncomment:
-                                            # Append informantInformation to informant.transcriptioncomment, separated by ';'
-                                            informant.transcriptioncomment = informant.transcriptioncomment + ';' + informantInformation
-                                            # cut off any leading or trailing spaces or ';'
-                                            informant.transcriptioncomment = informant.transcriptioncomment.strip()
-                                            informant.transcriptioncomment = informant.transcriptioncomment.strip(';')
-                                    
-                                    # cut off informant.transcriptioncomment if longer than 255 characters and add '...'
-                                    if len(informant.transcriptioncomment) > 250:
-                                        informant.transcriptioncomment = informant.transcriptioncomment[:250] + '...'
-
-
-                                # Save new or updated informant
-                                try:
-                                    # informant.createdate = Now()
-                                    informant.save()
-                                except Exception as e:
-                                    logger.error("save_transcription informant.save() Exception data %s", str(jsonData))
-                                    logger.error("save_transcription informant.save() Exception %s",e)
-                                    # print(e)
-
-                                # Check if records_person relation already exists:
-                                existing_records_person = RecordsPersons.objects.filter(person=informant,
-                                                                                        record=transcribed_object,
-                                                                                        relation__in=['i', 'informant']).first()
-                                if existing_records_person is None:
-                                    # records_person = RecordsPersons()
-                                    records_person = RecordsPersons(person=informant, record=transcribed_object,
-                                                                    relation='informant')
-                                    # records_person.person = informant.id
-                                    # records_person.record = transcribed_object.id
-                                    # records_person.relation = 'informant'
-                                    try:
-                                        records_person.save()
-                                    except Exception as e:
-                                        logger.debug("save_transcription records_person.save() Exception data %s", str(jsonData))
-                                        logger.error("save_transcription records_person.save() Exception %s",e)
-                                        # print(e)
-
-                                # transcribed_object.records_persons = records_person
+                        informant = save_informant_to_record(informant, jsonData, recordid, transcribed_object, user)
 
                     crowdsource_user = None
+                    # Save crowdsource_user when there is a from name
                     if 'from_name' in jsonData:
-                        crowdsource_user = CrowdSourceUsers()
-                        # TODO: Find unique id if transcription rejected and new user starts with same recordid
-                        crowdsource_user.userid = 'rid' + recordid
-                        # crowdsource_user gets default values for: role
-                        crowdsource_user.name = jsonData['from_name']
-                        if 'from_email' in jsonData:
-                            crowdsource_user.email = jsonData['from_email']
-                            # Set "transcribed by" when published in admin interface:
-                            # transcribed_object.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
-
-                        if crowdsource_user.email is not None or crowdsource_user.name is not None:
-
-                            # Check if crowdsource user already exists:
-                            existing_crowdsource_user = CrowdSourceUsers.objects.filter(name=crowdsource_user.name,
-                                                                                        email=crowdsource_user.email).first()
-                            if existing_crowdsource_user is None:
-                                # print(crowdsource_user)
-                                # Save new
-                                # (1048, "Column 'createdate' cannot be null")
-                                crowdsource_user.createdate = Now()
-                                crowdsource_user.save()
-                            else:
-                                # Use existing
-                                crowdsource_user = existing_crowdsource_user
-
-                        # print(transcribed_object)
+                        crowdsource_user = save_crowdsource_user(crowdsource_user, jsonData, recordid)
                     else:
                         # Add anonymous user:
                         crowdsource_user = CrowdSourceUsers.objects.filter(userid='crowdsource-anonymous').first()
@@ -773,6 +661,143 @@ def save_transcription(request, response_message, response_status, set_status_to
     else:
         response_message = 'Ett oväntat fel: Error in request'
     return jsonData, response_message, response_status
+
+def calculate_transcribe_time(page_id, transcribed_object):
+    """
+    Calculate transcribe time
+    """
+    transcribe_time = 0
+    if page_id is None:
+        if transcribed_object.transcriptiondate is not None:
+            transcribe_time = datetime.now() - transcribed_object.transcriptiondate
+        if transcribe_time.total_seconds() > 0:
+            if transcribed_object.transcribe_time is None:
+                transcribed_object.transcribe_time = int(transcribe_time.total_seconds() / 60)
+            else:
+                # Not using "saves before last transcribed":
+                transcribed_object.transcribe_time = int(transcribe_time.total_seconds() / 60)
+                # Note: To handle "saves before last transcribed":
+                # 1. When first save for this session: make sure transcribe_time starts from zero
+                # HOW TO: Identify first save for this session?
+                # 2. Add transcribe times:
+                # transcribed_object.transcribe_time = transcribed_object.transcribe_time + int(transcribe_time.total_seconds() / 60)
+
+def save_crowdsource_user(crowdsource_user, jsonData, recordid):
+    """
+    save_crowdsource_user if in input json data
+    """
+    crowdsource_user = CrowdSourceUsers()
+    # TODO: Find unique id if transcription rejected and new user starts with same recordid
+    crowdsource_user.userid = 'rid' + recordid
+    # crowdsource_user gets default values for: role
+    crowdsource_user.name = jsonData['from_name']
+    if 'from_email' in jsonData:
+        crowdsource_user.email = jsonData['from_email']
+        # Set "transcribed by" when published in admin interface:
+        # transcribed_object.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
+    if crowdsource_user.email is not None or crowdsource_user.name is not None:
+
+        # Check if crowdsource user already exists:
+        existing_crowdsource_user = CrowdSourceUsers.objects.filter(name=crowdsource_user.name,
+                                                                    email=crowdsource_user.email).first()
+        if existing_crowdsource_user is None:
+            # print(crowdsource_user)
+            # Save new
+            # (1048, "Column 'createdate' cannot be null")
+            crowdsource_user.createdate = Now()
+            crowdsource_user.save()
+        else:
+            # Use existing
+            crowdsource_user = existing_crowdsource_user
+    # print(transcribed_object)
+    return crowdsource_user
+
+
+def save_informant_to_record(informant, jsonData, recordid, transcribed_object, user):
+    """
+    save informant to record if in input json data
+    """
+    if len(jsonData['informantName']) > 1:
+        informant = Persons()
+        informant.id = 'crwd' + recordid
+        informant.name = jsonData['informantName']
+        if 'informantBirthPlace' in jsonData:
+            informant.birthplace = jsonData['informantBirthPlace']
+            # informant.biography = 'BirthPlace: ' + jsonData['informantBirthPlace'] + 'Extra: ' + jsonData['informantInformation']
+        if 'informantBirthDate' in jsonData:
+            if jsonData['informantBirthDate'].isdigit():
+                informant.birth_year = jsonData['informantBirthDate']
+
+        # if 'informantBirthPlace' in jsonData and 'informantBirthDate' in jsonData:
+        # Check if a informant that is crowdsourced already exists
+        # to avoid lots of rows with the same informant data.
+        # Very likely same informant if:
+        # Name, birth year and birthplace exactly the same.
+        # 'Field under "informant"' is saved in person.transcriptioncomment
+        existing_person = Persons.objects.filter(name=informant.name,
+                                                 birth_year=informant.birth_year,
+                                                 birthplace=informant.birthplace).first()
+        if existing_person is None:
+            logger.debug(informant)
+            informant.transcriptionstatus = 'transcribed'
+            informant.createdby = user
+            informant.editedby = user
+            informant.createdate = Now()
+        else:
+            # Use existing informant
+            informant = existing_person
+
+        if informant is not None:
+            if 'informantInformation' in jsonData:
+                informantInformation = jsonData['informantInformation']
+                # Check if informant.transcriptioncomment is empty
+                if informant.transcriptioncomment is None:
+                    # Set informant.transcriptioncomment to informantInformation
+                    informant.transcriptioncomment = informantInformation
+                # Else: informant.transcriptioncomment is not empty
+                else:
+                    # check if informantInformation already exists as substring in informant.transcriptioncomment
+                    if informantInformation not in informant.transcriptioncomment:
+                        # Append informantInformation to informant.transcriptioncomment, separated by ';'
+                        informant.transcriptioncomment = informant.transcriptioncomment + ';' + informantInformation
+                        # cut off any leading or trailing spaces or ';'
+                        informant.transcriptioncomment = informant.transcriptioncomment.strip()
+                        informant.transcriptioncomment = informant.transcriptioncomment.strip(';')
+
+                # cut off informant.transcriptioncomment if longer than 255 characters and add '...'
+                if len(informant.transcriptioncomment) > 250:
+                    informant.transcriptioncomment = informant.transcriptioncomment[:250] + '...'
+
+            # Save new or updated informant
+            try:
+                # informant.createdate = Now()
+                informant.save()
+            except Exception as e:
+                logger.error("save_transcription informant.save() Exception data %s", str(jsonData))
+                logger.error("save_transcription informant.save() Exception %s", e)
+                # print(e)
+
+            # Check if records_person relation already exists:
+            existing_records_person = RecordsPersons.objects.filter(person=informant,
+                                                                    record=transcribed_object,
+                                                                    relation__in=['i', 'informant']).first()
+            if existing_records_person is None:
+                # records_person = RecordsPersons()
+                records_person = RecordsPersons(person=informant, record=transcribed_object,
+                                                relation='informant')
+                # records_person.person = informant.id
+                # records_person.record = transcribed_object.id
+                # records_person.relation = 'informant'
+                try:
+                    records_person.save()
+                except Exception as e:
+                    logger.debug("save_transcription records_person.save() Exception data %s", str(jsonData))
+                    logger.error("save_transcription records_person.save() Exception %s", e)
+                    # print(e)
+
+            # transcribed_object.records_persons = records_person
+    return informant
+
 
 def validateString(string):
     if string is not None:
