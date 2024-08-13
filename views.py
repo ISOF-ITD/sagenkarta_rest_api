@@ -1019,8 +1019,16 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                 if transcribesession is not None:
                     # if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
                     if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                        no_pages_to_transcribe = False
+                        # If page-by-page check if all pages transcribed (or no pages to transcribe)
+                        if transcribed_object.transcriptiontype == 'sida':
+                            if not RecordsMedia.objects.filter(record=recordid, transcriptionstatus='readytotranscribe').exists():
+                                no_pages_to_transcribe = True
+
                         if transcribed_object.transcriptionstatus == 'undertranscription':
                             transcribed_object.transcriptionstatus = 'readytotranscribe'
+                            if no_pages_to_transcribe:
+                                transcribed_object.transcriptionstatus = 'transcribed'
 
                             try:
                                 transcribed_object.save()
