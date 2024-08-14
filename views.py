@@ -1,6 +1,7 @@
 from django.db.models.functions import Now
 from datetime import datetime
-from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers, RecordsMedia
+from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers, RecordsMedia, \
+    set_avoid_timer_before_update_of_search_database
 from django.contrib.auth.models import User
 import requests
 from rest_framework import viewsets, permissions
@@ -1038,6 +1039,7 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
                                     transcribed_object.transcriptionstatus = 'autopublished'
 
                             try:
+                                set_avoid_timer_before_update_of_search_database(True)
                                 transcribed_object.save()
                                 response_status = 'true'
                                 logger.debug("TranscribeCancelViewSet data %s", str(jsonData))

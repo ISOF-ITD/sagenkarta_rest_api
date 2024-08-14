@@ -25,7 +25,18 @@ import logging
 
 from .models_accessionsregister import Accessionsregister_FormLista
 
+import threading
+
 logger = logging.getLogger(__name__)
+
+# Create a thread-local data object
+_thread_locals = threading.local()
+
+def set_avoid_timer_before_update_of_search_database(avoid_timer_before_update_of_search_database):
+    _thread_locals.avoid_timer_before_update_of_search_database = avoid_timer_before_update_of_search_database
+
+def get_avoid_timer_before_update_of_search_database():
+    return getattr(_thread_locals, 'avoid_timer_before_update_of_search_database', None)
 
 class Categories(models.Model):
 	id = models.CharField(primary_key=True,max_length=255)
@@ -349,7 +360,6 @@ class RecordsPlaces(models.Model):
 	class Meta:
 		db_table = 'records_places'
 
-
 class RecordsCategory(models.Model):
 	record = models.ForeignKey(Records, db_column='record', related_name='categories', on_delete=DO_NOTHING)
 	category = models.ForeignKey(Categories, db_column='category', on_delete=DO_NOTHING)
@@ -445,7 +455,12 @@ def records_post_saved(sender, **kwargs):
 			else:
 				logger.error("records_post_saved put: esResponse is None = 'No response from ES'." + str(document))
 
-	t = Timer(5, save_es_model)
+	# If request variable avoid_timer_before_update_of_search_database set timer to zero
+	timer_interval = 5
+	if get_avoid_timer_before_update_of_search_database():
+		timer_interval = 0
+
+	t = Timer(timer_interval, save_es_model)
 	t.start()
 
 post_save.connect(records_post_saved, sender=Records)
