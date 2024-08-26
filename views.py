@@ -619,29 +619,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                                 informant.transcriptionstatus = 'autopublished'
                                 informant.save()
                 if 'messageComment' in jsonData:
-                    if len(jsonData['messageComment']) > 0:
-                        if supertranscriber:
-                            if transcribed_object_parent.comment is None or len(transcribed_object_parent.comment) < 1:
-                                # If comment empty
-                                transcribed_object_parent.comment = jsonData['messageComment']
-                            else:
-                                # If comment exists
-                                separator = ';'
-                                # If not already registered
-                                if not jsonData['messageComment'] in transcribed_object_parent.comment:
-                                    transcribed_object_parent.comment = transcribed_object_parent.comment + separator + \
-                                                                              jsonData['messageComment']
-                        else:
-                            if transcribed_object_parent.transcription_comment is None or len(transcribed_object_parent.transcription_comment) < 1:
-                                # If comment empty
-                                transcribed_object_parent.transcription_comment = jsonData['messageComment']
-                            else:
-                                # If comment exists
-                                separator = ';'
-                                # If not already registered
-                                if not jsonData['messageComment'] in transcribed_object_parent.transcription_comment:
-                                    transcribed_object_parent.transcription_comment = transcribed_object_parent.transcription_comment + separator + \
-                                                                              jsonData['messageComment']
+                    save_message_comment(jsonData['messageComment'], supertranscriber, transcribed_object_parent)
 
                 # Save record
                 try:
@@ -662,6 +640,40 @@ def save_transcription(request, response_message, response_status, set_status_to
     else:
         response_message = 'Ett oväntat fel: Error in request'
     return jsonData, response_message, response_status
+
+"""
+save message comment. 
+
+Save message comment to comment, which is published, if supertranscriber, else save it to transcriptioncomment.
+"""
+def save_message_comment(messageComment, supertranscriber, transcribed_object_parent):
+    if len(messageComment) > 0:
+        if supertranscriber:
+            # Save transcription comment directly in record.comment
+            if transcribed_object_parent.comment is None or len(transcribed_object_parent.comment) < 1:
+                # If comment empty
+                transcribed_object_parent.comment = messageComment
+            else:
+                # If comment exists
+                separator = ';'
+                # If not already registered
+                if not messageComment in transcribed_object_parent.comment:
+                    transcribed_object_parent.comment = transcribed_object_parent.comment + separator + \
+                                                        messageComment
+        else:
+            # Save transcription comment in transcription_comment (record or media)
+            if transcribed_object_parent.transcription_comment is None or len(
+                    transcribed_object_parent.transcription_comment) < 1:
+                # If comment empty
+                transcribed_object_parent.transcription_comment = messageComment
+            else:
+                # If comment exists
+                separator = ';'
+                # If not already registered
+                if not messageComment in transcribed_object_parent.transcription_comment:
+                    transcribed_object_parent.transcription_comment = transcribed_object_parent.transcription_comment + separator + \
+                                                                      messageComment
+
 
 def calculate_transcribe_time(page_id, transcribed_object):
     """
