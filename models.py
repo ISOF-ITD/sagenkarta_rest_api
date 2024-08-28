@@ -126,6 +126,22 @@ class Places(models.Model):
 		verbose_name = 'Plats med yta'
 		verbose_name_plural = 'Plats med yta'
 
+"""
+Possible statuses for transcription
+"""
+class Transcription_statuses(models.TextChoices):
+    accession = 'accession', 'Accession'  # Makes it clear that "accessions" will not be transcribed
+    nottranscribable = 'nottranscribable', 'Icke transkriberbar'
+    untranscribed = 'untranscribed', 'Ej transkriberad'
+    readytotranscribe = 'readytotranscribe', 'Publicerad för transkribering'
+    undertranscription = 'undertranscription', 'Under transkription'
+    transcribed = 'transcribed', 'Transkriberad'
+    reviewing = 'reviewing', 'Under granskning'
+    needsimprovement = 'needsimprovement', 'Sparas för förbättring'
+    approved = 'approved', 'Godkänd'
+    published = 'published', 'Publicerad'
+    autopublished = 'autopublished', 'Autopublicerad'
+
 class Persons(models.Model):
 	archive_row = models.IntegerField(default=None, blank=True, null=True)
 	id = models.CharField(primary_key=True, max_length=50)
@@ -139,7 +155,10 @@ class Persons(models.Model):
 	image = models.ImageField(blank=True, null=True, verbose_name='Bildfil', upload_to='personer')
 	import_row_id = models.IntegerField(default=0, blank=False, null=False)
 	transcriptioncomment = models.CharField(max_length=255, verbose_name='Kommentarer', default='')
-	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new')
+	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False,
+										   default=Transcription_statuses.accession,
+										   choices=Transcription_statuses.choices, verbose_name='Transkriptionstatus',
+										   help_text='OBS: one_accession_row ska ha "accession"')
 	# changedate = models.DateTimeField()
 	createdate = models.DateTimeField(auto_now_add=True, verbose_name="Skapad datum")
 	changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
@@ -234,7 +253,8 @@ class Records(models.Model):
 	transcriptiondate = models.DateTimeField(blank=True, verbose_name="Transkriptionsdatum")
 	transcriptiontype = models.CharField(max_length=20, blank=True, null=True, default=None, choices=transcriptiontype_choices)
 	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING)
-	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default='new', choices=transcription_statuses)
+	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, default=Transcription_statuses.accession, choices=Transcription_statuses.choices, verbose_name='Transkriptionstatus',
+										   help_text='OBS: one_accession_row ska ha "accession"')
 	publishstatus = models.CharField(max_length=20, blank=False, null=False, default='unpublished')
 	update_status = models.CharField(max_length=20, blank=True, null=True, verbose_name='Uppdateringsstatus', help_text='Utvalda för uppdatering')
 	language = models.CharField(max_length=50)
@@ -316,7 +336,10 @@ class RecordsMedia(models.Model):
 
 	# Transcription task
 	transcriptiontype = models.CharField(max_length=20, blank=True, null=True, default=None, verbose_name='Transkriptionstyp', help_text='Typ av formulär för transkribering')
-	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False, verbose_name='Transkriptionstatus', help_text='OBS: one_accession_row ska ha "accession"')
+	transcriptionstatus = models.CharField(max_length=20, blank=False, null=False,
+										   default=Transcription_statuses.accession,
+										   choices=Transcription_statuses.choices, verbose_name='Transkriptionstatus',
+										   help_text='OBS: one_accession_row ska ha "accession"')
 	transcriptiondate = models.DateTimeField(blank=True, null=True, verbose_name="Transkriptionsdatum")
 	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING, )
 	approvedate = models.DateTimeField(null=True, blank=True, verbose_name="Godkänd datum")
