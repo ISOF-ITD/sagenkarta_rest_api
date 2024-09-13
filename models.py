@@ -329,10 +329,11 @@ class RecordsMedia(models.Model):
 	archive_row = models.IntegerField(default=None, blank=True, null=True)
 	record = models.ForeignKey(Records, db_column='record', related_name='media', on_delete=DO_NOTHING)
 	type = models.CharField(max_length=50, blank=True, null=True)
-	store = models.CharField(max_length=20, blank=False, null=False, default='unknown')
-	source = models.CharField(max_length=255, blank=True, null=True)
+	store = models.CharField(max_length=20, blank=False, null=False, default='unknown', verbose_name='Lagringsyta', help_text='Pekar ut url')
+	source = models.CharField(max_length=255, blank=True, null=True, verbose_name='Filidentifierare', help_text='Unik filidentifierare i lagringsytan')
 	title = models.CharField(max_length=255, blank=True, null=True)
 	text = models.TextField(blank=True, null=True)
+	comment = models.TextField(blank=True, null=True, verbose_name='Kommentar', help_text='Publik')
 
 	# Transcription task
 	transcriptiontype = models.CharField(max_length=20, blank=True, null=True, default=None, verbose_name='Transkriptionstyp', help_text='Typ av formulär för transkribering')
