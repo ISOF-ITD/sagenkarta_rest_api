@@ -342,6 +342,7 @@ class RecordsMedia(models.Model):
 										   choices=Transcription_statuses.choices, verbose_name='Transkriptionstatus',
 										   help_text='OBS: one_accession_row ska ha "accession"')
 	transcriptiondate = models.DateTimeField(blank=True, null=True, verbose_name="Transkriptionsdatum")
+	transcription_comment = models.TextField(blank=True, null=True)
 	transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING, )
 	approvedate = models.DateTimeField(null=True, blank=True, verbose_name="Godkänd datum")
 

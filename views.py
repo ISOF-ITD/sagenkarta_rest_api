@@ -536,14 +536,16 @@ def save_transcription(request, response_message, response_status, set_status_to
                 transcribesession = jsonData['transcribesession']
             # if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]) in transcribesession:
             if page_id is None:
+                # If not "page by page" check session id on transcribed_object
                 if str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
                     transcribesession_status = True
             else:
+                # If "page by page" check session id on transcribed_object_parent
                 if str(transcribed_object_parent.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
                     transcribesession_status = True
         # Temporarily avoid transcribesession_status:
         # transcribesession_status = True
-        # Check transcribesession_status:
+        # compare_sessions to show transcribesession_status in log:
         compare_sessions = [
             str(transcribed_object.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')),
             transcribed_object_parent.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S'),
@@ -570,8 +572,8 @@ def save_transcription(request, response_message, response_status, set_status_to
             # följande gäller bara hela dokument. på sidnivå finns inte "undertranscription" eftersom vi inte låser på sidnivå. man
             # ska istället kolla om det är "readytotranscribe" och hela dokumentet är "undertranscription".
             # Regel:
-            # 1. Om "sida för sida": Kolla att status är undertranscription
-            # 2. Om inte "sida för sida": Kolla att transcriptionstatus på record är undertranscription samt sidans transcriptionstatus ska vara readytotranscribe
+            # 1. Om inte "sida för sida": Kolla att transcriptionstatus på record är undertranscription
+            # 2. Om "sida för sida": Kolla att transcriptionstatus på record är undertranscription samt sidans transcriptionstatus ska vara readytotranscribe
             if (page_id is None and transcribed_object.transcriptionstatus == 'undertranscription') or (page_id is not None and transcribed_object.transcriptionstatus == 'readytotranscribe' and transcribed_object_parent.transcriptionstatus == 'undertranscription'):
                 informant = None
                 user = User.objects.filter(username='restapi').first()
@@ -619,7 +621,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                                 informant.transcriptionstatus = 'autopublished'
                                 informant.save()
                 if 'messageComment' in jsonData:
-                    save_message_comment(jsonData['messageComment'], supertranscriber, transcribed_object_parent)
+                    save_message_comment(jsonData['messageComment'], supertranscriber, transcribed_object)
 
                 # Save record
                 try:
@@ -644,34 +646,41 @@ def save_transcription(request, response_message, response_status, set_status_to
 """
 save message comment. 
 
-Save message comment to comment, which is published, if supertranscriber, else save it to transcriptioncomment.
+Save message comment to either:
+-field comment if supertranscriber is true
+-else save it to transcription comment.
+
+Parameters:
+messageComment: String. Comment to save 
+supertranscriber: boolean
+transcribed_object: object transcribed, either a Records-object or a RecordsMedia-object
 """
-def save_message_comment(messageComment, supertranscriber, transcribed_object_parent):
+def save_message_comment(messageComment, supertranscriber, transcribed_object):
     if len(messageComment) > 0:
         if supertranscriber:
             # Save transcription comment directly in record.comment
-            if transcribed_object_parent.comment is None or len(transcribed_object_parent.comment) < 1:
+            if transcribed_object.comment is None or len(transcribed_object.comment) < 1:
                 # If comment empty
-                transcribed_object_parent.comment = messageComment
+                transcribed_object.comment = messageComment
             else:
                 # If comment exists
                 separator = ';'
                 # If not already registered
-                if not messageComment in transcribed_object_parent.comment:
-                    transcribed_object_parent.comment = transcribed_object_parent.comment + separator + \
+                if not messageComment in transcribed_object.comment:
+                    transcribed_object.comment = transcribed_object.comment + separator + \
                                                         messageComment
         else:
             # Save transcription comment in transcription_comment (record or media)
-            if transcribed_object_parent.transcription_comment is None or len(
-                    transcribed_object_parent.transcription_comment) < 1:
+            if transcribed_object.transcription_comment is None or len(
+                    transcribed_object.transcription_comment) < 1:
                 # If comment empty
-                transcribed_object_parent.transcription_comment = messageComment
+                transcribed_object.transcription_comment = messageComment
             else:
                 # If comment exists
                 separator = ';'
                 # If not already registered
-                if not messageComment in transcribed_object_parent.transcription_comment:
-                    transcribed_object_parent.transcription_comment = transcribed_object_parent.transcription_comment + separator + \
+                if not messageComment in transcribed_object.transcription_comment:
+                    transcribed_object.transcription_comment = transcribed_object.transcription_comment + separator + \
                                                                       messageComment
 
 
