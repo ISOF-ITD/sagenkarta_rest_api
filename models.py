@@ -359,6 +359,15 @@ class RecordsMedia(models.Model):
 				text_to = str(self.text)
 		return text_to
 
+	#Only publish comment when transcriptionstatus published
+	def comment_to_publish(self):
+		text_to = None
+		if self.text is not None and self.text != '':
+			text_to = None # = 'Denna text håller på att skrivas av, av en användare eller är under behandling.'
+			if self.transcriptionstatus in ['published', 'autopublished']:
+				text_to = str(self.comment)
+		return text_to
+
 	class Meta:
 		managed = False
 		db_table = 'records_media'

@@ -232,6 +232,7 @@ Transcription data follow same state logic as serializer for records
 """
 class RecordsMediaSerializer(serializers.ModelSerializer):
 	text = serializers.CharField(source='text_to_publish')
+	comment = serializers.CharField(source='comment_to_publish')
 	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
 
