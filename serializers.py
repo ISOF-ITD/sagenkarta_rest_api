@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, RecordsPersons, RecordsCategory, RecordsPlaces, Places
+from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, \
+	RecordsPersons, RecordsCategory, RecordsPlaces, Places, RecordsLanguage
 from .models_accessionsregister import Accessionsregister_FormLista, Accessionsregister_pers
 
 import logging
@@ -213,6 +214,10 @@ class RecordsPersonsSerializer(serializers.ModelSerializer):
 		)
 
 class RecordsMetadataSerializer(serializers.ModelSerializer):
+	"""
+	Serialize RecordsMetadata
+	"""
+
 	class Meta:
 		model = RecordsMetadata
 
@@ -221,16 +226,17 @@ class RecordsMetadataSerializer(serializers.ModelSerializer):
 			'value'
 		)
 
-"""
-Serialize RecordsMedia
 
-Title for file type:
-pdf, audio: not transcribed (at all?)
-image: may be transcribed?
-
-Transcription data follow same state logic as serializer for records
-"""
 class RecordsMediaSerializer(serializers.ModelSerializer):
+	"""
+	Serialize RecordsMedia
+
+	Title for file type:
+	pdf, audio: not transcribed (at all?)
+	image: may be transcribed?
+
+	Transcription data follow same state logic as serializer for records
+	"""
 	text = serializers.CharField(source='text_to_publish')
 	comment = serializers.CharField(source='comment_to_publish')
 	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
@@ -335,9 +341,21 @@ class AccessionsPersSerializer(serializers.ModelSerializer):
 		)
 
 
+class RecordsLanguageSerializer(serializers.ModelSerializer):
+	"""
+	Serialize RecordsLanguages and return suitable Languages fields
+	"""
+	name = serializers.CharField()
+	code = serializers.CharField()
+
+	class Meta:
+		model = RecordsLanguage
+		fields = ['name', 'code']
+
 class RecordsSerializer(serializers.ModelSerializer):
 	#places = SockenSerializer(many=True, read_only=True);
 	places = RecordsPlacesSerializer(many=True, read_only=True);
+	languages = RecordsLanguageSerializer(many=True, read_only=True);
 	metadata = RecordsMetadataSerializer(many=True, read_only=True);
 	#taxonomy = CategorySerializer(source='category', read_only=True);
 	taxonomy = RecordsCategorySerializer(many=True, read_only=True, source='categories');
@@ -502,7 +520,8 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'headwords',
 			'taxonomy', 
 			'archive', 
-			'language',
+			'language', # Replaced with language model (languages): To be removed
+			'languages',
 			'materialtype',
 			'numberofonerecord',
 			'numberoftranscribedonerecord',

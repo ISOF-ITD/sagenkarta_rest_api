@@ -186,6 +186,38 @@ class PersonsPlaces(models.Model):
 		managed = False
 		db_table = 'persons_places'
 
+
+class Languages(models.Model):
+	"""
+    Språk som används i materialet
+
+    Kod/Språkkod: I första hand enligt ISO 639-1, vid behov ISO 639-3 för t.ex. Romani
+    Typ: Kan användas för t.ex. att skilja på språk och dialekt
+    """
+	type_choices = [
+		('sprak', 'Språk'),
+		('dialekt', 'Dialekt'),
+	]
+
+
+	name = models.CharField(max_length=255, blank=False, null=False, verbose_name="Namn")
+	# name_en = models.CharField(max_length=255, null=True, blank=True, verbose_name="Namn på engelska")
+	type = models.CharField(max_length=255, blank=True, null=True, choices=type_choices, verbose_name="Typ")
+	code = models.CharField(max_length=20, blank=True, null=True, verbose_name="Språkkod")
+
+
+	def __str__(self):
+		# return str(self.name)+' ('+self.id+') ['+self.type+']'
+		return f'{str(self.name)} ({self.id})'
+
+
+	class Meta:
+		managed = False
+		db_table = 'languages'
+		verbose_name = 'Språk'
+		verbose_name_plural = 'Språk'
+
+
 class CrowdSourceUsers(models.Model):
 	roles = [
 		('unknown', 'Okänd'),
@@ -209,6 +241,7 @@ class CrowdSourceUsers(models.Model):
 	class Meta:
 		managed = False
 		db_table = 'crowdsource_users'
+
 
 class Records(models.Model):
 	transcription_statuses = [
@@ -292,6 +325,10 @@ class Records(models.Model):
 	taxonomy = models.ManyToManyField(
 		Categories,
 		through = 'RecordsCategory', symmetrical=False
+	)
+	languages = models.ManyToManyField(
+		Languages,
+		through = 'RecordsLanguage', symmetrical=False
 	)
 
 	#Only publish text when transcriptionstatus published
@@ -401,6 +438,19 @@ class RecordsCategory(models.Model):
 	class Meta:
 		managed = False
 		db_table = 'records_category'
+
+
+class RecordsLanguage(models.Model):
+	"""
+    Relationstabell mellan records och språk (languages)
+    """
+	record = models.ForeignKey(Records, db_column='record', on_delete=DO_NOTHING, db_index=True, )
+	language = models.ForeignKey(Languages, db_column='language', on_delete=DO_NOTHING, db_index=True)
+
+	class Meta:
+		managed = False
+		db_table = 'records_language'
+
 
 # Spara/uppdatera modell JSON i Elasticsearch
 def records_post_saved(sender, **kwargs):
