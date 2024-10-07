@@ -456,7 +456,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 		if obj.record_type == 'one_accession_row':
 			# Get only published "tradark" one_record instances for this archive_id
 			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
-			recordmedias = RecordsMedia.objects.filter(
+			count = RecordsMedia.objects.filter(
 				# Do not exist on RecordsMedia. Needed?
 				# publishstatus='published',
 				transcriptionstatus__in=['published', 'autopublished'] ,
