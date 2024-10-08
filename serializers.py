@@ -460,6 +460,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			count = RecordsMedia.objects.filter(
 				# Do not exist on RecordsMedia. Needed?
 				# publishstatus='published',
+				record__record_type = 'one_record',
 				transcriptionstatus__in=['published', 'autopublished'] ,
 				record__id__startswith=obj.id
 				).count()
@@ -480,6 +481,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 				# Do not exist on RecordsMedia. Needed?
 				# publishstatus='published',
 				# transcriptionstatus__in=['published', 'autopublished'] ,
+				record__record_type = 'one_record',
 				record__id__startswith=obj.id
 				).count()
 
