@@ -368,6 +368,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	numberofonerecord = serializers.SerializerMethodField('number_of_one_record')
 	numberoftranscribedonerecord = serializers.SerializerMethodField('number_of_transcribed_one_record')
 	numberoftranscribedpages = serializers.SerializerMethodField('number_of_transcribed_pages')
+	numberofpages = serializers.SerializerMethodField('number_of_pages')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
 	# Return only public transcription statuses:
 	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
@@ -465,6 +466,25 @@ class RecordsSerializer(serializers.ModelSerializer):
 
 		return count
 
+	def number_of_pages(self, obj):
+		"""
+		number_of_pages (number pages in records with type one_record)
+		for records of type one_accession_row with same record.archive_id
+		return count
+		"""
+		count = 0
+		if obj.record_type == 'one_accession_row':
+			# Get only published "tradark" one_record instances for this archive_id
+			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
+			count = RecordsMedia.objects.filter(
+				# Do not exist on RecordsMedia. Needed?
+				# publishstatus='published',
+				# transcriptionstatus__in=['published', 'autopublished'] ,
+				record__id__startswith=obj.id
+				).count()
+
+		return count
+
 	# transcribed_by is shown if transcriptionstatus is published
 	def transcribed_by(self, obj):
 		text = None
@@ -525,6 +545,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'materialtype',
 			'numberofonerecord',
 			'numberoftranscribedonerecord',
+			'numberofpages',
 			'numberoftranscribedpages',
 			'recordtype',
 			'copyrightlicense',
