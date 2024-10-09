@@ -427,6 +427,7 @@ class RecordsPlaces(models.Model):
 	record = models.ForeignKey(Records, db_column='record', on_delete=DO_NOTHING, related_name='places')
 	place = models.ForeignKey(Socken, db_column='place', on_delete=DO_NOTHING)
 	type = models.CharField(max_length=20, blank=True, null=True)
+	specification = models.CharField(max_length=100, blank=True, null=True, verbose_name="Platsspecificering",help_text="by_anteckn")
 
 	class Meta:
 		db_table = 'records_places'

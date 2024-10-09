@@ -74,6 +74,7 @@ class RecordsPlacesSerializer(serializers.ModelSerializer):
 			'lm_id',
 			'fylke',
 			'type',
+			'specification',
 			'comment',
 		)
 
