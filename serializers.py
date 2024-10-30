@@ -456,16 +456,16 @@ class RecordsSerializer(serializers.ModelSerializer):
 		# return False
 		count = 0
 		if obj.record_type == 'one_accession_row':
-			# Get only published "tradark" one_record instances for this archive_id
-			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
+			# Get only published "tradark" one_record instances for this archive_id?
+			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')?
 			count = RecordsMedia.objects.filter(
 				# Do not exist on RecordsMedia. Needed?
 				# publishstatus='published',
 				record__record_type = 'one_record',
-				transcriptionstatus__in=['published', 'autopublished'] ,
+				# 'transcribed' pages counted as transcribed even not yet approved to show work in progress
+				transcriptionstatus__in=['transcribed', 'published', 'autopublished'],
 				record__id__startswith=obj.id
 				).count()
-
 		return count
 
 	def number_of_pages(self, obj):
