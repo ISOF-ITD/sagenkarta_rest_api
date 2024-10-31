@@ -626,9 +626,18 @@ def save_transcription(request, response_message, response_status, set_status_to
                 # Save record
                 try:
                     transcribed_object.save()
-                    if page_id is not None:
-                        transcribed_object_parent.save()
                     response_status = 'true'
+                    if page_id is not None:
+                        # If no pages left to transcribe: set transcriptionstatus on parent record to published
+                        # (ignore if there are som pages that is not yet published)
+                        if (RecordsMedia.objects.filter(
+                            record__record_type='one_record',
+                            transcriptionstatus__in=['readytotranscribe'],
+                            record__id__startswith=transcribed_object_parent.id
+                        ).count() < 1):
+                            transcribed_object_parent.transcriptionstatus = 'published'
+                        # Save parent object if page_id: that is save record for this page
+                        transcribed_object_parent.save()
                     logger.info("save_transcription transcribed_object.save() data %s", str(jsonData))
                 except Exception as e:
                     logger.error("save_transcription transcribed_object.save() Exception data %s", str(jsonData))
