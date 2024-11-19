@@ -638,6 +638,24 @@ def save_transcription(request, response_message, response_status, set_status_to
                             transcribed_object_parent.transcriptionstatus = 'published'
                         # Save parent object if page_id: that is save record for this page
                         transcribed_object_parent.save()
+
+                    # Update one_accession_row parent in search database so calculated values in json are updated
+                    # one_accession_row parent has id without page number part after second underscore character
+                    if transcribed_object_parent.id is not None:
+                        record_id = transcribed_object_parent.id
+                        if record_id.count('_') == 2:
+                            last_underscore_index = record_id.rfind('_')
+                            one_accession_row_parent_id = record_id[:last_underscore_index]
+                            # Make sure one_accession_row parent is one_accession_row and type arkiv
+                            one_accession_row_parent = Records.objects.filter(type='arkiv',
+                                                                              record_type='one_accession_row',
+                                                                              id=one_accession_row_parent_id).first()
+                            if one_accession_row_parent is not None:
+                                #modelId = one_accession_row_parent.id
+                                #updateDocumentDatabase(modelId)
+                                # No update function here so trigger update by save trigger on records model (records_post_saved)
+                                one_accession_row_parent.save()
+
                     logger.info("save_transcription transcribed_object.save() data %s", str(jsonData))
                 except Exception as e:
                     logger.error("save_transcription transcribed_object.save() Exception data %s", str(jsonData))
