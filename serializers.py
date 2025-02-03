@@ -1,3 +1,4 @@
+import requests
 from rest_framework import serializers
 from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, \
 	RecordsPersons, RecordsCategory, RecordsPlaces, Places, RecordsLanguage
@@ -243,6 +244,20 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
 
+	def get_filesize(self, obj):
+		url = obj.source
+		try:
+			response = requests.head(url, timeout=5)
+			# If the server responds with a content-length header
+			size = response.headers.get('content-length')
+			if size is not None:
+				return int(size)
+		except Exception as e:
+			# Handle errors
+			logger.error("RecordsMediaSerializer get_filesize Exception: %s", e)
+		return None
+	
+
 	"""
 	Only show public transcriptionstatuses
 	"""
@@ -271,6 +286,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 			'store',
 			'title',
 			# Transcription:
+			'filesize',
 			'text',
 			'comment',
 			'transcriptionstatus',
