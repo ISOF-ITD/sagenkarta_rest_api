@@ -1,7 +1,10 @@
 from django.db.models.functions import Now
 from datetime import datetime
+
+from rest_framework.permissions import AllowAny
+
 from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers, RecordsMedia, \
-    set_avoid_timer_before_update_of_search_database
+    set_avoid_timer_before_update_of_search_database, RecordsMedia, TextChanges, CrowdSourceUsers
 from django.contrib.auth.models import User
 import requests
 from rest_framework import viewsets, permissions
@@ -16,6 +19,12 @@ from django.http import JsonResponse, HttpResponse
 import json
 from django.views.decorators.clickjacking import xframe_options_exempt
 # from csp.decorators import csp
+
+from django.db import transaction
+from django.contrib.auth.models import User
+from rest_framework import viewsets, status, serializers
+from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from . import config
 from . import secrets_env
@@ -568,7 +577,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                     response_message = 'Ett oväntat fel: Uppteckningen är inte utvald för transkribering.'
             # Only possible to register transcription when status (not already transcribed):
             # ('readytotranscribe'?),'undertranscription':
-            
+
             # följande gäller bara hela dokument. på sidnivå finns inte "undertranscription" eftersom vi inte låser på sidnivå. man
             # ska istället kolla om det är "readytotranscribe" och hela dokumentet är "undertranscription".
             # Regel:
@@ -665,7 +674,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                 if response_message is None:
                     response_message = 'Ett oväntat fel: Inte redo för transkribering.'
         else:
-            response_message = 'Ett oväntat fel: ' + ('transcribed_object saknas' if transcribed_object is None else '') + '. felaktigt sessions-id eller inget json-data. ' + 'transcribesession_status är: ' + str(transcribesession_status) + ' compare_sessions: ' + str(compare_sessions) 
+            response_message = 'Ett oväntat fel: ' + ('transcribed_object saknas' if transcribed_object is None else '') + '. felaktigt sessions-id eller inget json-data. ' + 'transcribesession_status är: ' + str(transcribesession_status) + ' compare_sessions: ' + str(compare_sessions)
     else:
         response_message = 'Ett oväntat fel: Error in request'
     return jsonData, response_message, response_status
@@ -1122,3 +1131,190 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
         permission_classes = [permissions.AllowAny]
 
         return [permission() for permission in permission_classes]
+
+def time_to_seconds(time_str):
+    """Convert time in mm:ss format to seconds with two decimal places."""
+    minutes, seconds = map(float, time_str.split(':'))
+    return round(minutes * 60 + seconds, 2)
+
+
+def seconds_to_time(seconds):
+    """Convert seconds to mm:ss format."""
+    minutes = int(seconds // 60)
+    seconds = seconds % 60
+    return f"{minutes}:{seconds:05.2f}"
+
+
+class DescribeUpdateSerializer(serializers.Serializer):
+    """
+    Serialize describe request parameters (json)
+    """
+    recordid = serializers.CharField()
+    file = serializers.CharField()
+    #page = serializers.CharField()
+    #transcribesession = serializers.DateTimeField()
+    transcribesession = serializers.CharField()
+    from_email = serializers.EmailField(required=False, allow_blank=True)
+    from_name = serializers.CharField()
+    start = serializers.CharField(required=False)
+    start_from = serializers.CharField(required=False, allow_null=True)
+    start_to = serializers.CharField(required=False, allow_null=True)
+    change_from = serializers.CharField(required=False, allow_blank=True)
+    change_to = serializers.CharField(required=False, allow_blank=True)
+
+class DescribeStartSerializer(serializers.Serializer):
+    """
+    Serialize describe start request parameters (json)
+    """
+    recordid = serializers.CharField()
+
+class DescribeViewSet(viewsets.ViewSet):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    # permission_classes = [AllowAny]  # This allows any user to access the endpoint
+
+    def get_permissions(self):
+        permission_classes = [permissions.AllowAny]
+        return [permission() for permission in permission_classes]
+
+    @action(detail=False, methods=['post'], url_path='start')
+    def describestart(self, request):
+        """
+        API endpoint for starting a session for updating and creating text descriptions for RecordsMedia.
+        """
+        response_status = 'false'
+        serializer = DescribeStartSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+        record_id = data.get("recordid")
+
+        try:
+            jsonData = data
+            #jsonData = json.loads(request.data['json'])
+            #record_id = None
+            #if 'recordid' in jsonData:
+                #record_id = jsonData['recordid']
+            # Session on main object
+            record = Records.objects.get(id=record_id)
+            # Session on media object
+            #record = RecordsMedia.objects.get(id=record_id)
+
+            if record is not None:
+                with transaction.atomic():
+                    if record.transcriptionstatus == 'readytotranscribe':
+                        record.transcriptionstatus = 'undertranscription'
+                        record.transcriptiondate = Now()
+
+                        record.save()
+                        response_status = 'true'
+
+                        # Read object again to get read database value
+                        record = Records.objects.get(id=record_id)
+                        #record = RecordsMedia.objects.get(id=record_id)
+                        jsonData['transcribesession'] = str(
+                            record.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
+                        logger.debug("TranscribeStartViewSet data %s", jsonData)
+
+                    else:
+                        json_response = {'success': response_status, 'data': jsonData}
+                        return Response(json_response, status=status.HTTP_400_BAD_REQUEST)
+
+            json_response = {'success': response_status, 'data': jsonData}
+            return Response(json_response, status=status.HTTP_200_OK)
+
+        except Records.DoesNotExist:
+            return Response({"error": "Record not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['post'], url_path='change')
+    def change(self, request):
+        """
+        API endpoint for updating and creating text descriptions for RecordsMedia.
+
+        UNDER UTVECKLING
+        """
+        serializer = DescribeUpdateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+        record_id = data.get("recordid")
+        file = data.get("file")
+        transcribesession = data.get("transcribesession")
+        start_time = time_to_seconds(data.get("start")) if data.get("start") else None
+        change_from = data.get("change_from", "")
+        change_to = data.get("change_to", "")
+        start_from = time_to_seconds(data.get("start_from")) if data.get("start_from") else None
+        start_to = time_to_seconds(data.get("start_to")) if data.get("start_to") else None
+        username = data.get("from_name", "Anonymous")
+        email = data.get("from_email", "")
+
+        try:
+            records = Records.objects.get(id=record_id)
+            #records = RecordsMedia.objects.get(id=record_id)
+            records_media = RecordsMedia.objects.filter(record=record_id, source=file).first()
+            if records is not None:
+                if records.transcriptionstatus == 'undertranscription':
+                    existing_text = json.loads(records_media.text or "[]")
+                    logger.debug(transcribesession)
+                    logger.debug(str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')))
+                    if str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                        # Ensure start time is unique
+                        if any(entry['start'] == start_time for entry in existing_text):
+                            return Response({"error": "Start time must be unique."}, status=status.HTTP_400_BAD_REQUEST)
+
+                        # Create a new entry or update an existing one
+                        new_entry = {"text": change_to, "start": start_time}
+                        if start_from is not None and start_to is not None:
+                            for entry in existing_text:
+                                if entry["start"] == start_from:
+                                    entry["start"] = start_to
+                        else:
+                            action = 'insert'
+                            existing_text.append(new_entry)
+
+                        # Ensure JSON elements are ordered by start time
+                        existing_text = sorted(existing_text, key=lambda x: x['start'])
+
+                        with transaction.atomic():
+                            records_media.text = json.dumps(existing_text)
+                            records_media.save()
+
+                            # Log the change
+                            user, _ = CrowdSourceUsers.objects.get_or_create(userid=username,
+                                                                             defaults={"name": username, "email": email})
+                            TextChanges.objects.create(
+                                recordsmedia=records_media,
+                                type='desc',
+                                action=action,
+                                start=start_time,
+                                # value=json.dumps(existing_text),
+                                change_from=change_from,
+                                change_to=change_to,
+                                changedby=user
+                            )
+
+                            # Update contributeby field
+                            unique_users = TextChanges.objects.filter(recordsmedia=records_media).values_list("changedby__name",
+                                                                                                              flat=True).distinct()
+                            records_media.contributeby = ", ".join(unique_users)
+                            records_media.save()
+                    else:
+                        return Response({"error": "Cannot update."}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({"error": "Cannot update."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"error": "Cannot update."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Convert start times back to mm:ss format for response
+            if existing_text is None:
+                response_data = []
+            else:
+                response_data = [{"text": entry["text"], "start": seconds_to_time(entry["start"])} for entry in
+                                 existing_text]
+
+            return Response({"message": "Text updated successfully.", "updated_text": response_data},
+                            status=status.HTTP_200_OK)
+
+        except RecordsMedia.DoesNotExist:
+            return Response({"error": "Record not found."}, status=status.HTTP_404_NOT_FOUND)
