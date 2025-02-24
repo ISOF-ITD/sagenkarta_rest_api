@@ -1255,7 +1255,7 @@ class DescribeViewSet(viewsets.ViewSet):
             records_media = RecordsMedia.objects.filter(record=record_id, source=file).first()
             if records is not None:
                 if records.transcriptionstatus == 'undertranscription':
-                    existing_text = json.loads(records_media.text or "[]")
+                    existing_text = json.loads(records_media.description or "[]")
                     logger.debug(transcribesession)
                     logger.debug(str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')))
                     if str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
@@ -1277,7 +1277,7 @@ class DescribeViewSet(viewsets.ViewSet):
                         existing_text = sorted(existing_text, key=lambda x: x['start'])
 
                         with transaction.atomic():
-                            records_media.text = json.dumps(existing_text)
+                            records_media.description = json.dumps(existing_text)
                             records_media.save()
 
                             # Log the change
