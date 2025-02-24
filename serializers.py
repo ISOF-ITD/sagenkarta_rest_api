@@ -1,4 +1,5 @@
 from rest_framework import serializers
+import json
 from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories, RecordsMedia, RecordsPersons, \
 	RecordsPersons, RecordsCategory, RecordsPlaces, Places, RecordsLanguage
 from .models_accessionsregister import Accessionsregister_FormLista, Accessionsregister_pers
@@ -242,6 +243,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 	comment = serializers.CharField(source='comment_to_publish')
 	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
+	description = serializers.SerializerMethodField()
 
 	"""
 	Only show public transcriptionstatuses
@@ -272,6 +274,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 			'title',
 			# Transcription:
 			'text',
+			'description',
 			'comment',
 			'transcriptionstatus',
 			'transcriptiontype',
@@ -279,6 +282,13 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 			'transcriptiondate',
 			'approvedate'
 		)
+
+	def get_description(self, obj):
+		""" Ensure description is returned as a list of dictionaries instead of a JSON string. """
+		try:
+			return json.loads(obj.description) if obj.description else []
+		except json.JSONDecodeError:
+			return []
 
 class RecordsCategorySerializer(serializers.ModelSerializer):
 	category = serializers.CharField(source='category.id')
