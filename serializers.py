@@ -403,7 +403,12 @@ class RecordsSerializer(serializers.ModelSerializer):
 		
 	# return contents only if record_type is one_accession_row, otherwise return None
 	def get_contents(self, obj):
-		if obj.record_type == 'one_accession_row':
+		show_content = False
+		if (obj.record_type == 'one_record'):
+			if RecordsCategory.objects.filter(category__name='Inspelning', record=obj.id).exists():
+				# Show content for audio files
+				show_content = True
+		if (obj.record_type == 'one_accession_row' or show_content):
 			return obj.contents
 		else:
 			return None
