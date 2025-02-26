@@ -1155,7 +1155,7 @@ class DescribeUpdateSerializer(serializers.Serializer):
     #transcribesession = serializers.DateTimeField()
     transcribesession = serializers.CharField()
     from_email = serializers.EmailField(required=False, allow_blank=True)
-    from_name = serializers.CharField()
+    from_name = serializers.CharField(required=False)
     start = serializers.CharField(required=False)
     start_from = serializers.CharField(required=False, allow_null=True)
     start_to = serializers.CharField(required=False, allow_null=True)
@@ -1254,30 +1254,60 @@ class DescribeViewSet(viewsets.ViewSet):
             #records = RecordsMedia.objects.get(id=record_id)
             records_media = RecordsMedia.objects.filter(record=record_id, source=file).first()
             if records is not None:
-                if records.transcriptionstatus == 'undertranscription':
-                    existing_text = json.loads(records_media.description or "[]")
-                    logger.debug(transcribesession)
-                    logger.debug(str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')))
-                    if str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                existing_text = json.loads(records_media.description or "[]")
+                logger.debug(transcribesession)
+                logger.debug(str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')))
+                if str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                    action = None
+                    message = ''
+                    # INSERT: If start_time: new entry
+                    if start_time is not None:
                         # Ensure start time is unique
                         if any(entry['start'] == start_time for entry in existing_text):
                             return Response({"error": "Start time must be unique."}, status=status.HTTP_400_BAD_REQUEST)
-
-                        # Create a new entry or update an existing one
-                        new_entry = {"text": change_to, "start": start_time}
-                        if start_from is not None and start_to is not None:
-                            for entry in existing_text:
-                                if entry["start"] == start_from:
-                                    entry["start"] = start_to
-                        else:
+                        time_exists = False
+                        for entry in existing_text:
+                            # If start_from in elements
+                            if entry["start"] == start_from:
+                                time_exists = True
+                                message = 'start_from exists'
+                        if not time_exists:
+                            new_entry = {"text": change_to, "start": start_time}
                             action = 'insert'
                             existing_text.append(new_entry)
 
+                    else:
+                        # NOT YET TESTED
+                        # UPDATE TEXT: Check if text change: update
+                        if change_from is not None and change_to is not None:
+                            for entry in existing_text:
+                                # If start_to in elements
+                                if entry["start"] == start_time:
+                                    action = 'update'
+                                    entry["text"] = change_to
+                            if action is None:
+                                message = 'start_to does not exist'
+                        # UPDATE TIME: Check if time change: update
+                        if start_from is not None and start_to is not None:
+                            for entry in existing_text:
+                                # If start_from in elements
+                                if entry["start"] == start_from:
+                                    entry["start"] = start_to
+                                    # Log start_time
+                                    start_time = start_to
+                                    action = 'update'
+                            if action is None:
+                                message = 'start_from does not exist'
+
+                    # Check if action valid
+                    if action is not None:
                         # Ensure JSON elements are ordered by start time
                         existing_text = sorted(existing_text, key=lambda x: x['start'])
 
                         with transaction.atomic():
                             records_media.description = json.dumps(existing_text)
+                            records_media.transcriptiondate = Now()
+                            # Save contributor: Where?
                             records_media.save()
 
                             # Log the change
@@ -1297,10 +1327,11 @@ class DescribeViewSet(viewsets.ViewSet):
                             # Update contributeby field
                             unique_users = TextChanges.objects.filter(recordsmedia=records_media).values_list("changedby__name",
                                                                                                               flat=True).distinct()
+                            # contributeby does not exist YET?
                             records_media.contributeby = ", ".join(unique_users)
                             records_media.save()
                     else:
-                        return Response({"error": "Cannot update."}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
                 else:
                     return Response({"error": "Cannot update."}, status=status.HTTP_400_BAD_REQUEST)
             else:
