@@ -1241,11 +1241,15 @@ class DescribeViewSet(viewsets.ViewSet):
         record_id = data.get("recordid")
         file = data.get("file")
         transcribesession = data.get("transcribesession")
-        start_time = time_to_seconds(data.get("start")) if data.get("start") else None
+        start_time = data.get("start")
+        start_from = data.get("start_from")
+        start_to = data.get("start_to")
+        # Log time standardized in seconds
+        start_time_sec = time_to_seconds(data.get("start")) if data.get("start") else None
+        start_from_sec = time_to_seconds(data.get("start_from")) if data.get("start_from") else None
+        start_to_sec = time_to_seconds(data.get("start_to")) if data.get("start_to") else None
         change_from = data.get("change_from", "")
         change_to = data.get("change_to", "")
-        start_from = time_to_seconds(data.get("start_from")) if data.get("start_from") else None
-        start_to = time_to_seconds(data.get("start_to")) if data.get("start_to") else None
         username = data.get("from_name", "Anonymous")
         email = data.get("from_email", "")
 
@@ -1272,29 +1276,33 @@ class DescribeViewSet(viewsets.ViewSet):
                                 time_exists = True
                                 message = 'start_from exists'
                         if not time_exists:
+                            # Keep time format from client
+                            # OR standardize time format here?
                             new_entry = {"text": change_to, "start": start_time}
                             action = 'insert'
+                            start_time_to_log = start_time_sec
                             existing_text.append(new_entry)
 
                     else:
-                        # NOT YET TESTED
                         # UPDATE TEXT: Check if text change: update
-                        if change_from is not None and change_to is not None:
+                        if start_from is not None and change_from is not None and change_to is not None:
                             for entry in existing_text:
                                 # If start_to in elements
-                                if entry["start"] == start_time:
+                                if entry["start"] == start_from:
                                     action = 'update'
                                     entry["text"] = change_to
+                                    start_time_to_log = start_from_sec
                             if action is None:
                                 message = 'start_to does not exist'
                         # UPDATE TIME: Check if time change: update
+                        # NOT YET TESTED
                         if start_from is not None and start_to is not None:
                             for entry in existing_text:
                                 # If start_from in elements
                                 if entry["start"] == start_from:
                                     entry["start"] = start_to
                                     # Log start_time
-                                    start_time = start_to
+                                    start_time_to_log = start_to_sec
                                     action = 'update'
                             if action is None:
                                 message = 'start_from does not exist'
@@ -1306,8 +1314,9 @@ class DescribeViewSet(viewsets.ViewSet):
 
                         with transaction.atomic():
                             records_media.description = json.dumps(existing_text)
-                            records_media.transcriptiondate = Now()
-                            # Save contributor: Where?
+                            # DO NOT change transcriptiondate as it is the sessionid:
+                            # records_media.transcriptiondate = Now()
+                            # Save contributor: Where? See example records_media.contributeby below
                             records_media.save()
 
                             # Log the change
@@ -1317,7 +1326,8 @@ class DescribeViewSet(viewsets.ViewSet):
                                 recordsmedia=records_media,
                                 type='desc',
                                 action=action,
-                                start=start_time,
+                                start=start_time_to_log,
+                                end=start_to_sec,
                                 # value=json.dumps(existing_text),
                                 change_from=change_from,
                                 change_to=change_to,
@@ -1333,16 +1343,18 @@ class DescribeViewSet(viewsets.ViewSet):
                     else:
                         return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
                 else:
-                    return Response({"error": "Cannot update."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "Uppdateras av annan användare."}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({"error": "Cannot update."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Objektet finns inte."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Convert start times back to mm:ss format for response
             if existing_text is None:
                 response_data = []
             else:
-                response_data = [{"text": entry["text"], "start": seconds_to_time(entry["start"])} for entry in
-                                 existing_text]
+                # Not needed when we store time format in request:
+                # Convert start times back to mm:ss format for response
+                # response_data = [{"text": entry["text"], "start": seconds_to_time(entry["start"])} for entry in
+                #                 existing_text]
+                response_data = existing_text
 
             return Response({"message": "Text updated successfully.", "updated_text": response_data},
                             status=status.HTTP_200_OK)
