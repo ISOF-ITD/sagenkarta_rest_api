@@ -1144,6 +1144,9 @@ def seconds_to_time(seconds):
     seconds = seconds % 60
     return f"{minutes}:{seconds:05.2f}"
 
+class TermSerializer(serializers.Serializer):
+    term = serializers.CharField()
+    termid = serializers.CharField()
 
 class DescribeUpdateSerializer(serializers.Serializer):
     """
@@ -1161,6 +1164,14 @@ class DescribeUpdateSerializer(serializers.Serializer):
     start_to = serializers.CharField(required=False, allow_null=True)
     change_from = serializers.CharField(required=False, allow_blank=True)
     change_to = serializers.CharField(required=False, allow_blank=True)
+    terms = TermSerializer(required=False, many=True)
+
+    def validate_terms(self, value):
+        """Ensure that all 'term' values are unique."""
+        term_values = [term["term"] for term in value]
+        if len(term_values) != len(set(term_values)):
+            raise serializers.ValidationError("Terms must be unique.")
+        return value
 
 class DescribeStartSerializer(serializers.Serializer):
     """
@@ -1250,6 +1261,7 @@ class DescribeViewSet(viewsets.ViewSet):
         start_to_sec = time_to_seconds(data.get("start_to")) if data.get("start_to") else None
         change_from = data.get("change_from", "")
         change_to = data.get("change_to", "")
+        terms = data.get("terms", None)
         username = data.get("from_name", "Anonymous")
         email = data.get("from_email", "")
 
@@ -1278,7 +1290,12 @@ class DescribeViewSet(viewsets.ViewSet):
                         if not time_exists:
                             # Keep time format from client
                             # OR standardize time format here?
-                            new_entry = {"text": change_to, "start": start_time}
+                            if change_to is not None:
+                                new_entry = {"text": change_to, "start": start_time}
+                            if terms is not None:
+                                new_entry = {"terms": terms, "start": start_time}
+                            if change_to is not None and terms is not None:
+                                new_entry = {"text": change_to, "terms": terms, "start": start_time}
                             action = 'insert'
                             start_time_to_log = start_time_sec
                             existing_text.append(new_entry)
