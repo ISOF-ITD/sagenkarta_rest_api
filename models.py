@@ -370,7 +370,8 @@ class RecordsMedia(models.Model):
     source = models.CharField(max_length=255, blank=True, null=True, verbose_name='Filidentifierare', help_text='Unik filidentifierare i lagringsytan')
     title = models.CharField(max_length=255, blank=True, null=True)
     text = models.TextField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True, verbose_name='Beskrivningar', help_text='Tidsatta beskrivningar')
+    utterances = models.TextField(blank=True, null=True, verbose_name='Yttranden', help_text='Yttranden med ord')
     comment = models.TextField(blank=True, null=True, verbose_name='Kommentar', help_text='Publik')
 
     # Transcription task

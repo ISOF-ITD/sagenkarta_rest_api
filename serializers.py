@@ -244,6 +244,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
 	description = serializers.SerializerMethodField()
+	utterances = serializers.SerializerMethodField()
 
 	"""
 	Only show public transcriptionstatuses
@@ -275,6 +276,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 			# Transcription:
 			'text',
 			'description',
+			'utterances',
 			'comment',
 			'transcriptionstatus',
 			'transcriptiontype',
@@ -289,6 +291,15 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 			return json.loads(obj.description) if obj.description else []
 		except json.JSONDecodeError:
 			return []
+
+
+	def get_utterances(self, obj):
+		""" Ensure description is returned as a list of dictionaries instead of a JSON string. """
+		try:
+			return json.loads(obj.utterances) if obj.utterances else []
+		except json.JSONDecodeError:
+			return []
+
 
 class RecordsCategorySerializer(serializers.ModelSerializer):
 	category = serializers.CharField(source='category.id')
