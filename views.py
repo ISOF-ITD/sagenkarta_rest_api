@@ -1266,99 +1266,102 @@ class DescribeViewSet(viewsets.ViewSet):
         email = data.get("from_email", "")
 
         try:
-            records = Records.objects.get(id=record_id)
-            #records = RecordsMedia.objects.get(id=record_id)
-            records_media = RecordsMedia.objects.filter(record=record_id, source=file).first()
-            if records is not None:
-                existing_text = json.loads(records_media.description or "[]")
-                logger.debug(transcribesession)
-                logger.debug(str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')))
-                if str(records_media.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
-                    action = None
-                    message = ''
-                    # INSERT: If start_time: new entry
-                    if start_time is not None:
-                        # Ensure start time is unique
-                        if any(entry['start'] == start_time for entry in existing_text):
-                            return Response({"error": "Start time must be unique."}, status=status.HTTP_400_BAD_REQUEST)
-                        time_exists = False
-                        for entry in existing_text:
-                            # If start_from in elements
-                            if entry["start"] == start_from:
-                                time_exists = True
-                                message = 'start_from exists'
-                        if not time_exists:
-                            # Keep time format from client
-                            # OR standardize time format here?
-                            if change_to is not None:
-                                new_entry = {"text": change_to, "start": start_time}
-                            if terms is not None:
-                                new_entry = {"terms": terms, "start": start_time}
-                            if change_to is not None and terms is not None:
-                                new_entry = {"text": change_to, "terms": terms, "start": start_time}
-                            action = 'insert'
-                            start_time_to_log = start_time_sec
-                            existing_text.append(new_entry)
-
-                    else:
-                        # UPDATE TEXT: Check if text change: update
-                        if start_from is not None and change_from is not None and change_to is not None:
-                            for entry in existing_text:
-                                # If start_to in elements
-                                if entry["start"] == start_from:
-                                    action = 'update'
-                                    entry["text"] = change_to
-                                    start_time_to_log = start_from_sec
-                            if action is None:
-                                message = 'start_to does not exist'
-                        # UPDATE TIME: Check if time change: update
-                        # NOT YET TESTED
-                        if start_from is not None and start_to is not None:
+            record = Records.objects.get(id=record_id)
+            #record = RecordsMedia.objects.get(id=record_id)
+            if record.transcriptionstatus == 'undertranscription':
+                records_media = RecordsMedia.objects.filter(record=record_id, source=file, transcriptionstatus='readytotranscribe').first()
+                if records_media is not None:
+                    existing_text = json.loads(records_media.description or "[]")
+                    logger.debug(transcribesession)
+                    logger.debug(str(record.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')))
+                    if str(record.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                        action = None
+                        message = ''
+                        # INSERT: If start_time: new entry
+                        if start_time is not None:
+                            # Ensure start time is unique
+                            if any(entry['start'] == start_time for entry in existing_text):
+                                return Response({"error": "Start time must be unique."}, status=status.HTTP_400_BAD_REQUEST)
+                            time_exists = False
                             for entry in existing_text:
                                 # If start_from in elements
                                 if entry["start"] == start_from:
-                                    entry["start"] = start_to
-                                    # Log start_time
-                                    start_time_to_log = start_to_sec
-                                    action = 'update'
-                            if action is None:
-                                message = 'start_from does not exist'
+                                    time_exists = True
+                                    message = 'start_from exists'
+                            if not time_exists:
+                                # Keep time format from client
+                                # OR standardize time format here?
+                                if change_to is not None:
+                                    new_entry = {"text": change_to, "start": start_time}
+                                if terms is not None:
+                                    new_entry = {"terms": terms, "start": start_time}
+                                if change_to is not None and terms is not None:
+                                    new_entry = {"text": change_to, "terms": terms, "start": start_time}
+                                action = 'insert'
+                                start_time_to_log = start_time_sec
+                                existing_text.append(new_entry)
 
-                    # Check if action valid
-                    if action is not None:
-                        # Ensure JSON elements are ordered by start time
-                        existing_text = sorted(existing_text, key=lambda x: x['start'])
+                        else:
+                            # UPDATE TEXT: Check if text change: update
+                            if start_from is not None and change_from is not None and change_to is not None:
+                                for entry in existing_text:
+                                    # If start_to in elements
+                                    if entry["start"] == start_from:
+                                        action = 'update'
+                                        entry["text"] = change_to
+                                        start_time_to_log = start_from_sec
+                                if action is None:
+                                    message = 'start_to does not exist'
+                            # UPDATE TIME: Check if time change: update
+                            # NOT YET TESTED
+                            if start_from is not None and start_to is not None:
+                                for entry in existing_text:
+                                    # If start_from in elements
+                                    if entry["start"] == start_from:
+                                        entry["start"] = start_to
+                                        # Log start_time
+                                        start_time_to_log = start_to_sec
+                                        action = 'update'
+                                if action is None:
+                                    message = 'start_from does not exist'
 
-                        with transaction.atomic():
-                            records_media.description = json.dumps(existing_text)
-                            # DO NOT change transcriptiondate as it is the sessionid:
-                            # records_media.transcriptiondate = Now()
-                            # Save contributor: Where? See example records_media.contributeby below
-                            records_media.save()
+                        # Check if action valid
+                        if action is not None:
+                            # Ensure JSON elements are ordered by start time
+                            existing_text = sorted(existing_text, key=lambda x: x['start'])
 
-                            # Log the change
-                            user, _ = CrowdSourceUsers.objects.get_or_create(userid=username,
-                                                                             defaults={"name": username, "email": email})
-                            TextChanges.objects.create(
-                                recordsmedia=records_media,
-                                type='desc',
-                                action=action,
-                                start=start_time_to_log,
-                                end=start_to_sec,
-                                # value=json.dumps(existing_text),
-                                change_from=change_from,
-                                change_to=change_to,
-                                changedby=user
-                            )
+                            with transaction.atomic():
+                                records_media.description = json.dumps(existing_text)
+                                # DO NOT change transcriptiondate as it is the sessionid:
+                                # records_media.transcriptiondate = Now()
+                                # Save contributor: Where? See example records_media.contributeby below
+                                records_media.save()
 
-                            # Update contributeby field
-                            unique_users = TextChanges.objects.filter(recordsmedia=records_media).values_list("changedby__name",
-                                                                                                              flat=True).distinct()
-                            # contributeby does not exist YET?
-                            records_media.contributeby = ", ".join(unique_users)
-                            records_media.save()
+                                # Log the change
+                                user, _ = CrowdSourceUsers.objects.get_or_create(userid=username,
+                                                                                 defaults={"name": username, "email": email})
+                                TextChanges.objects.create(
+                                    recordsmedia=records_media,
+                                    type='desc',
+                                    action=action,
+                                    start=start_time_to_log,
+                                    end=start_to_sec,
+                                    # value=json.dumps(existing_text),
+                                    change_from=change_from,
+                                    change_to=change_to,
+                                    changedby=user
+                                )
+
+                                # Update contributeby field
+                                unique_users = TextChanges.objects.filter(recordsmedia=records_media).values_list("changedby__name",
+                                                                                                                  flat=True).distinct()
+                                # contributeby does not exist YET?
+                                records_media.contributeby = ", ".join(unique_users)
+                                records_media.save()
+                        else:
+                            return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
                     else:
-                        return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"error": "Uppdateras av annan användare."}, status=status.HTTP_400_BAD_REQUEST)
                 else:
                     return Response({"error": "Uppdateras av annan användare."}, status=status.HTTP_400_BAD_REQUEST)
             else:
