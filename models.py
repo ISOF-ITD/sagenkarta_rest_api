@@ -384,6 +384,7 @@ class RecordsMedia(models.Model):
     transcription_comment = models.TextField(blank=True, null=True)
     transcribedby = models.ForeignKey(CrowdSourceUsers, db_column='transcribedby', null=True, blank=True, on_delete=DO_NOTHING, )
     approvedate = models.DateTimeField(null=True, blank=True, verbose_name="Godkänd datum")
+    contributors = models.TextField(blank=True, null=True, verbose_name='Bidragsgivare', help_text='Bidragsgivare som angett namn')
 
     #Only publish text when transcriptionstatus published
     def text_to_publish(self):

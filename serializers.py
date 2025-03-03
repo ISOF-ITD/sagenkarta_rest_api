@@ -278,6 +278,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 			'description',
 			'utterances',
 			'comment',
+			'contributors',
 			'transcriptionstatus',
 			'transcriptiontype',
 			'transcribedby',

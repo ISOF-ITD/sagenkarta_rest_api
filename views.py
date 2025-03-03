@@ -1213,6 +1213,7 @@ class DescribeViewSet(viewsets.ViewSet):
 
             if record is not None:
                 with transaction.atomic():
+                    # Maybe: Also check that the record of RecordsMedia has transcriptiontype audio? record__transcriptiontype='audio'
                     if record.transcriptionstatus == 'readytotranscribe':
                         record.transcriptionstatus = 'undertranscription'
                         record.transcriptiondate = Now()
@@ -1269,6 +1270,7 @@ class DescribeViewSet(viewsets.ViewSet):
             record = Records.objects.get(id=record_id)
             #record = RecordsMedia.objects.get(id=record_id)
             if record.transcriptionstatus == 'undertranscription':
+                # Maybe: Also check that the record of RecordsMedia has transcriptiontype audio? record__transcriptiontype='audio'
                 records_media = RecordsMedia.objects.filter(record=record_id, source=file, transcriptionstatus='readytotranscribe').first()
                 if records_media is not None:
                     existing_text = json.loads(records_media.description or "[]")
@@ -1352,11 +1354,12 @@ class DescribeViewSet(viewsets.ViewSet):
                                     changedby=user
                                 )
 
-                                # Update contributeby field
+                                # Update contributor field
+                                # IF need: Add check user status/role if user should be registered and shown?
                                 unique_users = TextChanges.objects.filter(recordsmedia=records_media).values_list("changedby__name",
                                                                                                                   flat=True).distinct()
-                                # contributeby does not exist YET?
-                                records_media.contributeby = ", ".join(unique_users)
+                                unique_users_text = "; ".join(unique_users)
+                                records_media.contributors = unique_users_text
                                 records_media.save()
                         else:
                             return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
