@@ -1331,7 +1331,7 @@ class DescribeViewSet(viewsets.ViewSet):
                             existing_text = sorted(existing_text, key=lambda x: x['start'])
 
                             with transaction.atomic():
-                                records_media.description = json.dumps(existing_text)
+                                records_media.description = json.dumps(existing_text, ensure_ascii=False)
                                 # DO NOT change transcriptiondate as it is the sessionid:
                                 # records_media.transcriptiondate = Now()
                                 # Save contributor: Where? See example records_media.contributeby below
