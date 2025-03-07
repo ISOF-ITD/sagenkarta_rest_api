@@ -722,7 +722,7 @@ def save_message_comment(messageComment, supertranscriber, transcribed_object):
 
 def calculate_transcribe_time(page_id, transcribed_object):
     """
-    Calculate transcribe time
+    Calculate transcribe time in minutes
     """
     transcribe_time = 0
     if page_id is None:
@@ -1330,7 +1330,10 @@ class DescribeViewSet(viewsets.ViewSet):
                         # Check if action valid
                         if action is not None:
                             # Ensure JSON elements are ordered by start time
-                            existing_text = sorted(existing_text, key=lambda x: x['start'])
+                            # For string minutes:seconds with leading zeros
+                            existing_text = sorted(existing_text, key=lambda x: time_to_seconds(x['start']))
+                            # For numerical values:
+                            # existing_text = sorted(existing_text, key=lambda x: x['start'])
 
                             with transaction.atomic():
                                 records_media.description = json.dumps(existing_text, ensure_ascii=False)
