@@ -1,4 +1,5 @@
-Django==3.2.16
+#Django==3.2.16
+Django==4.2.20
 # For openapi/swagger view:
 coreapi == 2.3.3
 #Django==3.2
@@ -15,18 +16,26 @@ Pillow==9.4.0
 # djangorestframework==3.7.3
 # Version in PlaceNameService:
 #djangorestframework==3.11.0
-djangorestframework==3.14.0
+#djangorestframework==3.14.0
+# django 4.2:
+djangorestframework==3.15.2
 django-rest-swagger == 2.2.0
 # requests is used by sagenkarta_rest_api
 # requests ONLY? used for test of proxy to isof-geoserver in isofGeoProxy:
 # Old version for testing:
 # requests==2.18.4
-requests==2.27.1
-django-cors-headers==3.10.1
+#requests==2.27.1
+requests==2.32.3
+#django-cors-headers==3.10.1
+django-cors-headers==4.7.0
 # Test: Handle: Denied by X-Frame-Option directive set to "SAME-ORIGIN":
 # django-csp==3.6
 # Used in external proxy services as LantmaterietProxyView:
 # django-revproxy==0.9.13
+# Since django-revproxy 0.13.0 is outdated and not actively maintained, you need to modify the source code of the package.
+# OR Downgrade requests to 2.26.0
+# There's no django-revproxy-ng package on PyPI.
+#django-revproxy-ng==
 django-revproxy==0.12.0
 # -e git+https://git@github.com/jazzband/django-revproxy@master#egg=django-revproxy
 # Testing error
@@ -42,7 +51,8 @@ django-revproxy==0.12.0
 # urllib3==1.16
 # Version in PlaceNameService:
 #urllib3==1.25.9
-urllib3==1.26.14
+#urllib3==1.26.14
+urllib3==2.3.0
 # ERROR: requests 2.18.4 has requirement urllib3<1.23,>=1.21.1, but you'll have urllib3 1.17 which is incompatible.
 # Latest supporting module requests 2.18.4:
 #urllib3==1.21.1

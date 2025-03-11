@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.urls import path, re_path, include
 from rest_framework import routers
 from . import views
 
@@ -19,17 +19,16 @@ router.register(r'transcribecancel', views.TranscribeCancelViewSet, basename='tr
 app_name = 'api'
 
 urlpatterns = [
-	url(r'^isofGeoProxy/', views.isofGeoProxy, name='IsofGeoProxy'),
-
-	url(r'^simple_lm_proxy/', views.SimpleLantmaterietProxy,  name='SimpleLantmaterietProxy'),
-	url(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
-	url(r'^lm_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietEpsg3857ProxyView.as_view()),
-	url(r'^lm_nedtonad_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietNedtonadEpsg3857ProxyView.as_view()),
-	url(r'^lm_orto_proxy/(?P<path>.*)$', views.LantmaterietOrtoProxyView.as_view()),
-	url(r'^lm_historto_proxy/(?P<path>.*)$', views.LantmaterietHistOrtoProxyView.as_view()),
-	url(r'^isofgeo_proxy/(?P<path>.*)$', views.IsofGeoProxyView.as_view()),
-	url(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
-	url(r'^frigg_static/(?P<path>.*)$', views.FriggStaticView.as_view()),
-	url(r'^filemaker_proxy/(?P<path>.*)$', views.FilemakerProxyView.as_view()),
-	url(r'^', include(router.urls)),
+    path('isofGeoProxy/', views.isofGeoProxy, name='IsofGeoProxy'),
+    path('simple_lm_proxy/', views.SimpleLantmaterietProxy, name='SimpleLantmaterietProxy'),
+    re_path(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
+    re_path(r'^lm_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietEpsg3857ProxyView.as_view()),
+    re_path(r'^lm_nedtonad_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietNedtonadEpsg3857ProxyView.as_view()),
+    re_path(r'^lm_orto_proxy/(?P<path>.*)$', views.LantmaterietOrtoProxyView.as_view()),
+    re_path(r'^lm_historto_proxy/(?P<path>.*)$', views.LantmaterietHistOrtoProxyView.as_view()),
+    re_path(r'^isofgeo_proxy/(?P<path>.*)$', views.IsofGeoProxyView.as_view()),
+    re_path(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
+    re_path(r'^frigg_static/(?P<path>.*)$', views.FriggStaticView.as_view()),
+    re_path(r'^filemaker_proxy/(?P<path>.*)$', views.FilemakerProxyView.as_view()),
+    path('', include(router.urls)),
 ]
