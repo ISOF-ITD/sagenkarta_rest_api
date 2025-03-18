@@ -12,7 +12,8 @@ router.register(r'transcribe', views.TranscribeViewSet, basename='transcribe')
 router.register(r'transcribesave', views.TranscribeSaveViewSet, basename='transcribesave')
 router.register(r'transcribestart', views.TranscribeStartViewSet, basename='transcribestart')
 router.register(r'transcribecancel', views.TranscribeCancelViewSet, basename='transcribecancel')
-#router.register(r'describe', views.DescribeViewSet, basename='describe')
+router.register(r'describe', views.DescribeViewSet, basename='describe')
+router.register(r'utterances', views.UtterancesViewSet, basename='utterances')
 
 # App name must be specified,
 # otherwise Django will complain about the URL's.
