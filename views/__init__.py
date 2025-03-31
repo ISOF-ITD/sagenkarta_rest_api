@@ -1,14 +1,18 @@
 from django.db.models.functions import Now
 from datetime import datetime
 
+from django.utils.dateparse import parse_datetime
+from django.utils.html import strip_tags
+from rest_framework.exceptions import ValidationError
+import re
 from rest_framework.permissions import AllowAny
 
-from .models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers, RecordsMedia, \
+from sagenkarta_rest_api.models import Records, Persons, Socken, Categories, RecordsPersons, CrowdSourceUsers, RecordsMedia, \
     set_avoid_timer_before_update_of_search_database, RecordsMedia, TextChanges, CrowdSourceUsers
 from django.contrib.auth.models import User
 import requests
 from rest_framework import viewsets, permissions
-from .serializers import RecordsSerializer, PersonsSerializer, SockenSerializer, CategorySerializer
+from sagenkarta_rest_api.serializers import RecordsSerializer, PersonsSerializer, SockenSerializer, CategorySerializer
 from rest_framework.response import Response
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -26,8 +30,8 @@ from rest_framework import viewsets, status, serializers
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from . import config
-from . import secrets_env
+from sagenkarta_rest_api import config
+from sagenkarta_rest_api import secrets_env
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1175,9 +1179,9 @@ class DescribeUpdateSerializer(serializers.Serializer):
 
     def validate_terms(self, value):
         """Ensure that all 'term' values are unique."""
-        term_values = [term["term"] for term in value]
+        term_values = [term["term"].lower() for term in value]
         if len(term_values) != len(set(term_values)):
-            raise serializers.ValidationError("Terms must be unique.")
+            raise serializers.ValidationError("Terms must be case-insensitively unique.")
         return value
 
 class DescribeStartSerializer(serializers.Serializer):
@@ -1357,9 +1361,13 @@ class DescribeViewSet(viewsets.ViewSet):
                                 # Save contributor: Where? See example records_media.contributeby below
                                 records_media.save()
 
+                                # Prevent CSV injection
+                                clean_name = strip_tags(username).replace(';', '')
                                 # Log the change
-                                user, _ = CrowdSourceUsers.objects.get_or_create(userid=username,
-                                                                                 defaults={"name": username, "email": email})
+                                user, _ = CrowdSourceUsers.objects.get_or_create(
+                                    userid=clean_name,
+                                    defaults={"name": clean_name, "email": email}
+                                )
                                 TextChanges.objects.create(
                                     recordsmedia=records_media,
                                     type='desc',
@@ -1386,7 +1394,10 @@ class DescribeViewSet(viewsets.ViewSet):
                 else:
                     return Response({"error": "Uppdateras av annan användare."}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({"error": "Objektet finns inte."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": f"Record media med source {file} finns inte"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
             if existing_text is None:
                 response_data = []
@@ -1463,7 +1474,8 @@ class UtterancesViewSet(viewsets.ViewSet):
                     existing_text = json.loads(records_media.utterances or "[]")
                     logger.debug(transcribesession)
                     logger.debug(str(record.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')))
-                    if str(record.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in transcribesession:
+                    session_time = parse_datetime(transcribesession)
+                    if record.transcriptiondate.replace(microsecond=0) == session_time.replace(microsecond=0):
                         action = None
                         message = ''
                         # INSERT: If start_time: new entry
@@ -1567,7 +1579,10 @@ class UtterancesViewSet(viewsets.ViewSet):
                 else:
                     return Response({"error": "Uppdateras av annan användare."}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({"error": "Objektet finns inte."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": f"Record media med source {file} finns inte"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
             if existing_text is None:
                 response_data = []
