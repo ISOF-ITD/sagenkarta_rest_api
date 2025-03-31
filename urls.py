@@ -1,6 +1,7 @@
 from django.urls import path, re_path, include
 from rest_framework import routers
 from . import views
+from .views.describe_views import DescribeViewSet
 
 router = routers.DefaultRouter()
 router.register(r'records', views.RecordsViewSet, basename='record')
@@ -12,7 +13,7 @@ router.register(r'transcribe', views.TranscribeViewSet, basename='transcribe')
 router.register(r'transcribesave', views.TranscribeSaveViewSet, basename='transcribesave')
 router.register(r'transcribestart', views.TranscribeStartViewSet, basename='transcribestart')
 router.register(r'transcribecancel', views.TranscribeCancelViewSet, basename='transcribecancel')
-router.register(r'describe', views.DescribeViewSet, basename='describe')
+router.register(r'describe', DescribeViewSet, basename='describe')
 router.register(r'utterances', views.UtterancesViewSet, basename='utterances')
 
 # App name must be specified,
