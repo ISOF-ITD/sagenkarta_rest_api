@@ -34,6 +34,9 @@ from sagenkarta_rest_api import config
 from sagenkarta_rest_api import secrets_env
 
 import logging
+
+from sagenkarta_rest_api.views.describe_views import DescribeUpdateSerializer
+
 logger = logging.getLogger(__name__)
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
