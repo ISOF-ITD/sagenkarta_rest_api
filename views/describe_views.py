@@ -198,6 +198,8 @@ class DescribeViewSet(viewsets.ViewSet):
                                     if entry["start"] == start_from:
                                         action = 'update'
                                         entry["text"] = change_to
+                                        if terms is not None:
+                                            entry["terms"] = terms
                                         start_time_to_log = start_from_sec
                                 if action is None:
                                     message = 'start_to does not exist'
@@ -212,6 +214,9 @@ class DescribeViewSet(viewsets.ViewSet):
                                 for entry in existing_text:
                                     if entry["start"] == start_from:
                                         entry["start"] = start_to
+                                        # FIX: also update terms if present
+                                        if terms is not None:
+                                            entry["terms"] = terms
                                         action = 'update'
                                         start_time_to_log = start_to_sec
                                 if action is None:
