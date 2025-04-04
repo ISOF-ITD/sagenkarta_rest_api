@@ -73,6 +73,7 @@ class DescribeViewSet(viewsets.ViewSet):
     Provides endpoints to 'start' (lock) a transcription session,
     'change' (update/insert) description, and 'delete' single description.
     """
+    transcriptionstatuses_allowed_to_update = {'readytocontribute', 'readytotranscribe'}
 
     authentication_classes = (
         CsrfExemptSessionAuthentication, BasicAuthentication
@@ -99,7 +100,7 @@ class DescribeViewSet(viewsets.ViewSet):
             record = Records.objects.get(id=record_id)
             if record is not None:
                 with transaction.atomic():
-                    if record.transcriptionstatus == 'readytotranscribe':
+                    if record.transcriptionstatus in self.transcriptionstatuses_allowed_to_update:
                         record.transcriptionstatus = 'undertranscription'
                         record.transcriptiondate = Now()
                         record.save()
@@ -157,7 +158,7 @@ class DescribeViewSet(viewsets.ViewSet):
                 records_media = RecordsMedia.objects.filter(
                     record=record_id,
                     source=file,
-                    transcriptionstatus='readytotranscribe'
+                    transcriptionstatus__in=self.transcriptionstatuses_allowed_to_update
                 ).first()
                 if records_media is not None:
                     existing_text = json.loads(records_media.description or "[]")
@@ -175,6 +176,7 @@ class DescribeViewSet(viewsets.ViewSet):
 
                             time_exists = False
                             for entry in existing_text:
+                                # Use start_from for existing entries
                                 if entry["start"] == start_from:
                                     time_exists = True
                                     message = 'start_from exists'
@@ -197,6 +199,8 @@ class DescribeViewSet(viewsets.ViewSet):
                                 for entry in existing_text:
                                     if entry["start"] == start_from:
                                         action = 'update'
+                                        # Log old value in change from:
+                                        change_from = entry["text"]
                                         entry["text"] = change_to
                                         if terms is not None:
                                             entry["terms"] = terms

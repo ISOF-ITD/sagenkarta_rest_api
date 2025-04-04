@@ -133,6 +133,8 @@ class Transcription_statuses(models.TextChoices):
     accession = 'accession', 'Accession'  # Makes it clear that "accessions" will not be transcribed
     nottranscribable = 'nottranscribable', 'Icke transkriberbar'
     untranscribed = 'untranscribed', 'Ej transkriberad'
+    # For processes like contributions for audio of content descriptions or correcting utterances
+    readytocontribute = 'readytocontribute', 'Redo att bidra'
     readytotranscribe = 'readytotranscribe', 'Publicerad för transkribering'
     undertranscription = 'undertranscription', 'Under transkription'
     transcribed = 'transcribed', 'Transkriberad'
@@ -141,6 +143,8 @@ class Transcription_statuses(models.TextChoices):
     approved = 'approved', 'Godkänd'
     published = 'published', 'Publicerad'
     autopublished = 'autopublished', 'Autopublicerad'
+    # For processes like contributions for audio of content descriptions or correcting utterances
+    done = 'done', 'Klar'
 
 class Persons(models.Model):
     archive_row = models.IntegerField(default=None, blank=True, null=True)
