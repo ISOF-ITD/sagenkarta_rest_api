@@ -238,11 +238,29 @@ class DescribeViewSet(viewsets.ViewSet):
                                 records_media.save()
 
                                 # Log the change
-                                clean_name = strip_tags(username).replace(';', '')
-                                user, _ = CrowdSourceUsers.objects.get_or_create(
-                                    userid=clean_name,
-                                    defaults={"name": clean_name, "email": email}
-                                )
+                                clean_name = None
+                                if username is not None:
+                                    clean_name = strip_tags(username).replace(';', '')
+                                crowdsource_user = CrowdSourceUsers()
+                                # TODO: Find unique id if transcription rejected and new user starts with same recordid
+                                crowdsource_user.userid = 'rid' + record_id
+                                crowdsource_user.name = clean_name
+                                crowdsource_user.email = email
+                                if crowdsource_user.email is not None or crowdsource_user.name is not None:
+                                    # Check if crowdsource user already exists:
+                                    existing_crowdsource_user = CrowdSourceUsers.objects.filter(
+                                        name=crowdsource_user.name,
+                                        email=crowdsource_user.email).first()
+                                    if existing_crowdsource_user is None:
+                                        crowdsource_user.createdate = Now()
+                                        crowdsource_user.save()
+                                    else:
+                                        crowdsource_user = existing_crowdsource_user
+
+                                #user, _ = CrowdSourceUsers.objects.get_or_create(
+                                #    userid=crowdsource_user.userid,
+                                #    defaults={"name": clean_name, "email": email}
+                                #)
                                 TextChanges.objects.create(
                                     recordsmedia=records_media,
                                     type='desc',
@@ -251,7 +269,7 @@ class DescribeViewSet(viewsets.ViewSet):
                                     end=start_to_sec,
                                     change_from=change_from,
                                     change_to=change_to,
-                                    changedby=user
+                                    changedby=crowdsource_user
                                 )
 
                                 # Update contributor field:
