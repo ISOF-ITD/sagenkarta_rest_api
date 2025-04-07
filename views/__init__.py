@@ -614,6 +614,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                     if 'from_name' in jsonData:
                         crowdsource_user = save_crowdsource_user(crowdsource_user, jsonData, recordid)
                     else:
+                        # Probably not needed anymore as crowdsource_user is set to anonymous user in create_or_update_crowdsource_user called by save_crowdsource_user
                         # Add anonymous user:
                         crowdsource_user = CrowdSourceUsers.objects.filter(userid='crowdsource-anonymous').first()
                     if crowdsource_user is not None:
@@ -778,6 +779,10 @@ def create_or_update_crowdsource_user(crowdsource_user):
         else:
             # Use existing
             crowdsource_user = existing_crowdsource_user
+    else:
+        # Add anonymous user:
+        crowdsource_user = CrowdSourceUsers.objects.filter(userid='crowdsource-anonymous').first()
+
     return crowdsource_user
 
 
