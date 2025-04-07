@@ -35,8 +35,6 @@ from sagenkarta_rest_api import secrets_env
 
 import logging
 
-from sagenkarta_rest_api.views.describe_views import DescribeUpdateSerializer
-
 logger = logging.getLogger(__name__)
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -760,6 +758,12 @@ def save_crowdsource_user(crowdsource_user, jsonData, recordid):
         crowdsource_user.email = jsonData['from_email']
         # Set "transcribed by" when published in admin interface:
         # transcribed_object.comment = 'Transkriberat av: ' + jsonData['from_name'] + ', ' + jsonData['from_email']
+    crowdsource_user = create_or_update_crowdsource_user(crowdsource_user)
+    # print(transcribed_object)
+    return crowdsource_user
+
+
+def create_or_update_crowdsource_user(crowdsource_user):
     if crowdsource_user.email is not None or crowdsource_user.name is not None:
 
         # Check if crowdsource user already exists:
@@ -774,7 +778,6 @@ def save_crowdsource_user(crowdsource_user, jsonData, recordid):
         else:
             # Use existing
             crowdsource_user = existing_crowdsource_user
-    # print(transcribed_object)
     return crowdsource_user
 
 

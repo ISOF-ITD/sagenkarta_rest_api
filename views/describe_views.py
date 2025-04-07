@@ -9,6 +9,9 @@ import json
 import logging
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
+from sagenkarta_rest_api.views import create_or_update_crowdsource_user
+
+
 class CsrfExemptSessionAuthentication(SessionAuthentication):
 
     def enforce_csrf(self, request):
@@ -242,20 +245,15 @@ class DescribeViewSet(viewsets.ViewSet):
                                 if username is not None:
                                     clean_name = strip_tags(username).replace(';', '')
                                 crowdsource_user = CrowdSourceUsers()
-                                # TODO: Find unique id if transcription rejected and new user starts with same recordid
-                                crowdsource_user.userid = 'rid' + record_id
+                                # recordid might not be unique, so use transcribesession as unique id
+                                crowdsource_user.userid = 'tid' + str(transcribesession.replace(':', '').replace(' ', '-'))
                                 crowdsource_user.name = clean_name
                                 crowdsource_user.email = email
-                                if crowdsource_user.email is not None or crowdsource_user.name is not None:
-                                    # Check if crowdsource user already exists:
-                                    existing_crowdsource_user = CrowdSourceUsers.objects.filter(
-                                        name=crowdsource_user.name,
-                                        email=crowdsource_user.email).first()
-                                    if existing_crowdsource_user is None:
-                                        crowdsource_user.createdate = Now()
-                                        crowdsource_user.save()
-                                    else:
-                                        crowdsource_user = existing_crowdsource_user
+                                crowdsource_user = create_or_update_crowdsource_user(crowdsource_user)
+                                if crowdsource_user is not None:
+                                    # TODO: if user undefined add anonymous user 'crowdsource-anonymous':
+                                    # if len(crowdsource_user.name) == 0 and len(crowdsource_user.email):
+                                    records_media.transcribedby = crowdsource_user
 
                                 #user, _ = CrowdSourceUsers.objects.get_or_create(
                                 #    userid=crowdsource_user.userid,
