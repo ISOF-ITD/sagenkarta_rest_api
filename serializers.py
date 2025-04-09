@@ -384,6 +384,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 	copyrightlicense = serializers.CharField(source='copyright_license')
 	numberofonerecord = serializers.SerializerMethodField('number_of_one_record')
 	numberoftranscribedonerecord = serializers.SerializerMethodField('number_of_transcribed_one_record')
+	numberofcontributedonerecord = serializers.SerializerMethodField('number_of_contributed_one_record')
 	numberoftranscribedpages = serializers.SerializerMethodField('number_of_transcribed_pages')
 	numberofpages = serializers.SerializerMethodField('number_of_pages')
 	transcribedby = serializers.SerializerMethodField('transcribed_by')
@@ -462,6 +463,22 @@ class RecordsSerializer(serializers.ModelSerializer):
 				publishstatus='published',
 				transcriptionstatus__in=['published', 'autopublished'] ,
 				record_type='one_record',
+				taxonomy__type='tradark',id__startswith=obj.id
+				).distinct().count()
+		return count
+	
+	# number_of_contributed_one_record (number of records with type one_record and transcriptionstatus=done)
+	# for records of type one_accession_row with same record.archive_id
+	def number_of_contributed_one_record(self, obj):
+		count = 0
+		if obj.record_type == 'one_accession_row':
+			# Get only published "tradark" one_record instances for this archive_id
+			# that also is imported "directly" from accessionsregistret (record_type='one_record', taxonomy__type='tradark')
+			count = Records.objects.filter(
+				publishstatus='published',
+				transcriptionstatus='done',
+				record_type='one_record',
+				# `startswith` kommer att fungera för ljud eftersom ljud får id med tillägg av "_a" i slutet
 				taxonomy__type='tradark',id__startswith=obj.id
 				).distinct().count()
 		return count
@@ -564,6 +581,7 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'materialtype',
 			'numberofonerecord',
 			'numberoftranscribedonerecord',
+			'numberofcontributedonerecord',
 			'numberofpages',
 			'numberoftranscribedpages',
 			'recordtype',
