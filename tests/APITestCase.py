@@ -12,23 +12,25 @@ class APITestCase(TestCase):
 
     python manage.py test
     """
-    def setUp(self):
-        self.client = APIClient()
-        self.base_url = "/api"
-        # self.base_url = "http://localhost:8000/api"
-        self.record_id = "s03684:a_f_128326_0"
-        self.transcribe_session = "2025-02-28 16:21:33"
+    client = APIClient()
+    base_url = "/api"
+    record_id = "s03684:a_f_128326_0"
+    transcribe_session = "2025-02-28 16:21:33"
+
+    @classmethod
+    def setUpTestData(cls):
+        # from django.apps import apps
+        # apps.check_apps_ready()  # Ensure apps are loaded
+        response = cls.client.post(f"{cls.base_url}/transcribestart", {"recordid": cls.record_id}, format='json')
+        assert response.status_code in [status.HTTP_200_OK, status.HTTP_201_CREATED]
+        assert "success" in response.json()
 
     def tearDown(self):
-        self.client.post(f"{self.base_url}/transcribecancel", {"recordid": self.record_id, "transcribesession": self.transcribe_session}, format='json')
-
-    def test_start_transcribe_session(self):
-        response = self.client.post(f"{self.base_url}/transcribestart", {"recordid": self.record_id}, format='json')
-        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_201_CREATED])
-        self.assertIn("success", response.json())
+        data = {"recordid": self.record_id, "transcribesession": self.transcribe_session}
+        print(data)
+        self.__class__.client.post(f"{self.base_url}/transcribecancel", data, format='json')
 
     def test_update_utterance(self):
-        self.test_start_transcribe_session()
         data = {
             "recordid": self.record_id,
             "file": "Lund/Ljudarkiv/3001-4000/3601-3700/S 3684A Byarum SMÅL.MP3",
@@ -45,7 +47,6 @@ class APITestCase(TestCase):
         self.assertIn("success", response.json())
 
     def test_update_description(self):
-        self.test_start_transcribe_session()
         data = {
             "recordid": self.record_id,
             "file": "Lund/Ljudarkiv/3001-4000/3601-3700/S 3684A Byarum SMÅL.MP3",
@@ -61,7 +62,6 @@ class APITestCase(TestCase):
         self.assertIn("success", response.json())
 
     def test_update_transcribe(self):
-        self.test_start_transcribe_session()
         data = {
             "transcribesession": self.transcribe_session,
             "recordid": self.record_id,
@@ -75,7 +75,6 @@ class APITestCase(TestCase):
         self.assertIn("success", response.json())
 
     def test_update_transcribe_with_page(self):
-        self.test_start_transcribe_session()
         data = {
             "transcribesession": self.transcribe_session,
             "recordid": self.record_id,
