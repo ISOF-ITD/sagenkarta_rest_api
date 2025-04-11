@@ -516,6 +516,7 @@ def save_transcription(request, response_message, response_status, set_status_to
     response_status
     set_status_to_transcribed Boolean: True if transcription is finished, i.e. "sent", otherwise only saved temporarily
     """
+    jsonData = None
     if 'json' in request.data:
         jsonData = json.loads(request.data['json'])
         # print(jsonData)
@@ -1061,6 +1062,10 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
         response_message = None
         # if request.data is not None:
         if 'json' in request.data:
+            # NOT YET WORKING: For handling other data type "json"
+            # if isinstance(request.data, dict):
+            #    jsonData = request.data['json']
+            # else:
             jsonData = json.loads(request.data['json'])
             # print(jsonData)
             logger.debug("TranscribeCancelViewSet post " + str(jsonData))

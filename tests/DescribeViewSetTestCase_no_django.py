@@ -90,6 +90,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
             "from_name": "pertest",
             "start": "3:05",
         }
+        print(logid)
         print(data)
         response = requests.post(f"{self.base_url}/describe/delete/", json=data)
         self.log_response(response, logid)
