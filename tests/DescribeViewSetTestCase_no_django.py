@@ -19,8 +19,10 @@ class APIDescribeViewTestCase(unittest.TestCase):
     3. Validate tests
     Check output files
     Check data in for example TradarkAdmin
+        https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/textchanges/
+        https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/recordsmediareview
     Check json data for file in concerned record:
-    https://garm-test.isof.se/folkeservice/api/records/s03684:a_f_128326_a/
+        https://garm-test.isof.se/folkeservice/api/records/s03684:a_f_128326_a/
 
     TODO: Assertions does not work
     """
@@ -94,6 +96,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         print(data)
         response = requests.post(f"{self.base_url}/describe/delete/", json=data)
         self.log_response(response, logid)
+        # Check why we get status code 400 and it still works?
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
