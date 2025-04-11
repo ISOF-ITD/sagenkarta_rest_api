@@ -79,7 +79,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         cls.log_response(response, logid)
         assert response.status_code == 200, f"Failed to cancel transcription: {response.text}"
 
-    def test_delete_description(self):
+    def test_01_delete_description(self):
         # url_path = "/describe/delete/"
         logid = "test_delete_description /describe/delete"
         data = {
@@ -97,8 +97,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
-
-    def test_create_description(self):
+    def test_02_create_description(self):
         logid = "test_create_description /describe/change"
         # Get the current timestamp as a string
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -119,7 +118,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
 
-    def test_update_description(self):
+    def test_10_update_description(self):
         logid = "test_update_description /describe/change"
         # Get the current timestamp as a string
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -141,7 +140,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
 
-    def test_update_description_no_user(self):
+    def test_11_update_description_no_user(self):
         logid = "test_update_description_no_user /describe/change"
         # Get the current timestamp as a string
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -152,7 +151,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
             "transcribesession": self.transcribe_session,
             "start_from": "5:05",
             "change_from": "Jakthistorier på vilda björnar",
-            "change_to": "Jakthistorier på flera björnar" + logid + " " + timestamp_now
+            "change_to": "Jakthistorier på flera björnar " + logid + " " + timestamp_now
         }
         print(data)
         response = requests.post(f"{self.base_url}/describe/change/", json=data)
@@ -160,7 +159,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
-    def test_create_description_terms(self):
+    def test_20_create_description_terms(self):
         logid = "test_create_description /describe/change"
         # Get the current timestamp as a string
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -187,7 +186,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
 
-    def test_update_description_terms(self):
+    def test_21_update_description_terms(self):
         logid = "test_update_description /describe/change"
         # Get the current timestamp as a string
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
