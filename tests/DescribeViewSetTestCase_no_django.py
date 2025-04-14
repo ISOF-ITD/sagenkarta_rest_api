@@ -12,7 +12,10 @@ class APIDescribeViewTestCase(unittest.TestCase):
     This test case is independent of Django and can be executed in the shell.
 
     Run in shell:
-    1. folkeservice runserver
+    1. Kör API-server
+        cd /home/per/dev/server/folkeservice/sagenkarta_rest_api/
+        source ../current_venv/bin/activate
+        folkeservice runserver
     2. Start test
     python3 tests/DescribeViewSetTestCase_no_django.py 2> DescribeViewSetTestCase_no_django1.html
     python3 tests/DescribeViewSetTestCase_no_django.py > DescribeViewSetTestCase_no_django_$(date +"%Y-%m-%d:%H%M").txt 2> DescribeViewSetTestCase_no_django_$(date +"%Y-%m-%d:%H%M").html
@@ -26,6 +29,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
 
     TODO: Assertions does not work
     """
+    # base_url = "https://garm-test.isof.se/folkeservice/api"
     base_url = "http://localhost:8000/api"
     record_id = "s03684:a_f_128326_a"
     # Manual tests:
@@ -100,7 +104,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
-    def test_02_create_description(self):
+    def test_01_create_description(self):
         logid = "test_create_description /describe/change"
         # Get the current timestamp as a string
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
