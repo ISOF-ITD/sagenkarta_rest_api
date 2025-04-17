@@ -16,10 +16,12 @@ class APIDescribeViewTestCase(unittest.TestCase):
         cd /home/per/dev/server/folkeservice/sagenkarta_rest_api/
         source ../current_venv/bin/activate
         folkeservice runserver
-    2. Start test
+    2. Check transcriptionstatus is "ready to transcribe"
+        https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/records/s03684:a_f_128326_a/change/?_changelist_filters=q%3Ds03684:a_f_128326
+    3. Start test
     python3 tests/DescribeViewSetTestCase_no_django.py 2> DescribeViewSetTestCase_no_django1.html
     python3 tests/DescribeViewSetTestCase_no_django.py > DescribeViewSetTestCase_no_django_$(date +"%Y-%m-%d:%H%M").txt 2> DescribeViewSetTestCase_no_django_$(date +"%Y-%m-%d:%H%M").html
-    3. Validate tests
+    4. Validate tests
     Check output files
     Check data in for example TradarkAdmin
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/textchanges/
