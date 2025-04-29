@@ -131,6 +131,9 @@ class DescribeViewSet(viewsets.ViewSet):
     def change(self, request):
         """
         API endpoint for creating/updating text descriptions for the selected media.
+
+        Parameters:
+
         """
         serializer = DescribeUpdateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -333,7 +336,7 @@ class DescribeViewSet(viewsets.ViewSet):
                 records_media = RecordsMedia.objects.filter(
                     record=record_id,
                     source=file,
-                    transcriptionstatus='readytotranscribe'
+                    transcriptionstatus__in=self.transcriptionstatuses_allowed_to_update
                 ).first()
 
                 if records_media is None:

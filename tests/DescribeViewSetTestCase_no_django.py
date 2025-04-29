@@ -1,3 +1,4 @@
+import json
 import unittest
 from datetime import datetime
 
@@ -33,7 +34,10 @@ class APIDescribeViewTestCase(unittest.TestCase):
     """
     # base_url = "https://garm-test.isof.se/folkeservice/api"
     base_url = "http://localhost:8000/api"
-    record_id = "s03684:a_f_128326_a"
+    # Real public record:
+    # record_id = "s03684:a_f_128326_a"
+    # Record only for testing:
+    record_id = "s03684:a_f_X_128326_a"
     # Manual tests:
     #file = "Lund/Ljudarkiv/3001-4000/3601-3700/S 3684A Byarum SMÅL.MP3",
     # Automatic tests
@@ -78,13 +82,34 @@ class APIDescribeViewTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         logid = "tearDownClass transcribecancel"
-        # Cancel the transcription session
+
+        data = {
+            "transcribesession": cls.transcribe_session,
+            "recordid": cls.record_id,
+        }
+        # headers={"Content-Type": "application/json"}
         # data = {"recordid": cls.record_id, "transcribesession": cls.transcribe_session}
-        data = {"json": {"recordid": cls.record_id, "transcribesession": cls.transcribe_session}}
+        # data = {"json": {"recordid": cls.record_id, "transcribesession": cls.transcribe_session}}
+        # response = requests.post(f"{cls.base_url}/transcribecancel" + cls.use_slash, json=data)
+
+        # USED in client for transcribe: request as file
+        headers=None
+        files = {
+            # "json": (None, data)  # (filename, content)
+            # Convert the dictionary to a JSON string
+            "json": (None, json.dumps(data))  # (filename, content as JSON string)
+        }
         print(logid)
         print(data)
-        response = requests.post(f"{cls.base_url}/transcribecancel" + cls.use_slash, json=data)
+        print(files)
+        response=requests.post(f"{cls.base_url}/transcribecancel" + cls.use_slash,
+                                 files=files, headers=headers)
+
+        # NOT USED in client for transcribe:
+        #response = requests.post(f"{self.base_url}/transcribecancel/", json=data)
         cls.log_response(response, logid)
+        cls.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+        cls.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
         assert response.status_code == 200, f"Failed to cancel transcription: {response.text}"
 
     def test_01_delete_description(self):
@@ -106,7 +131,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
-    def test_01_create_description(self):
+    def test_02_create_description(self):
         logid = "test_create_description /describe/change"
         # Get the current timestamp as a string
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -118,7 +143,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
             "from_email": "pertest@isof.se",
             "from_name": "pertest",
             "start": "3:05",
-            "change_to": "Jakthistorier på flera björnar " + logid + " " + timestamp_now
+            "change_to": "Jakthistorier på flera björnar to DELETE " + logid + " " + timestamp_now
         }
         print(data)
         response = requests.post(f"{self.base_url}/describe/change/", json=data)
@@ -126,6 +151,25 @@ class APIDescribeViewTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
+    def test_03_create_description(self):
+        logid = "test_create_description /describe/change"
+        # Get the current timestamp as a string
+        timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(timestamp_now)
+        data = {
+            "recordid": self.record_id,
+            "file": self.file,
+            "transcribesession": self.transcribe_session,
+            "from_email": "pertest@isof.se",
+            "from_name": "pertest",
+            "start": "5:05",
+            "change_to": "Jakthistorier på flera björnar " + logid + " " + timestamp_now
+        }
+        print(data)
+        response = requests.post(f"{self.base_url}/describe/change/", json=data)
+        self.log_response(response, logid)
+        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
     def test_10_update_description(self):
         logid = "test_update_description /describe/change"
