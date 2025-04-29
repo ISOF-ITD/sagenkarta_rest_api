@@ -1058,7 +1058,7 @@ class TranscribeCancelViewSet(viewsets.ViewSet):
     # I'm almost certain the DRF authentication middleware entirely ignores any such decorator. https://stackoverflow.com/questions/19897973/how-to-unset-csrf-in-modelviewset-of-django-rest-framework
     # @method_decorator(csrf_exempt)
     def post(self, request, format=None):
-åä̈́        jsonData = None
+        jsonData = None
         response_status = 'false'
         response_message = None
         # if request.data is not None:
