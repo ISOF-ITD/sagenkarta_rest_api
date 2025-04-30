@@ -13,11 +13,11 @@ class APIDescribeViewTestCase(unittest.TestCase):
     This test case is independent of Django and can be executed in the shell.
 
     Run in shell:
-    1. Kör API-server
+    1. Vid behov: Starta API-server folkeservice
         cd /home/per/dev/server/folkeservice/sagenkarta_rest_api/
         source ../current_venv/bin/activate
         folkeservice runserver
-    2. Check transcriptionstatus is "ready to transcribe"
+    2. Check transcriptionstatus is "ready to contribute" (or transcribe)
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/records/s03684:a_f_128326_a/change/?_changelist_filters=q%3Ds03684:a_f_128326
     3. Start test
     python3 tests/DescribeViewSetTestCase_no_django.py 2> DescribeViewSetTestCase_no_django1.txt
@@ -25,6 +25,9 @@ class APIDescribeViewTestCase(unittest.TestCase):
     python3 tests/DescribeViewSetTestCase_no_django.py > DescribeViewSetTestCase_no_django_$(date +"%Y-%m-%d:%H%M")-log.txt 2> DescribeViewSetTestCase_no_django_$(date +"%Y-%m-%d:%H%M")-result.txt
     4. Validate tests
     Check output files: *-result.txt and if error *-log.txt
+    Example *-result.txt:
+        Ran 8 tests in 11.916s
+        OK
     Check data in for example TradarkAdmin
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/textchanges/
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/recordsmediareview
@@ -67,6 +70,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         data = response_json.get('data')
         recordid = data.get('recordid') if data else None
 
+        # print(logid + ' ' +f"transcribesession: {str(cls.transcribesession)}")
         print(logid + ' ' +f"Success: {success_value}")
         print(logid + ' ' +f"Record ID: {recordid}")
         cls.transcribe_session = data.get("transcribesession", None)
@@ -107,6 +111,7 @@ class APIDescribeViewTestCase(unittest.TestCase):
         }
         print(logid + ' ' + str(data))
         print(logid + ' ' + str(files))
+        # print(logid + ' ' +f"transcribesession: {str(cls.transcribesession)}")
         response=requests.post(f"{cls.base_url}/transcribecancel" + cls.use_slash,
                                  files=files, headers=headers)
 
