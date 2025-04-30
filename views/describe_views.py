@@ -75,6 +75,11 @@ class DescribeViewSet(viewsets.ViewSet):
     Handle descriptions for files in RecordsMedia.
     Provides endpoints to 'start' (lock) a transcription session,
     'change' (update/insert) description, and 'delete' single description.
+
+    Preconditions for starting a transcription session:
+    record.transactionstatus must be 'readytocontribute' or 'readytotranscribe'
+    Preconditions for updating, adding or inserting a description:
+    records_media.transactionstatus must be 'readytocontribute' or 'readytotranscribe'
     """
     transcriptionstatuses_allowed_to_update = {'readytocontribute', 'readytotranscribe'}
 
