@@ -535,17 +535,10 @@ def save_transcription(request, response_message, response_status, set_status_to
         else: # page_id is not None
             # find record to transcribe (transcribed_object) as RecordsMedia-object
             # add logging to see how this goes
-            print("RICO page_id: " + str(page_id))
-            print("RICO recordid: " + str(recordid))
 
             if RecordsMedia.objects.filter(record=recordid, source=page_id).exists():
-                print("RICO RecordsMedia-object found")
                 transcribed_object = RecordsMedia.objects.get(record=recordid, source=page_id)
                 transcribed_object_parent = Records.objects.get(pk=recordid)
-                print("RICO transcribed_object: " + str(transcribed_object))
-                print("RICO transcribed_object_parent: " + str(transcribed_object_parent))
-            else:
-                print("RICO RecordsMedia-object NOT found")
 
         # transcribed_record_arr += transcribed_object
         # if len(transcribed_record_arr) == 1:
