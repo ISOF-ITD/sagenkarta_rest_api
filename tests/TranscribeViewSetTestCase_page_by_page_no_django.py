@@ -21,18 +21,24 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/records/liu00198_5F194713_5F1/change/?_changelist_filters=q%3Dliu00198_194713
     3. Start test
     python3 tests/TranscribeViewSetTestCase_page_by_page_no_django.py 2> TranscribeViewSetTestCase_no_django1.html
-    python3 tests/TranscribeViewSetTestCase_page_by_page_no_django.py > TranscribeViewSetTestCase_page_by_page_no_django_$(date +"%Y-%m-%d:%H%M").txt 2> TranscribeViewSetTestCase_page_by_page_no_django_$(date +"%Y-%m-%d:%H%M").html
+    python3 tests/TranscribeViewSetTestCase_page_by_page_no_django.py > TranscribeViewSetTestCase_page_by_page_no_django_$(date +"%Y-%m-%d:%H%M")-log.txt 2> TranscribeViewSetTestCase_page_by_page_no_django_$(date +"%Y-%m-%d:%H%M")-result.txt
     4. Validate tests
-    Check output files
+    Check output files: *-result.txt and if error *-log.txt
+    Example *-result.txt:
+        Ran 2 tests in 8.493s
+        OK (skipped=1)
     Check data in for example TradarkAdmin
-        https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/textchanges/
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/recordsmediareview
-    Check json data for file in concerned record:
-        https://garm-test.isof.se/folkeservice/api/records/liu00198_194713_1/
+    Check text data for file in concerned record:
+        https://garm-test.isof.se/folkeservice/api/records/10789_X_27860_1/
+        (https://garm-test.isof.se/folkeservice/api/records/liu00198_194713_1/)
+        https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/recordsmediareview/1553540/change/
     """
     base_url = "http://localhost:8000/api"
-    record_id_page_by_page = "liu00198_194713_1"
-    page_file = "uppteckningar/liu_00100-00199/liu00198_0026.jpg"
+    # record_id_page_by_page = "10789_27860_1"
+    record_id_page_by_page = "10789_X_27860_1"
+    page_file_to_transcribe = "uppteckningar/ulma_10700-10799/10789_0001.jpg"
+    # page_file_to_cancel = "uppteckningar/ulma_10700-10799/10789_0002.jpg"
     transcribe_session = "2025-02-28 16:21:33"
     use_slash = "/"
     #use_slash = ""
@@ -73,9 +79,10 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
             # Convert the dictionary to a JSON string
             "json": (None, json.dumps(data))  # (filename, content as JSON string)
         }
-        print(logid)
-        print(files)
-        print(headers)
+        # print(logid + ' ' +f"transcribesession: {str(cls.transcribesession)}")
+        print(logid + ' ' + str(data))
+        print(logid + ' ' + str(files))
+        print(logid + ' ' + str(headers))
         response=requests.post(f"{cls.base_url}/transcribestart" + cls.use_slash,
                                  files=files, headers=headers)
 
@@ -90,10 +97,10 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
         data = response_json.get('data')
         recordid = data.get('recordid') if data else None
 
-        print(f"Success: {success_value}")
-        print(f"Record ID: {recordid}")
+        print(logid + ' ' +f"Success: {success_value}")
+        print(logid + ' ' +f"Record ID: {recordid}")
         cls.transcribe_session = data.get("transcribesession", None)
-        print(f"Transcribe session: {cls.transcribe_session}")
+        print(logid + ' ' +f"Transcribe session: {cls.transcribe_session}")
         assert response.status_code in [200, 201], f"Failed to start transcription: {response.text}"
         assert "success" in response.json(), f"Unexpected response: {response.json()}"
 
@@ -125,9 +132,10 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
             # Convert the dictionary to a JSON string
             "json": (None, json.dumps(data))  # (filename, content as JSON string)
         }
-        print(logid)
-        print(data)
-        print(files)
+        # print(logid + ' ' +f"transcribesession: {str(cls.transcribesession)}")
+        print(logid + ' ' + str(data))
+        print(logid + ' ' + str(files))
+        print(logid + ' ' + str(headers))
         response=requests.post(f"{cls.base_url}/transcribecancel" + cls.use_slash,
                                  files=files, headers=headers)
 
@@ -138,20 +146,20 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
         if response.json():
             # If transcribesession already cancelled as it should:
             assert response.json().get(
-                "success") == 'false', f"Expected 'success' to be false, but got: {response.json().get('success')}"
+                "success") == 'true', f"Expected 'success' to be true, but got: {response.json().get('success')}"
             # If transcribesession not cancelled as it should:
             #assert response.json().get(
             #    "success") == 'true', f"Expected 'success' to be true, but got: {response.json().get('success')}"
         # cls.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
-    def test_01_update_transcribe_with_page(self):
-        logid = "test_update_transcribe_with_page /transcribe/"
+    def test_01_transcribe_page(self):
+        logid = "test_01_transcribe_page /transcribe/"
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(logid + " " + timestamp_now)
         data = {
             "transcribesession": self.transcribe_session,
             "recordid": self.record_id_page_by_page,
-            "page": self.page_file,
+            "page": self.page_file_to_transcribe,
             "from_email": "pertest@isof.se",
             "from_name": "pertest",
             "message": "I Kinnekulle berg fanns .. " + logid + " " + timestamp_now,
@@ -164,7 +172,10 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
             # Convert the dictionary to a JSON string
             "json": (None, json.dumps(data))  # (filename, content as JSON string)
         }
-        print(logid + " " + str(files))
+        print(logid + ' ' +f"Transcribe session: {self.transcribe_session}")
+        print(logid + ' ' + str(data))
+        print(logid + ' ' + str(files))
+        print(logid + ' ' + str(headers))
         response=requests.post(f"{self.base_url}/transcribe" + self.use_slash,
                                 files=files, headers=headers)
 
@@ -174,6 +185,8 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
+    # Skip for now as cancel test in tear down class
+    @unittest.skip("Test not yet implemented")
     def test_90_transcribe_cancel(self):
         """
         ------geckoformboundaryb8fa1b7e162dc763e9dbc229353ec808
@@ -195,6 +208,9 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
             # Convert the dictionary to a JSON string
             "json": (None, json.dumps(data))  # (filename, content as JSON string)
         }
+        print(logid + ' ' + str(data))
+        print(logid + ' ' + str(files))
+        print(logid + ' ' + str(headers))
         response=requests.post(f"{self.base_url}/transcribecancel" + self.use_slash,
                                  files=files, headers=headers)
 

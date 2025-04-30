@@ -28,7 +28,7 @@ class APITranscribeViewTestCase(unittest.TestCase):
         Ran 3 tests in 0.145s OK
     Check data in for example TradarkAdmin
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/records
-    Check json data for file in concerned record and records_media:
+    Check text data for file in concerned record and records_media:
         https://garm-test.isof.se/folkeservice/api/records/ifgh00702_X_195386_1/
 
     Check changes in the database:
