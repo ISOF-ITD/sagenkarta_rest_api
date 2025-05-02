@@ -71,7 +71,7 @@ class UtterancesViewSet(viewsets.ViewSet):
             #record = RecordsMedia.objects.get(id=record_id)
             if record.transcriptionstatus == 'undertranscription':
                 # Maybe: Also check that the record of RecordsMedia has transcriptiontype audio? record__transcriptiontype='audio'
-                records_media = RecordsMedia.objects.filter(record=record_id, source=file, transcriptionstatus_in=self.transcriptionstatuses_allowed_to_update).first()
+                records_media = RecordsMedia.objects.filter(record=record_id, source=file, transcriptionstatus__in=self.transcriptionstatuses_allowed_to_update).first()
                 if records_media is not None:
                     existing_text = json.loads(records_media.utterances or "[]")
                     logger.debug(transcribesession)

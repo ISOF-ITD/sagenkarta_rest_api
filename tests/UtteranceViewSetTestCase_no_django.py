@@ -26,8 +26,8 @@ class APIUtteranceViewTestCase(unittest.TestCase):
     4. Validate tests
     Check output files: *-result.txt and if error *-log.txt
     Example *-result.txt:
-        Ran 2 tests in 8.493s
-        OK (skipped=1)
+        Ran 1 test in 48.203s
+        OK
     Check data in for example TradarkAdmin
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/recordsmediareview
     Check text data for file in concerned record:
@@ -35,7 +35,8 @@ class APIUtteranceViewTestCase(unittest.TestCase):
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/recordsmediareview/?/change/
     """
     base_url = "http://localhost:8000/api"
-    record_id = "s00247:a_f_127613_a"
+    # record_id = "s00247:a_f_127613_a"
+    record_id = "s00247:a_f_X_127613_a"
     file = "Lund/Ljudarkiv/1-1000/201-300/S 247A_mp3.MP3"
     transcribe_session = "2025-02-28 16:21:33"
     use_slash = "/"
@@ -45,7 +46,7 @@ class APIUtteranceViewTestCase(unittest.TestCase):
     def setUpClass(cls):
         logid = "setUpClass utterance"
         # Start the transcription session
-        response=requests.post(f"{cls.base_url}/description/start" + cls.use_slash,
+        response=requests.post(f"{cls.base_url}/describe/start" + cls.use_slash,
                                  json={"recordid": cls.record_id})
         # json={"json": {"recordid": cls.record_id}})
         # logger.debug("test Utterance/start" + str(response))
@@ -106,7 +107,7 @@ class APIUtteranceViewTestCase(unittest.TestCase):
         assert response.status_code == 200, f"Failed to cancel transcription: {response.text}"
 
     def test_10_update_utterance(self):
-        logid = "test_10_update_utterance /describe/change"
+        logid = "test_10_update_utterance /utterances/change"
         timestamp_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         data = {
             "recordid": self.record_id,
@@ -117,7 +118,7 @@ class APIUtteranceViewTestCase(unittest.TestCase):
             "speaker": "A",
             "start_from": "0.3",
             "change_from": "skurit av havren",
-            "change_to": "skurit i havren" + logid + " " + timestamp_now
+            "change_to": "skurit i havren " + logid + " " + timestamp_now
         }
         print(logid + ' ' + str(data))
         # print(logid + ' ' + str(files))
