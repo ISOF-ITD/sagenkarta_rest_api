@@ -295,10 +295,12 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 
 
 	def get_utterances(self, obj):
-		""" Ensure description is returned as a list of dictionaries instead of a JSON string. """
+		""" utterances is returned as one json object. """
 		try:
-			return json.loads(obj.utterances) if obj.utterances else []
-		except json.JSONDecodeError:
+			# Try as one element
+			return obj.utterances if obj.utterances else []
+		except Exception as e:
+			logger.error(e)
 			return []
 
 
