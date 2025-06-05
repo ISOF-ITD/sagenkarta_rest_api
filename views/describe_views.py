@@ -8,8 +8,7 @@ from sagenkarta_rest_api.models import Records, RecordsMedia, CrowdSourceUsers, 
 import json
 import logging
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-
-from sagenkarta_rest_api.views import create_or_update_crowdsource_user
+from sagenkarta_rest_api.views.transcribe_views import create_or_update_crowdsource_user
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):

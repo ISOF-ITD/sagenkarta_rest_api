@@ -1,37 +1,45 @@
 from django.urls import path, re_path, include
+from django.http import HttpResponseNotFound
 from rest_framework import routers
-from . import views
-from .views.describe_views import DescribeViewSet
-from .views.utterance_views import UtterancesViewSet
+from sagenkarta_rest_api.views import (
+    RecordsViewSet, PersonsViewSet, LocationsViewSet, CategoriesViewSet,
+    FeedbackViewSet, TranscribeViewSet, TranscribeSaveViewSet,
+    TranscribeStartViewSet, TranscribeCancelViewSet,
+    DescribeViewSet, UtterancesViewSet,
+    # proxies
+    isofGeoProxy, SimpleLantmaterietProxy,
+    LantmaterietProxyView, LantmaterietEpsg3857ProxyView,
+    LantmaterietNedtonadEpsg3857ProxyView, LantmaterietOrtoProxyView,
+    LantmaterietHistOrtoProxyView, IsofGeoProxyView, IsofHomepageView,
+    FriggStaticView, FilemakerProxyView,
+)
 
 router = routers.DefaultRouter()
-router.register(r'records', views.RecordsViewSet, basename='record')
-router.register(r'persons', views.PersonsViewSet, basename='person')
-router.register(r'locations', views.LocationsViewSet, basename='locations')
-router.register(r'categories', views.CategoriesViewSet, basename='categories')
-router.register(r'feedback', views.FeedbackViewSet, basename='feedback')
-router.register(r'transcribe', views.TranscribeViewSet, basename='transcribe')
-router.register(r'transcribesave', views.TranscribeSaveViewSet, basename='transcribesave')
-router.register(r'transcribestart', views.TranscribeStartViewSet, basename='transcribestart')
-router.register(r'transcribecancel', views.TranscribeCancelViewSet, basename='transcribecancel')
+router.register(r'records', RecordsViewSet, basename='record')
+router.register(r'persons', PersonsViewSet, basename='person')
+router.register(r'locations', LocationsViewSet, basename='locations')
+router.register(r'categories', CategoriesViewSet, basename='categories')
+router.register(r'feedback', FeedbackViewSet, basename='feedback')
+router.register(r'transcribe', TranscribeViewSet, basename='transcribe')
+router.register(r'transcribesave', TranscribeSaveViewSet, basename='transcribesave')
+router.register(r'transcribestart', TranscribeStartViewSet, basename='transcribestart')
+router.register(r'transcribecancel', TranscribeCancelViewSet, basename='transcribecancel')
 router.register(r'describe', DescribeViewSet, basename='describe')
 router.register(r'utterances', UtterancesViewSet, basename='utterances')
 
-# App name must be specified,
-# otherwise Django will complain about the URL's.
 app_name = 'api'
 
 urlpatterns = [
-    path('isofGeoProxy/', views.isofGeoProxy, name='IsofGeoProxy'),
-    path('simple_lm_proxy/', views.SimpleLantmaterietProxy, name='SimpleLantmaterietProxy'),
-    re_path(r'^lm_proxy/(?P<path>.*)$', views.LantmaterietProxyView.as_view()),
-    re_path(r'^lm_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietEpsg3857ProxyView.as_view()),
-    re_path(r'^lm_nedtonad_epsg3857_proxy/(?P<path>.*)$', views.LantmaterietNedtonadEpsg3857ProxyView.as_view()),
-    re_path(r'^lm_orto_proxy/(?P<path>.*)$', views.LantmaterietOrtoProxyView.as_view()),
-    re_path(r'^lm_historto_proxy/(?P<path>.*)$', views.LantmaterietHistOrtoProxyView.as_view()),
-    re_path(r'^isofgeo_proxy/(?P<path>.*)$', views.IsofGeoProxyView.as_view()),
-    re_path(r'^isofhomepage/(?P<path>.*)$', views.IsofHomepageView.as_view()),
-    re_path(r'^frigg_static/(?P<path>.*)$', views.FriggStaticView.as_view()),
-    re_path(r'^filemaker_proxy/(?P<path>.*)$', views.FilemakerProxyView.as_view()),
+    path('isofGeoProxy/', isofGeoProxy),
+    path('simple_lm_proxy/', SimpleLantmaterietProxy),
+    re_path(r'^lm_proxy/(?P<path>.*)$', LantmaterietProxyView.as_view()),
+    re_path(r'^lm_epsg3857_proxy/(?P<path>.*)$', LantmaterietEpsg3857ProxyView.as_view()),
+    re_path(r'^lm_nedtonad_epsg3857_proxy/(?P<path>.*)$', LantmaterietNedtonadEpsg3857ProxyView.as_view()),
+    re_path(r'^lm_orto_proxy/(?P<path>.*)$', LantmaterietOrtoProxyView.as_view()),
+    re_path(r'^lm_historto_proxy/(?P<path>.*)$', LantmaterietHistOrtoProxyView.as_view()),
+    re_path(r'^isofgeo_proxy/(?P<path>.*)$', IsofGeoProxyView.as_view()),
+    re_path(r'^isofhomepage/(?P<path>.*)$', IsofHomepageView.as_view()),
+    re_path(r'^frigg_static/(?P<path>.*)$', FriggStaticView.as_view()),
+    re_path(r'^filemaker_proxy/(?P<path>.*)$', FilemakerProxyView.as_view()),
     path('', include(router.urls)),
 ]
