@@ -1,17 +1,10 @@
-# views_records.py  (fully patched)
-
 import logging
 from django.db.models import Q
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from sagenkarta_rest_api.models import Records, Categories
 from sagenkarta_rest_api.serializers import RecordsSerializer, CategorySerializer
 
 logger = logging.getLogger(__name__)
-
-
-class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Categories.objects.all()
-    serializer_class = CategorySerializer
 
 
 class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -21,8 +14,24 @@ class RecordsViewSet(viewsets.ReadOnlyModelViewSet):
     Examples:
     - /api/records/?transcriptiondate_after=2024-01-01
     - /api/records/?transcriptionstatus=published,autopublished&transcriptiondate_after=2024-01-01
+
+    Accepted query parameters for `/api/records/`
+    ---------------------------------------------
+    * `country` (str, case-insensitive)
+    * `archive_org` (str, case-insensitive)
+    * `only_categories` (bool flag)
+    * `category` (comma-separated list, case-insensitive)
+    * `record_ids` (comma-separated list)
+    * `type`, `recordtype`, `transcriptionstatus`, `import_batch`,
+      `publishstatus`, `update_status` (each: comma-separated list)
+    * `transcriptiondate_after` (YYYY-MM-DD)
+    * `person`, `place`, `gender`, `person_relation`
+    * `search` + `search_field` (`record` | `person` | `place`)
+
+    If you add / rename parameters, also update the docs above
     """
     serializer_class = RecordsSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         qs = Records.objects.all()

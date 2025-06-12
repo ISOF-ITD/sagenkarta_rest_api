@@ -6,32 +6,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from sagenkarta_rest_api.models import Records, RecordsMedia, CrowdSourceUsers, TextChanges
 import json
-import logging
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from sagenkarta_rest_api.views.transcribe_views import create_or_update_crowdsource_user
-
-
-class CsrfExemptSessionAuthentication(SessionAuthentication):
-
-    def enforce_csrf(self, request):
-        return  # To not perform the csrf check previously happening
-
-logger = logging.getLogger(__name__)
-
-def time_to_seconds(time_str):
-    """Convert a string time mm:ss to float seconds with two decimal places."""
-    if isinstance(time_str, str) and '.' in time_str:
-        # If already float-like (e.g. "10.3"), just parse it
-        return float(time_str)
-    else:
-        minutes, seconds = map(float, time_str.split(':'))
-        return round(minutes * 60 + seconds, 2)
-
-def seconds_to_time(seconds):
-    """Convert seconds (float) back to mm:ss format with 2 decimals."""
-    minutes = int(seconds // 60)
-    seconds = seconds % 60
-    return f"{minutes}:{seconds:05.2f}"
+from sagenkarta_rest_api.views.transcribe import create_or_update_crowdsource_user
+from .utils import (
+    CsrfExemptSessionAuthentication,
+    time_to_seconds,
+)
 
 class TermSerializer(serializers.Serializer):
     term = serializers.CharField()

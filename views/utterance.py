@@ -5,7 +5,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from sagenkarta_rest_api.models import Records, RecordsMedia, CrowdSourceUsers, TextChanges
-from sagenkarta_rest_api.views.describe_views import DescribeUpdateSerializer
+from sagenkarta_rest_api.views.describe import DescribeUpdateSerializer
 from sagenkarta_rest_api.views.utils import time_to_seconds, CsrfExemptSessionAuthentication
 from rest_framework.decorators import action
 

@@ -1,9 +1,11 @@
-from .records_views import RecordsViewSet, CategoriesViewSet
-from .location_views import PersonsViewSet, LocationsViewSet
-from .feedback_views import FeedbackViewSet
-from .transcribe_views import (
+from .records import RecordsViewSet
+from .categories import CategoriesViewSet
+from .location import LocationsViewSet
+from .persons import PersonsViewSet
+from .feedback import FeedbackViewSet
+from .transcribe import (
     TranscribeViewSet, TranscribeSaveViewSet, TranscribeStartViewSet, TranscribeCancelViewSet
 )
-from .describe_views import DescribeViewSet
-from .utterance_views import UtterancesViewSet
-from .proxy_views import *
+from .describe import DescribeViewSet
+from .utterance import UtterancesViewSet
+from .proxy import *

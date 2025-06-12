@@ -4,13 +4,6 @@ from sagenkarta_rest_api.models import Persons, Socken
 from sagenkarta_rest_api.serializers import PersonsSerializer, SockenSerializer
 
 
-class PersonsViewSet(viewsets.ReadOnlyModelViewSet):
-    # Read-only list/detail of `Persons`
-    queryset = Persons.objects.all()
-    serializer_class = PersonsSerializer
-    pagination_class = None
-
-
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Filters `Socken` (places) by query-params:
