@@ -1,9 +1,21 @@
 """
-All endpoints that start /api/transcribe… live here:
-    • TranscribeStartViewSet  (lock a record)
-    • TranscribeViewSet       (save + finish)
-    • TranscribeSaveViewSet   (save, keep session)
-    • TranscribeCancelViewSet (unlock / abort)
+Endpoints under **/api/transcribe***.
+
+│  ViewSet                    │ Verb │ Purpose
+├─────────────────────────────┼──────┼─────────────────────────────────────────
+│ TranscribeStartViewSet      │ POST │ lock a record → *undertranscription*
+│ TranscribeViewSet           │ POST │ save ➜ finish session                 │
+│ TranscribeSaveViewSet       │ POST │ save intermediate draft               │
+│ TranscribeCancelViewSet     │ POST │ unlock / abort session                │
+
+The helpers below encapsulate the rather gnarly business rules around:
+
+* page-by-page vs whole-document transcription
+* super-transcriber auto-publish flow
+* informant + contributor de-duplication
+
+Whenever you touch this file, please update these rules here – it is the
+single point of truth for future developers.
 """
 import json
 import logging
@@ -29,6 +41,8 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 
+# Transcription status values
+# Used to determine if a record has already been handled and shouldn't be modified again.
 STATUSES_COMPLETED = {
     'transcribed', 'reviewing', 'needsimprovement',
     'approved', 'published', 'autopublished'
@@ -44,6 +58,7 @@ def save_message_comment(comment: str, supertranscriber: bool, obj):
     if not comment:
         return
 
+    # Supertranscribers store comments in 'comment', others in 'transcription_comment'
     field = "comment" if supertranscriber else "transcription_comment"
     current = getattr(obj, field) or ""
 
@@ -282,7 +297,10 @@ def save_transcription(request, response_message, response_status, set_status_to
 
 
 class _BaseTranscribeViewSet(viewsets.ViewSet):
-    # Shared boiler-plate: skip CSRF, allow anyone.
+    """
+    Common base for all transcribe-related endpoints.
+    Disables CSRF and allows public (unauthenticated) access.
+    """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
@@ -404,7 +422,9 @@ class TranscribeCancelViewSet(_BaseTranscribeViewSet):
         if target.transcriptionstatus != 'undertranscription':
             return JsonResponse({'success': 'false', 'message': 'Felaktig status.'}, status=409)
 
-        # Special page-by-page logic
+
+        # Special case for page-by-page transcriptions:
+        # If no pages left, mark whole record as transcribed or autopublished.
         if target.transcriptiontype == 'sida':
             pages_left = RecordsMedia.objects.filter(
                 record=recordid, transcriptionstatus='readytotranscribe'
