@@ -116,6 +116,8 @@ def save_informant_to_record(informant, jsonData, recordid, transcribed_object, 
     """
     Persist Persons row (informant) + RecordsPersons relation if ‘informantName’ present.
     """
+    if isinstance(transcribed_object, RecordsMedia):
+        transcribed_object = transcribed_object.record
     if len(jsonData.get("informantName", "")) <= 1:
         return informant  # nothing to do
 
