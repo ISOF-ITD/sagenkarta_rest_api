@@ -182,9 +182,13 @@ def save_transcription(request, response_message, response_status, set_status_to
     transcribed_object = None
     transcribed_object_parent = None
     if page_id is None:
+        # Whole-record transcription
+        valid_status_before_transcribed = 'undertranscription'
         transcribed_object = Records.objects.filter(pk=recordid).first()
         transcribed_object_parent = transcribed_object
     else:
+        # Page-by-page transcription
+        valid_status_before_transcribed = 'readytotranscribe'
         transcribed_object = RecordsMedia.objects.filter(record=recordid, source=page_id).first()
         transcribed_object_parent = Records.objects.filter(pk=recordid).first()
 
@@ -235,8 +239,8 @@ def save_transcription(request, response_message, response_status, set_status_to
     if validateString(jsonData.get('recordtitle')):
         transcribed_object.title = jsonData['recordtitle']
 
-    # Finalise status?
-    if set_status_to_transcribed and transcribed_object.transcriptionstatus == 'undertranscription':
+    # Change transcriptionstatus to review status
+    if set_status_to_transcribed and transcribed_object.transcriptionstatus == valid_status_before_transcribed:
         transcribed_object.transcriptionstatus = 'transcribed'
         transcribed_object.transcriptiondate = Now()
 
