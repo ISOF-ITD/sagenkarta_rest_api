@@ -35,6 +35,7 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/recordsmediareview/1553540/change/
     """
     base_url = "http://localhost:8000/api"
+    # base_url = "https://garm-test.isof.se/folkeservice/api"
     # record_id_page_by_page = "10789_27860_1"
     record_id_page_by_page = "10789_X_27860_1"
     page_file_to_transcribe = "uppteckningar/ulma_10700-10799/10789_0001.jpg"

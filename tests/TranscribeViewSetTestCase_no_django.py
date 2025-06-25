@@ -35,8 +35,8 @@ class APITranscribeViewTestCase(unittest.TestCase):
     select * from svenska_sagor.records_hist
     where id = "ifgh00702_X_195386_1"
     """
-    # base_url = "https://garm-test.isof.se/folkeservice/api"
     base_url = "http://localhost:8000/api"
+    # base_url = "https://garm-test.isof.se/folkeservice/api"
     # record_id = "ifgh00702_195386_1"
     # BEFORE EACH TESTRUN: SET "Ready to transcribe" AS NO Automatic cancellation of transcriptions:
     record_id_blankett = "ifgh00702_X_195386_1"
