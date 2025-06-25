@@ -4,3 +4,5 @@ __pycache__/
 env
 venv
 /settings.py
+config.py
+secrets_env.py
