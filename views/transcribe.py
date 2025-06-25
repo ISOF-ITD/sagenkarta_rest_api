@@ -73,9 +73,9 @@ def save_message_comment(comment: str, supertranscriber: bool, obj):
 
 
 def calculate_transcribe_time(page_id, obj):
-    if page_id is not None or obj.transcriptiondate is None:
+    if page_id is not None or obj.user_session_date is None:
         return
-    delta = datetime.now() - obj.transcriptiondate
+    delta = datetime.now() - obj.user_session_date
     obj.transcribe_time = int(delta.total_seconds() / 60)
 
 
@@ -194,10 +194,12 @@ def save_transcription(request, response_message, response_status, set_status_to
     # Session validation
     transcribesession_status = False
     if 'transcribesession' in jsonData:
-        ts = jsonData['transcribesession']
-        cmp_obj = transcribed_object_parent if page_id else transcribed_object
-        if str(cmp_obj.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) in ts:
-            transcribesession_status = True
+        # Handle null case for transcribesession:
+        if jsonData['transcribesession'] is not None:
+            ts = jsonData['transcribesession']
+            cmp_obj = transcribed_object_parent if page_id else transcribed_object
+            if str(cmp_obj.user_session_date.strftime('%Y-%m-%d %H:%M:%S')) in ts:
+                transcribesession_status = True
 
     if not transcribesession_status:
         response_message = 'Felaktigt sessions-id.'
@@ -346,6 +348,11 @@ class TranscribeSaveViewSet(_BaseTranscribeViewSet):
 
 class TranscribeStartViewSet(_BaseTranscribeViewSet):
     """
+    Starts a transcription session by locking a record or media page.
+
+    To use transcribe session on record do not send page in request.
+    Currently all transcription types use transcribe session on record.
+
     POST /api/transcribestart/  – lock a record (status → undertranscription)
     Expects JSON with at least { "recordid": "<id>" }
     """
@@ -385,11 +392,11 @@ class TranscribeStartViewSet(_BaseTranscribeViewSet):
                 return JsonResponse({'success': 'false'}, status=409)
 
             target.transcriptionstatus = 'undertranscription'
-            target.transcriptiondate = Now()
+            target.user_session_date = Now()
             target.save()
             target.refresh_from_db()
 
-        data['transcribesession'] = target.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        data['transcribesession'] = target.user_session_date.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         return JsonResponse({'success': 'true', 'data': data})
 
 
@@ -417,7 +424,7 @@ class TranscribeCancelViewSet(_BaseTranscribeViewSet):
             return JsonResponse({'success': 'false', 'message': 'Posten finns inte!'}, status=404)
 
         # Ensure session matches
-        if str(target.transcriptiondate.strftime('%Y-%m-%d %H:%M:%S')) not in session:
+        if str(target.user_session_date.strftime('%Y-%m-%d %H:%M:%S')) not in session:
             return JsonResponse({'success': 'false', 'message': 'Fel sessions-id.'}, status=409)
 
         # Only unlock if still undertranscription

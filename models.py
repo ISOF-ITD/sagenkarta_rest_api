@@ -305,6 +305,8 @@ class Records(models.Model):
     #												  choices=archive_material_publish_levels)
 
     import_batch = models.IntegerField(blank=True, null=True, verbose_name='Importbatch')
+    # Activate when in use:
+    user_session_date = models.DateTimeField(blank=True, null=True, verbose_name="Användarsession")
 
     # Track changes:
     approvedby = models.ForeignKey(User, db_column='approvedby', null=True, blank=True, editable=False, on_delete=DO_NOTHING, verbose_name='Godkänd av')
