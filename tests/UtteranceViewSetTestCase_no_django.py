@@ -35,8 +35,10 @@ class APIUtteranceViewTestCase(unittest.TestCase):
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/recordsmediareview/?/change/
     """
     base_url = "http://localhost:8000/api"
-    # record_id = "s00247:a_f_127613_a"
-    record_id = "s00247:a_f_X_127613_a"
+    # base_url = "https://garm-test.isof.se/folkeservice/api"
+    # base_url = "https://garm.isof.se/folkeservice/api"
+    # record_id = "s00247:a_f_127613"
+    record_id = "s00247:a_f_X_127613"
     file = "Lund/Ljudarkiv/1-1000/201-300/S 247A_mp3.MP3"
     transcribe_session = "2025-02-28 16:21:33"
     use_slash = "/"

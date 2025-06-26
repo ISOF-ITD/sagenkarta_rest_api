@@ -40,12 +40,13 @@ class APIDescribeViewTestCase(unittest.TestCase):
     where record = "s03684:a_f_X_128326_a"
     and source = "Lund/Ljudarkiv/3001-4000/3601-3700/S 3684B Byarum SMÅL.MP3"
     """
-    # base_url = "https://garm-test.isof.se/folkeservice/api"
     base_url = "http://localhost:8000/api"
+    # base_url = "https://garm-test.isof.se/folkeservice/api"
+    # base_url = "https://garm.isof.se/folkeservice/api"
     # Real public record:
-    # record_id = "s03684:a_f_128326_a"
+    # record_id = "s03684:a_f_128326"
     # Record only for testing:
-    record_id = "s03684:a_f_X_128326_a"
+    record_id = "s03684:a_f_X_128326"
     # Manual tests:
     #file = "Lund/Ljudarkiv/3001-4000/3601-3700/S 3684A Byarum SMÅL.MP3",
     # Automatic tests
