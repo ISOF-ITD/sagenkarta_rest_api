@@ -239,6 +239,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 
 	Transcription data follow same state logic as serializer for records
 	"""
+	id = serializers.IntegerField()
 	text = serializers.CharField(source='text_to_publish')
 	comment = serializers.CharField(source='comment_to_publish')
 	transcriptionstatus = serializers.SerializerMethodField('public_transcriptionstatus')
@@ -269,6 +270,7 @@ class RecordsMediaSerializer(serializers.ModelSerializer):
 		model = RecordsMedia
 
 		fields = (
+			'id',
 			'type',
 			'source',
 			'store',
