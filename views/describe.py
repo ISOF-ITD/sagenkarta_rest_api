@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils.timezone import now as Now
 from django.utils.html import strip_tags
@@ -90,6 +91,7 @@ class DescribeViewSet(viewsets.ViewSet):
                     if record.transcriptionstatus in self.transcriptionstatuses_allowed_to_update:
                         record.transcriptionstatus = 'undertranscription'
                         record.transcriptiondate = Now()
+                        record.editedby = User.objects.filter(username='restapi').first()
                         record.save()
 
                         # read again
@@ -142,6 +144,7 @@ class DescribeViewSet(viewsets.ViewSet):
         start_to_sec = time_to_seconds(start_to) if start_to else None
 
         try:
+            user = User.objects.filter(username='restapi').first()
             record = Records.objects.get(id=record_id)
             if record.transcriptionstatus == 'undertranscription':
                 # Example: filter the record's media that is 'readytotranscribe'
@@ -225,6 +228,7 @@ class DescribeViewSet(viewsets.ViewSet):
 
                             with transaction.atomic():
                                 records_media.description = json.dumps(existing_text, ensure_ascii=False)
+                                records_media.editedby = user
                                 records_media.save()
 
                                 # Log the change
@@ -236,7 +240,7 @@ class DescribeViewSet(viewsets.ViewSet):
                                 crowdsource_user.userid = 'tid' + str(transcribesession.replace(':', '').replace(' ', '-'))
                                 crowdsource_user.name = clean_name
                                 crowdsource_user.email = email
-                                crowdsource_user = create_or_update_crowdsource_user(crowdsource_user)
+                                crowdsource_user = create_or_update_crowdsource_user(crowdsource_user, user)
                                 if crowdsource_user is not None:
                                     # TODO: if user undefined add anonymous user 'crowdsource-anonymous':
                                     # if len(crowdsource_user.name) == 0 and len(crowdsource_user.email):
@@ -315,6 +319,7 @@ class DescribeViewSet(viewsets.ViewSet):
             )
 
         try:
+            user = User.objects.filter(username='restapi').first()
             record = Records.objects.get(id=record_id)
             if record.transcriptionstatus == 'undertranscription':
                 records_media = RecordsMedia.objects.filter(
@@ -356,6 +361,7 @@ class DescribeViewSet(viewsets.ViewSet):
 
                 with transaction.atomic():
                     records_media.description = json.dumps(existing_text, ensure_ascii=False)
+                    records_media.editedby = user
                     records_media.save()
 
                     # Log the deletion

@@ -164,8 +164,8 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
             "page": self.page_file_to_transcribe,
             "from_email": "pertest@isof.se",
             "from_name": "pertest",
-            "message": "I Kinnekulle berg fanns .. " + logid + " " + timestamp_now,
-            "messageComment": "Svår stil"
+            "message": "Fastlag och påsk. Svar på .. " + logid + " " + timestamp_now,
+            "messageComment": "Förfärlig stil"
         }
 
         # USED in client for transcribe: request as file

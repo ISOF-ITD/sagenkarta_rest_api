@@ -81,6 +81,24 @@ class _AuthProxy(ProxyView):
     Reverse-proxy base that injects HTTP Basic auth taken from
     `config.LantmaterietProxy_access` (“user:pass”).
     Subclasses must override the class attribute `upstream`.
+
+    Tests for development environment:
+    - curl -i http://localhost:8000/api/lm_epsg3857_proxy/9/151/277.png
+    - http://localhost:8000/api/lm_nedtonad_epsg3857_proxy/9/151/277.png
+    - http://localhost:8000/api/lm_orto_proxy?service=WMS&request=GetMap&layers=Ortofoto_0.5,Ortofoto_0.4,Ortofoto_0.25,Ortofoto_0.16&styles=&format=image/png&transparent=true&version=1.1.1&hidden=true&TILED=true&ISBASELAYER=true&TILESORIGIN=-2238400, 5287200&width=256&height=256&srs=EPSG:3857&bbox=2035059.441064533,8296780.798186171,2191602.4749925737,8453323.832114212
+    WMS instead of WMTS - NOT YET WORKING - Does isof have access to this?:
+    - http://localhost:8000/api/lm_historto_proxy/?service=WMS&request=GetMap&layers=OI.Histortho_60&styles=&format=image/png&transparent=true&version=1.1.1&hidden=false&TILED=true&ISBASELAYER=false&TILESORIGIN=-2238400,5287200&width=256&height=256&srs=EPSG:3857&bbox=1702405.4939674458,8609866.866042254,1721973.3732084509,8629434.74528326
+    Forbidden without auth:
+    - https://maps.lantmateriet.se/ortofoton/wms/v1?service=WMS&request=GetMap&layers=Ortofoto_0.5,Ortofoto_0.4,Ortofoto_0.25,Ortofoto_0.16&styles=&format=image/png&transparent=true&version=1.1.1&hidden=true&TILED=true&ISBASELAYER=true&TILESORIGIN=-2238400, 5287200&width=256&height=256&srs=EPSG:3857&bbox=2035059.441064533,8296780.798186171,2191602.4749925737,8453323.832114212
+    - https://maps.lantmateriet.se/historiska-ortofoton/wms/v1?service=WMS&request=GetMap&layers=OI.Histortho_60&styles=&format=image/png&transparent=true&version=1.1.1&hidden=false&TILED=true&ISBASELAYER=false&TILESORIGIN=-2238400,5287200&width=256&height=256&srs=EPSG:3857&bbox=1702405.4939674458,8609866.866042254,1721973.3732084509,8629434.74528326
+
+    Test environment:
+    - https://garm-test.isof.se/folkeservice/api/lm_epsg3857_proxy/9/151/277.png
+    - https://garm-test.isof.se/folkeservice/api/lm_nedtonad_epsg3857_proxy/9/151/277.png
+    - https://garm-test.isof.se/folkeservice/api/lm_orto_proxy?service=WMS&request=GetMap&layers=Ortofoto_0.5,Ortofoto_0.4,Ortofoto_0.25,Ortofoto_0.16&styles=&format=image/png&transparent=true&version=1.1.1&hidden=true&TILED=true&ISBASELAYER=true&TILESORIGIN=-2238400,5287200&width=256&height=256&srs=EPSG:3857&bbox=2035059.441064533,8296780.798186171,2191602.4749925737,8453323.832114212
+    WMS instead of WMTS - NOT YET WORKING - Open data with other authorization way? Does isof have access to this?:
+    - https://garm-test.isof.se/folkeservice/api/lm_historto_proxy?service=WMS&request=GetMap&layers=OI.Histortho_60&styles=&format=image/png&transparent=true&version=1.1.1&hidden=true&TILED=true&ISBASELAYER=true&TILESORIGIN=-2238400,5287200&width=256&height=256&srs=EPSG:3857&bbox=2035059.441064533,8296780.798186171,2191602.4749925737,8453323.832114212
+
     """
     upstream: str = "" # will be overridden in subclasses
 
@@ -99,8 +117,7 @@ class LantmaterietNedtonadEpsg3857ProxyView(_AuthProxy): upstream = config.Lantm
 class LantmaterietOrtoProxyView(_AuthProxy): upstream = config.LantmaterietOrtoProxy
 
 class LantmaterietHistOrtoProxyView(ProxyView):
-
-    # Orthophoto layer uses API-key in clear text
+    # Historic Orthophoto layers are Open data and uses API-key in clear text
     upstream = config.LantmaterietHistOrtoProxy
 
     def get_request_headers(self):

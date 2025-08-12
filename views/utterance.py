@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils.dateparse import parse_datetime
 from rest_framework import viewsets, permissions, status
@@ -67,6 +68,7 @@ class UtterancesViewSet(viewsets.ViewSet):
         email = data.get("from_email", "")
 
         try:
+            user = User.objects.filter(username='restapi').first()
             record = Records.objects.get(id=record_id)
             #record = RecordsMedia.objects.get(id=record_id)
             if record.transcriptionstatus == 'undertranscription':
@@ -150,6 +152,7 @@ class UtterancesViewSet(viewsets.ViewSet):
                                 # DO NOT change transcriptiondate as it is the sessionid:
                                 # records_media.transcriptiondate = Now()
                                 # Save contributor: Where? See example records_media.contributeby below
+                                records_media.editedby = user
                                 records_media.save()
 
                                 # Log the change

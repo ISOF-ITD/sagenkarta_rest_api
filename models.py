@@ -392,6 +392,12 @@ class RecordsMedia(models.Model):
     approvedate = models.DateTimeField(null=True, blank=True, verbose_name="Godkänd datum")
     contributors = models.TextField(blank=True, null=True, verbose_name='Bidragsgivare', help_text='Bidragsgivare som angett namn')
 
+    # Track data changes: restapi only changes not created
+    # transcriptiondate is used instead of changedate, as the restapi changes are currently transcriptions of different types: transcribe, and in test: utterances, describe
+    # changedate = models.DateTimeField(auto_now=True, blank=True, verbose_name="Ändrad datum")
+    editedby = models.ForeignKey(User, db_column='editedby', null=True, blank=True, editable=False, on_delete=DO_NOTHING,
+                                 related_name='Uppdaterad av+', verbose_name="Uppdaterad av")
+
     #Only publish text when transcriptionstatus published
     def text_to_publish(self):
         text_to = None

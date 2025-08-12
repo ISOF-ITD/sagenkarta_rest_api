@@ -80,7 +80,7 @@ def calculate_transcribe_time(page_id, obj):
 
 
 
-def create_or_update_crowdsource_user(crowdsource_user):
+def create_or_update_crowdsource_user(crowdsource_user, user):
     """
     Insert or return existing CrowdSourceUsers row that matches name+email.
     """
@@ -95,11 +95,12 @@ def create_or_update_crowdsource_user(crowdsource_user):
         return existing
 
     crowdsource_user.createdate = Now()
+    crowdsource_user.createdby = user
     crowdsource_user.save()
     return crowdsource_user
 
 
-def save_crowdsource_user(_, jsonData, recordid):
+def save_crowdsource_user(_, jsonData, recordid, user):
     """
     Wrapper that builds CrowdSourceUsers instance from the incoming JSON
     then lets create_or_update_crowdsource_user() persist / reuse it.
@@ -109,7 +110,7 @@ def save_crowdsource_user(_, jsonData, recordid):
         name=jsonData.get("from_name", ""),
         email=jsonData.get("from_email", ""),
     )
-    return create_or_update_crowdsource_user(u)
+    return create_or_update_crowdsource_user(u, user)
 
 
 def save_informant_to_record(informant, jsonData, recordid, transcribed_object, user):
@@ -249,7 +250,7 @@ def save_transcription(request, response_message, response_status, set_status_to
     if 'informantName' in jsonData:
         informant = save_informant_to_record(informant, jsonData, recordid, transcribed_object, user)
 
-    crowdsource_user = save_crowdsource_user(None, jsonData, recordid)
+    crowdsource_user = save_crowdsource_user(None, jsonData, recordid, user)
     if crowdsource_user:
         transcribed_object.transcribedby = crowdsource_user
 
@@ -267,6 +268,7 @@ def save_transcription(request, response_message, response_status, set_status_to
     # ------------------ persist to DB ----------------------------------- #
     try:
         set_avoid_timer_before_update_of_search_database(True)
+        transcribed_object.editedby = user
         transcribed_object.save()
         # Page-by-page: update parent record when all pages done
         if page_id:
@@ -277,6 +279,8 @@ def save_transcription(request, response_message, response_status, set_status_to
             ).count()
             if pages_left == 0:
                 transcribed_object_parent.transcriptionstatus = 'published'
+                transcribed_object_parent.editedby = user
+            # Always save the parent record for update in search database of calculated values in json
             transcribed_object_parent.save()
 
         response_status = 'true'
@@ -398,6 +402,7 @@ class TranscribeStartViewSet(_BaseTranscribeViewSet):
 
             target.transcriptionstatus = 'undertranscription'
             target.user_session_date = Now()
+            target.editedby = User.objects.filter(username='restapi').first()
             target.save()
             target.refresh_from_db()
 
@@ -461,6 +466,7 @@ class TranscribeCancelViewSet(_BaseTranscribeViewSet):
 
         try:
             set_avoid_timer_before_update_of_search_database(True)
+            target.editedby = User.objects.filter(username='restapi').first()
             target.save()
         except Exception:  # pragma: no cover
             logger.exception("Could not unlock %s", target.id)

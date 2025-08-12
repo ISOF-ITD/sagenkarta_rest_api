@@ -19,7 +19,7 @@ class APITranscribeViewTestCase(unittest.TestCase):
     2. Check transcriptionstatus is "ready to contribute" (or transcribe)
         https://garm-test.isof.se/TradarkAdmin/admin/TradarkAdmin/records/s03684:a_f_128326_a/change/?_changelist_filters=q%3Ds03684:a_f_128326
     3. Start test
-    python3 tests/DescribeViewSetTestCase_no_django.py 2> DescribeViewSetTestCase_no_django1.txt
+    python3 tests/TranscribeViewSetTestCase_no_django.py 2> TranscribeViewSetTestCase_no_django.txt
     If python error in html change file type to html
     python3 tests/TranscribeViewSetTestCase_no_django.py > TranscribeViewSetTestCase_no_django_$(date +"%Y-%m-%d:%H%M")-log.txt 2> TranscribeViewSetTestCase_no_django_$(date +"%Y-%m-%d:%H%M")-result.html
     4. Validate tests
@@ -137,7 +137,7 @@ class APITranscribeViewTestCase(unittest.TestCase):
             "recordid": self.record_id_fritext,
             "from_email": "pertest@isof.se",
             "from_name": "pertest",
-            "message": "I Kinnekulle berg fanns .. " +  logid + " " + timestamp_now,
+            "message": "Nu är påsken den glada tid .. " +  logid + " " + timestamp_now,
             "messageComment": "Svår stil"
         }
 
