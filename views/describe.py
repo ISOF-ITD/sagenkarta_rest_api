@@ -7,12 +7,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from sagenkarta_rest_api.models import Records, RecordsMedia, CrowdSourceUsers, TextChanges
 import json
+import logging
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from sagenkarta_rest_api.views.transcribe import create_or_update_crowdsource_user
 from .utils import (
     CsrfExemptSessionAuthentication,
     time_to_seconds,
 )
+
+logger = logging.getLogger(__name__)
 
 class TermSerializer(serializers.Serializer):
     term = serializers.CharField()
