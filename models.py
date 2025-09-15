@@ -526,7 +526,7 @@ def records_post_saved(sender, **kwargs):
         except Exception as e:
             logger.debug("records_post_saved get Exception: %s", modelResponseData)
             logger.debug("records_post_saved get Exception: %s",e)
-        logger.info("records_post_saved get: url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
+        logger.debug("records_post_saved get: url, data %s %s", restUrl, json.dumps(document).encode('utf-8'))
 
         # Check if not empty
         if len(document) > 0:
@@ -563,7 +563,7 @@ def records_post_saved(sender, **kwargs):
             except Exception as e:
                 logger.error("records_post_saved post: Exception: %s %s", e, str(document))
                 logger.error("records_post_saved post: Exception: %s",e)
-            logger.info("records_post_saved post: url, user, authentication_type_ES8, esResponse %s %s %s %s ", esUrl, user, authentication_type_ES8, esResponse)
+            logger.debug("records_post_saved post: url, user, authentication_type_ES8, esResponse %s %s %s %s ", esUrl, user, authentication_type_ES8, esResponse)
 
             if esResponse is not None:
                 # Log errors
