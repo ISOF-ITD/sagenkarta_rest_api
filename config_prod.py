@@ -17,7 +17,8 @@ LantmaterietHistOrtoProxy = 'https://maps.lantmateriet.se/historiska-ortofoton/w
 #LantmaterietHistOrtoProxy = 'https://api.lantmateriet.se/historiska-ortofoton/wms/v1/token/'
 LantmaterietProxy_access = secrets_env.LantmaterietProxy_access
 LantmaterietProxy_access_opendata = secrets_env.LantmaterietProxy_access_opendata
-IsofGeoProxy = 'https://oden-test.isof.se/geoserver/'
+# oden-test is removed
+IsofGeoProxy = 'https://oden.isof.se/geoserver/'
 IsofHomepage = 'https://www.isof.se/'
 FriggStatic = 'https://garm.isof.se/static/'
 FilemakerProxy = 'https://filemaker.isof.se/'
