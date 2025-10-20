@@ -6,7 +6,7 @@ from .models_accessionsregister import Accessionsregister_FormLista, Accessionsr
 
 import logging
 
-from .serializers_segments import SegmentsSerializer
+from .serializers_segment import SegmentsSerializer
 
 logger = logging.getLogger(__name__)
 
