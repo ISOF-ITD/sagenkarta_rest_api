@@ -5,6 +5,9 @@ from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories
 from .models_accessionsregister import Accessionsregister_FormLista, Accessionsregister_pers
 
 import logging
+
+from .serializers_segments import SegmentsSerializer
+
 logger = logging.getLogger(__name__)
 
 class HaradSerializer(serializers.ModelSerializer):
@@ -384,12 +387,12 @@ class RecordsLanguageSerializer(serializers.ModelSerializer):
 
 class RecordsSerializer(serializers.ModelSerializer):
 	#places = SockenSerializer(many=True, read_only=True);
-	places = RecordsPlacesSerializer(many=True, read_only=True);
-	languages = RecordsLanguageSerializer(many=True, read_only=True);
-	metadata = RecordsMetadataSerializer(many=True, read_only=True);
-	#taxonomy = CategorySerializer(source='category', read_only=True);
-	taxonomy = RecordsCategorySerializer(many=True, read_only=True, source='categories');
-	media = RecordsMediaSerializer(many=True, read_only=True);
+	places = RecordsPlacesSerializer(many=True, read_only=True)
+	languages = RecordsLanguageSerializer(many=True, read_only=True)
+	metadata = RecordsMetadataSerializer(many=True, read_only=True)
+	#taxonomy = CategorySerializer(source='category', read_only=True)
+	taxonomy = RecordsCategorySerializer(many=True, read_only=True, source='categories')
+	media = RecordsMediaSerializer(many=True, read_only=True)
 	materialtype = serializers.CharField(source='type')
 	recordtype = serializers.CharField(source='record_type')
 	archive = serializers.SerializerMethodField('get_archive_object')
@@ -413,6 +416,8 @@ class RecordsSerializer(serializers.ModelSerializer):
 	# physical_media direct from source form table in accessionsregister:
 	# Activate WHEN mapping added to index:
 	physical_media = serializers.SerializerMethodField('get_physical_media')
+	# Add segments on the record (reverse name is 'segment')
+	segments = SegmentsSerializer(many=True, read_only=True, source='segment')
 
 	# return headwords only if record_type is one_accession_row, otherwise return None
 	def get_headwords(self, obj):
@@ -620,5 +625,6 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'transcribedby',
 			'transcriptiondate',
 			'changedate',
-			'approvedate'
+			'approvedate',
+			'segments'
 		)

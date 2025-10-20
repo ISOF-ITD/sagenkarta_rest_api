@@ -1,58 +1,100 @@
-#Django==3.2.16
+# -------------------------------
+# Core framework (Python 3.12)
+# -------------------------------
 Django==4.2.20
 # For openapi/swagger view:
 coreapi == 2.3.3
-#Django==3.2
-# mysqlclient==1.4.2 # Kanske fungerade utan felmeddelande?
-mysqlclient==2.1.1 # ubuntu-py3.8 works even this error: error: invalid command 'bdist_wheel' ERROR: Failed building wheel for mysqlclient
-# Remove django models.ImageField in models-class if needed!
-# Pillow is used by models.ImageField: used in sagenkarta_rest_api and TradarkAdmin!
-# For django models.ImageField: (sagenkarta_rest_api.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
+
+# -------------------------------
+# Django REST Framework
+# Used by sagenkarta_rest_api and sagendatabas_es_api
+# -------------------------------
+djangorestframework==3.15.2
+
+# -------------------------------
+# OpenAPI / Swagger UI (modern replacement)
+# - Replaces deprecated: coreapi, django-rest-swagger
+# -------------------------------
+#coreapi == 2.3.3
+drf-spectacular>=0.27,<0.28
+drf-spectacular-sidecar>=2024.3,<2025.0  # ships Swagger UI assets
+
+# If you must keep the old stack, comment the two lines above and
+# (not recommended) un-comment these—but they are not supported on Django 4.2:
+# coreapi==2.3.3
+# django-rest-swagger==2.2.0
+
+# -------------------------------
+# Database
+# -------------------------------
+# mysqlclient: 2.2.x supports Python 3.12; older 2.1.x may fail to build.
+#mysqlclient>=2.2,<3.0
+mysqlclient==2.2.7
+
+# -------------------------------
+# Image handling (required by models.ImageField)
+# -------------------------------
 #python 3.6:
 #Pillow==8.2.0
-#python 3.8:
-Pillow==9.4.0
-# djangorestframework is used by sagenkarta_rest_api and  sagendatabas_es_api
-# djangorestframework==3.7.3
-# Version in PlaceNameService:
-#djangorestframework==3.11.0
-#djangorestframework==3.14.0
-# django 4.2:
-djangorestframework==3.15.2
-django-rest-swagger == 2.2.0
-# requests is used by sagenkarta_rest_api
-# requests ONLY? used for test of proxy to isof-geoserver in isofGeoProxy:
-# Old version for testing:
-# requests==2.18.4
-#requests==2.27.1
+#Pillow==8.4.0 gives:
+#ImageField TradarkAdmin.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed.:
+# https://pillow.readthedocs.io/en/latest/installation.html
+# libjpeg: https://installati.one/ubuntu/22.04/libjpeg-dev/
+#python 3.8-10:
+#Pillow==9.4.0
+#python 3.12:
+Pillow==11.3.0
+# If you remove ImageField usages (e.g., in sagenkarta_rest_api or TradarkAdmin)
+# For django models.ImageField: (sagenkarta_rest_api.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
+# you may also remove Pillow.
+
+# -------------------------------
+# HTTP clients / CORS
+# -------------------------------
 requests==2.32.3
+# requests>=2.32 works with urllib3 2.x
+urllib3==2.3.0
+# CORS
 #django-cors-headers==3.10.1
-django-cors-headers==4.7.0
-# Test: Handle: Denied by X-Frame-Option directive set to "SAME-ORIGIN":
-# django-csp==3.6
+#django-cors-headers==4.7.0
+#django-cors-headers>=4.4,<5.0
+django-cors-headers==4.9.0
+
+# -------------------------------
+# Security headers (optional)
+# -------------------------------
+# django-csp can cause "Denied by X-Frame-Options: SAMEORIGIN" if misconfigured.
+# Uncomment only if you need CSP and configure allowed frame ancestors.
+# django-csp==3.7
+
+# -------------------------------
+# Reverse proxy (legacy)
+# -------------------------------
+# django-revproxy is outdated and may require source changes for modern requests/urllib3.
+# If you depend on it, you have two realistic paths:
+
+# (A) Keep modern requests/urllib3 and vendor/fix revproxy in your repo (recommended):
+# -e git+https://github.com/jazzband/django-revproxy@master#egg=django-revproxy
+
+# (B) Pin older HTTP stack just for revproxy (NOT recommended globally):
+# django-revproxy==0.12.0
+# requests==2.26.0
+# urllib3==1.26.18
+
 # Used in external proxy services as LantmaterietProxyView:
 # django-revproxy==0.9.13
 # Since django-revproxy 0.13.0 is outdated and not actively maintained, you need to modify the source code of the package.
 # OR Downgrade requests to 2.26.0
 # There's no django-revproxy-ng package on PyPI.
 #django-revproxy-ng==
-django-revproxy==0.12.0
+#django-revproxy==0.12.0
 # -e git+https://git@github.com/jazzband/django-revproxy@master#egg=django-revproxy
-# Testing error
-# File "/home/perla331/sagendatabas/sagenkarta_rest_api/urls.py", line 7, in <module>
-#    router.register(r'records', views.RecordsViewSet, base_name='record')
-# TypeError: register() got an unexpected keyword argument 'base_name'
-# Global py3 in frigg-test:
-# urllib3==1.16
-#urllib3
-# ERROR: django-revproxy 0.9.13 has requirement urllib3<1.17,>=1.12, but you'll have urllib3 1.21.1 which is incompatible.
-# Latest supporting module django-revproxy 0.9.13 below
-# NOTE: Seems to work with requests 2.18.4 OR requests 2.18.4 not used at all OR not tested
-# urllib3==1.16
-# Version in PlaceNameService:
-#urllib3==1.25.9
-#urllib3==1.26.14
-urllib3==2.3.0
-# ERROR: requests 2.18.4 has requirement urllib3<1.23,>=1.21.1, but you'll have urllib3 1.17 which is incompatible.
-# Latest supporting module requests 2.18.4:
-#urllib3==1.21.1
+
+
+# -------------------------------
+# Notes / migration crumbs
+# -------------------------------
+# DRF router.register(...):
+#   base_name was removed; use 'basename' instead to avoid:
+#   TypeError: register() got an unexpected keyword argument 'base_name'
+
