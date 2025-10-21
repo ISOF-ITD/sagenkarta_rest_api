@@ -10,7 +10,7 @@ from .models_segment import (
 
 class SegmentsSerializer(serializers.ModelSerializer):
     # record = serializers.PrimaryKeyRelatedField(read_only=True)
-    start  = serializers.PrimaryKeyRelatedField(read_only=True)
+    start_media_id  = serializers.PrimaryKeyRelatedField(source='start', read_only=True)
 
     # Lists of pure FK ids for the relations below:
     category_ids = serializers.SerializerMethodField()
@@ -18,7 +18,7 @@ class SegmentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Segments
-        fields = ("id", "start", "category_ids", "person_ids")
+        fields = ("id", "start_media_id", "category_ids", "person_ids")
 
     def get_category_ids(self, obj):
         # Default reverse name since no related_name=... on the FK:
