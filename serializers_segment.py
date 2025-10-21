@@ -18,7 +18,7 @@ class SegmentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Segments
-        fields = ("id", "record", "start", "category_ids", "person_ids")
+        fields = ("id", "start", "category_ids", "person_ids")
 
     def get_category_ids(self, obj):
         # Default reverse name since no related_name=... on the FK:
