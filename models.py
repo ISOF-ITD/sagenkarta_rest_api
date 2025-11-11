@@ -368,6 +368,14 @@ class RecordsPersons(models.Model): #ingredient
         db_table = 'records_persons'
 
 
+class Fonetic_signs(models.TextChoices):
+    FONETIC_SIGNS_EXISTS = "Y", "Ja"
+    FONETIC_SIGNS_DOES_NOT_EXISTS = "N", "Nej"
+
+class Unreadable(models.TextChoices):
+    UNREADABLE_TEXT_EXISTS = "Y", "Ja"
+    UNREADABLE_TEXT_DOES_NOT_EXISTS = "N", "Nej"
+
 class RecordsMedia(models.Model):
     archive_row = models.IntegerField(default=None, blank=True, null=True)
     record = models.ForeignKey(Records, db_column='record', related_name='media', on_delete=DO_NOTHING)
@@ -379,6 +387,9 @@ class RecordsMedia(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name='Beskrivningar', help_text='Tidsatta beskrivningar')
     utterances = models.TextField(blank=True, null=True, verbose_name='Yttranden', help_text='Yttranden med ord')
     comment = models.TextField(blank=True, null=True, verbose_name='Kommentar', help_text='Publik')
+    pagenumber = models.CharField(max_length=4, blank=True, null=True, verbose_name='Sidnummer', help_text='Nummer (ibland med bokstav) skrivet på sidan')
+    fonetic_signs = models.CharField(max_length=2, blank=True, null=True, choices=Fonetic_signs.choices, verbose_name='Fonetiska tecken', help_text='Fonetiska tecken (Landsmålsalfabetet) finns')
+    unreadable = models.CharField(max_length=2, blank=True, null=True, choices=Unreadable.choices, verbose_name='Oläslig', help_text='Oläslig text finns')
 
     # Transcription task
     transcriptiontype = models.CharField(max_length=20, blank=True, null=True, default=None, verbose_name='Transkriptionstyp', help_text='Typ av formulär för transkribering')
