@@ -204,8 +204,11 @@ def save_transcription(request, response_message, response_status, set_status_to
         if jsonData['transcribesession'] is not None:
             ts = jsonData['transcribesession']
             cmp_obj = transcribed_object_parent if page_id else transcribed_object
-            if str(cmp_obj.user_session_date.strftime('%Y-%m-%d %H:%M:%S')) in ts:
-                transcribesession_status = True
+            if cmp_obj.user_session_date is not None:
+                if str(cmp_obj.user_session_date.strftime('%Y-%m-%d %H:%M:%S')) in ts:
+                    transcribesession_status = True
+            else:
+                logger.debug("cmp_obj.user_session_date is None")
 
     if not transcribesession_status:
         response_message = 'Felaktigt sessions-id.'
