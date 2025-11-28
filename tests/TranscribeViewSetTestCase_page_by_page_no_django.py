@@ -33,15 +33,17 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
 	and r.id in ('10789_X_27860', 'ifgh00702_X_195386')
 
 	records_media:
-    select id, changedate, left(transcriptiondate, 16) as transcr_date, left(user_session_date, 16) as session_date, left(title,10), left(text,10), transcribedby, transcriptionstatus, transcriptiontype FROM svenska_sagor.records r
-	-- update svenska_sagor.records_media rm
-	set transcriptionstatus = 'readytotranscribe'
-	where type = 'image'
-	and right(source,4) = '.jpg'
-	-- Omregistrering inför nytt test:
-	and transcriptionstatus in ('transcribed')
+    select record, transcriptionstatus, replace(rm.source,'uppteckningar/','') as filepath, changedate, left(transcriptiondate, 16) as transcr_date, title, right(text,30), pagenumber, fonetic_signs, unreadable, transcription_comment, comment, transcribedby, transcriptiontype FROM svenska_sagor.records_media rm
+    -- select * FROM svenska_sagor.records_media rm
+    -- update svenska_sagor.records_media rm
+    -- set transcriptionstatus = 'readytotranscribe'
+    where type = 'image'
+    and right(source,4) = '.jpg'
+    -- Omregistrering inför nytt test:
+    -- and transcriptionstatus in ('undertranscription', 'transcribed', 'published', 'autopublished')
+    -- and transcriptionstatus in ('transcribed')
     and rm.source in ("uppteckningar/ulma_10700-10799/10789_0001.jpg", "uppteckningar/ifgh_00700-00799/ifgh00702_0002.jpg", "uppteckningar/ifgh_00700-00799/ifgh00702_0003.jpg")
-	and record in ('10789_X_27860', 'ifgh00702_X_195386')
+    and record in ('10789_X_27860', 'ifgh00702_X_195386')
 
     II. Test
     0. Set up environment
