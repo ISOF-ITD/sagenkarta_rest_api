@@ -243,9 +243,20 @@ def save_transcription(request, response_message, response_status, set_status_to
     if validateString(jsonData.get('recordtitle')):
         transcribed_object.title = jsonData['recordtitle']
 
-    for field in ("pagenumber", "fonetic_signs", "unreadable"):
-        if field in jsonData and hasattr(transcribed_object, field):
-            setattr(transcribed_object, field, jsonData[field])
+    if page_id:
+        if validateString(jsonData.get("pagenumber")):
+            transcribed_object.pagenumber = jsonData["pagenumber"]
+
+        for field in ("fonetic_signs", "unreadable"):
+            if field in jsonData and hasattr(transcribed_object, field):
+                value = jsonData[field]
+                if isinstance(value, bool):
+                    # Handle boolean call value:
+                    if value:
+                        value = "Y"
+                    else:
+                        value = "N"
+                setattr(transcribed_object, field, value)
 
     # Change transcriptionstatus to review status
     if set_status_to_transcribed and transcribed_object.transcriptionstatus == valid_status_before_transcribed:

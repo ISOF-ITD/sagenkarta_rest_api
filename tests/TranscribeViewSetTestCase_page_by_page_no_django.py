@@ -33,13 +33,14 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
 	and r.id in ('10789_X_27860', 'ifgh00702_X_195386')
 
 	records_media:
-	select record, replace(rm.source,'uppteckningar/','') as filepath, changedate, left(transcriptiondate, 16) as transcr_date, title, right(text,30), transcription_comment, comment, transcribedby, transcriptionstatus, transcriptiontype FROM svenska_sagor.records_media rm
+    select id, changedate, left(transcriptiondate, 16) as transcr_date, left(user_session_date, 16) as session_date, left(title,10), left(text,10), transcribedby, transcriptionstatus, transcriptiontype FROM svenska_sagor.records r
 	-- update svenska_sagor.records_media rm
 	set transcriptionstatus = 'readytotranscribe'
 	where type = 'image'
 	and right(source,4) = '.jpg'
 	-- Omregistrering inför nytt test:
 	and transcriptionstatus in ('transcribed')
+    and rm.source in ("uppteckningar/ulma_10700-10799/10789_0001.jpg", "uppteckningar/ifgh_00700-00799/ifgh00702_0002.jpg", "uppteckningar/ifgh_00700-00799/ifgh00702_0003.jpg")
 	and record in ('10789_X_27860', 'ifgh00702_X_195386')
 
     II. Test
@@ -285,6 +286,9 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
             "from_email": "testuser1@isof.se",
             "from_name": "Test User",
             "message": message,
+            "pagenumber": "1",
+            "fonetic_signs": "Y",
+            "unreadable": True,
             "messageComment": str(self.messageComment_1)
         }
 
@@ -318,6 +322,9 @@ class APITranscribeViewTestCasePageByPage(unittest.TestCase):
             "page": self.page_file_to_transcribe_2a,
             "from_email": "testuser1@isof.se",
             "from_name": "Test User",
+            "pagenumber": "2A",
+            "fonetic_signs": "N",
+            "unreadable": False,
             "message": message,
             "messageComment": str(self.messageComment_2a)
         }
