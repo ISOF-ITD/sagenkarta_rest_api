@@ -52,7 +52,9 @@ Pillow==11.3.0
 # -------------------------------
 # HTTP clients / CORS
 # -------------------------------
-requests==2.33.1
+requests==2.32.5
+#python version larger:
+#requests==2.33.1
 # requests>=2.32 works with urllib3 2.x
 urllib3==2.6.3
 # CORS
