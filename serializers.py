@@ -5,6 +5,7 @@ from .models import Records, Persons, Socken, Harad, RecordsMetadata, Categories
 from .models_accessionsregister import Accessionsregister_FormLista, Accessionsregister_pers
 
 import logging
+import re
 
 from .serializers_segment import SegmentsSerializer
 
@@ -570,16 +571,120 @@ class RecordsSerializer(serializers.ModelSerializer):
 			#200: 'Svenska litteratursällskapet i Finland (SLS)',
 		}
 
+		archive_org = source_organisation[obj.archive_org] if obj.archive_org is not None else None
+
+		def make_archive_id_display_search(s, archive_org=None):
+			"""
+			Tar en sträng som kan innehålla ett eller flera accessionsnummer separerade med ';'
+			(t.ex. "02345; ifgh00010; AB:0003") och returnerar en lista med formatterade värden.
+
+			Ex: "ifgh00010;02345" -> ["IFGH 10", "ULMA 2345"] (beroende på archive_org-regler)
+			"""
+
+			# 1) Om s är None eller tom sträng -> returnera tom lista
+			if not s:
+				return []
+
+			# 2) Splitta på ';' och trimma varje token.
+			#    Detta hanterar både ";" och "; " och " ;  " osv.
+			items = [part.strip() for part in s.split(";")]
+
+			# (valfritt) Filtrera bort tomma segment, t.ex. om strängen slutar med ";"
+			items = [part for part in items if part]
+
+			def _format_one(one):
+				"""
+				Kör samma logik som tidigare, men för ett enda accessionsnummer.
+				Returnerar sträng (eller "" om det inte går).
+				"""
+				# 1) Om one är None eller tom sträng -> returnera tomt
+				if not one:
+					return ""
+
+				# 2) Regexen i JS: /^(\D*)([0-9:]+.*)?/
+				match = re.match(r"^(\D*)([0-9:]+.*)?", one)
+
+				# 3) Om ingen match
+				if not match:
+					return ""
+
+				# 4) Plocka ut grupperna
+				letter_part = match.group(1) or ""
+				number_part = match.group(2) or ""
+
+				# 5) Default: inget prefix
+				prefix = ""
+
+				# 6) Lund
+				if archive_org == "Lund":
+					prefix = "DAL"
+
+				# 7) Umeå
+				if archive_org == "Umeå":
+					if number_part:
+						letter_part = ""
+
+					i = 0
+					while i < len(one) and not one[i].isdigit():
+						i += 1
+
+					if i < len(one):
+						numeric_part = one[i:]
+						m = re.match(r"\d+", numeric_part)
+						if m:
+							numeric_id = int(m.group(0))
+							prefix = "FFÖN" if numeric_id < 1166 else "DAUM"
+
+				# 8) Uppsala
+				if archive_org == "Uppsala":
+					prefix = "ULMA"
+
+					i = 0
+					while i < len(one) and not one[i].isdigit():
+						i += 1
+
+					if i < len(one):
+						numeric_part = one[i:]
+						m = re.match(r"\d+", numeric_part)
+						if m:
+							numeric_id = int(m.group(0))
+
+							if 39081 <= numeric_id <= 39383:
+								prefix = "SOFI"
+							if numeric_id > 39383:
+								prefix = "DFU"
+
+							if number_part:
+								lp = letter_part.lower()
+								if ("b" in lp) or ("gr" in lp) or ("ss" in lp):
+									prefix = "ULMA"
+
+				# 9) Bygg output utan dubbla mellanslag
+				parts = [
+					prefix.strip(),
+					letter_part.upper().strip(),
+					(number_part or "").lstrip("0").strip(),
+				]
+				parts = [p for p in parts if p]
+				return " ".join(parts)
+
+			# 3) Formattera varje del och returnera listan
+			return [_format_one(one) for one in items]
+
+
+
 		return {
 			'archive_id': obj.archive_id,
+			'archive_id_display_search': make_archive_id_display_search(obj.archive_id, archive_org),
 			'archive_row': obj.archive_row,
 			'archive_id_row': str(obj.archive_id) + '_' + str(obj.archive_row),
 			'page': obj.archive_page,
 			'total_pages': obj.total_pages,
 			'country': obj.country,
 			'archive': obj.archive,
-			'archive_org': source_organisation[obj.archive_org] if obj.archive_org is not None else None
+			'archive_org': archive_org
 		}
+
 
 	"""
 	Only show public transcriptionstatuses
