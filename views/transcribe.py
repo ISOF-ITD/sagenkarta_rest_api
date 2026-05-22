@@ -291,9 +291,13 @@ def save_transcription(request, response_message, response_status, set_status_to
         # Page-by-page: update parent record when all pages done
         if page_id:
             pages_left = RecordsMedia.objects.filter(
-                record__record_type='one_record',
+                # record__record_type='one_accession_row',
+                record__id=transcribed_object_parent.id,
+                type='image',
                 transcriptionstatus='readytotranscribe',
-                record__id__startswith=transcribed_object_parent.id
+                # Remove as it concerns old one_record:
+                # record__record_type='one_record',
+                # record__id__startswith=transcribed_object_parent.id
             ).count()
             if pages_left == 0:
                 transcribed_object_parent.transcriptionstatus = 'published'
