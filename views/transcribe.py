@@ -293,7 +293,6 @@ def save_transcription(request, response_message, response_status, set_status_to
         transcribed_object.save()
         # Page-by-page: update parent record when all pages done
         if page_id:
-            logger.info("Transcription page_id: %s", str(page_id))
             pages_left = RecordsMedia.objects.filter(
                 # record__record_type='one_accession_row',
                 record__id=transcribed_object_parent.id,
@@ -303,16 +302,16 @@ def save_transcription(request, response_message, response_status, set_status_to
                 # record__record_type='one_record',
                 # record__id__startswith=transcribed_object_parent.id
             ).count()
-            logger.info("Transcription page_left: %s", str(pages_left))
+            logger.info("Transcription %s page_left: %s", str(page_id), str(pages_left))
             if pages_left == 0:
                 transcribed_object_parent.transcriptionstatus = 'published'
                 transcribed_object_parent.editedby = user
             # Always save the parent record for update in search database of calculated values in json
             transcribed_object_parent.save()
-            logger.info("Transcription parent saved for %s", recordid)
+            logger.info("Transcription parent saved for %s", str(page_id), recordid)
 
         response_status = 'true'
-        logger.info("Transcription saved for %s", recordid)
+        logger.info("Transcription saved for %s %s", str(page_id), recordid)
 
 
     except Exception as e:
