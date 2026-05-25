@@ -92,11 +92,13 @@ def create_or_update_crowdsource_user(crowdsource_user, user):
         name=crowdsource_user.name, email=crowdsource_user.email
     ).first()
     if existing:
+        logger.info("Transcription crowdsource_user existing %s %s", crowdsource_user.email, crowdsource_user.name)
         return existing
 
     crowdsource_user.createdate = Now()
     crowdsource_user.createdby = user
     crowdsource_user.save()
+    logger.info("Transcription crowdsource_user saved %s %s", crowdsource_user.email, crowdsource_user.name)
     return crowdsource_user
 
 
@@ -262,6 +264,7 @@ def save_transcription(request, response_message, response_status, set_status_to
     if set_status_to_transcribed and transcribed_object.transcriptionstatus == valid_status_before_transcribed:
         transcribed_object.transcriptionstatus = 'transcribed'
         transcribed_object.transcriptiondate = Now()
+        logger.info("Transcriptionstatus transcribed for %s", recordid)
 
     # Save informant / contributor
     informant = None
@@ -290,6 +293,7 @@ def save_transcription(request, response_message, response_status, set_status_to
         transcribed_object.save()
         # Page-by-page: update parent record when all pages done
         if page_id:
+            logger.info("Transcription page_id: %s", str(page_id))
             pages_left = RecordsMedia.objects.filter(
                 # record__record_type='one_accession_row',
                 record__id=transcribed_object_parent.id,
@@ -299,11 +303,13 @@ def save_transcription(request, response_message, response_status, set_status_to
                 # record__record_type='one_record',
                 # record__id__startswith=transcribed_object_parent.id
             ).count()
+            logger.info("Transcription page_left: %s", str(pages_left))
             if pages_left == 0:
                 transcribed_object_parent.transcriptionstatus = 'published'
                 transcribed_object_parent.editedby = user
             # Always save the parent record for update in search database of calculated values in json
             transcribed_object_parent.save()
+            logger.info("Transcription parent saved for %s", recordid)
 
         response_status = 'true'
         logger.info("Transcription saved for %s", recordid)
@@ -460,6 +466,7 @@ class TranscribeCancelViewSet(_BaseTranscribeViewSet):
 
         # Only unlock if still undertranscription
         if target.transcriptionstatus != 'undertranscription':
+            logger.info("Transcription cancel status != undertranscription %s", str(recordid))
             return JsonResponse({'success': 'false', 'message': 'Felaktig status.'}, status=409)
 
 
@@ -475,15 +482,18 @@ class TranscribeCancelViewSet(_BaseTranscribeViewSet):
                         record=recordid
                     ).exclude(transcriptionstatus='autopublished').exists() else 'transcribed'
                 )
+                logger.info("Transcription cancel status autopublished %s", str(recordid))
             else:
                 target.transcriptionstatus = (
                     'readytocontribute' if target.transcriptiontype == 'audio' else 'readytotranscribe'
                 )
+                logger.info("Transcription cancel status readytocontribute %s", str(recordid))
         else:
             target.transcriptionstatus = (
                 'readytocontribute' if target.transcriptiontype == 'audio'
                 else 'readytotranscribe'
             )
+        logger.info("Transcription cancel status readytotranscribe %s", str(recordid))
 
         try:
             set_avoid_timer_before_update_of_search_database(True)

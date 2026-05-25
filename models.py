@@ -605,6 +605,7 @@ def records_post_saved(sender, **kwargs):
     if get_avoid_timer_before_update_of_search_database():
         timer_interval = 0
 
+    logger.info("records_post_saved timer_interval %s", str(timer_interval))
     t = Timer(timer_interval, save_es_model)
     t.start()
 
