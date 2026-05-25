@@ -90,7 +90,7 @@ django-cors-headers==4.9.0
 # OR Downgrade requests to 2.26.0
 # There's no django-revproxy-ng package on PyPI.
 #django-revproxy-ng==
-#django-revproxy==0.12.0
+django-revproxy==0.12.0
 # -e git+https://git@github.com/jazzband/django-revproxy@master#egg=django-revproxy
 
 
