@@ -446,10 +446,9 @@ class TranscribeCancelViewSet(_BaseTranscribeViewSet):
         page = data.get('page')
         session = data.get('transcribesession', '')
 
+        # target for cancel is always record:
         target = (
             Records.objects.filter(pk=recordid).first()
-            if page is None
-            else RecordsMedia.objects.filter(record=recordid, source=page).first()
         )
 
         if not target:
