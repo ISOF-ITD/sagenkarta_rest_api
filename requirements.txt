@@ -1,21 +1,24 @@
 # -------------------------------
 # Core framework (Python 3.12)
 # -------------------------------
-Django==4.2.29
-# For openapi/swagger view:
-coreapi == 2.3.3
+#Django==4.2.29
+# python 3.12:
+Django==5.2.15
 
 # -------------------------------
 # Django REST Framework
 # Used by sagenkarta_rest_api and sagendatabas_es_api
 # -------------------------------
+# python 3.9:
 djangorestframework==3.15.2
+# ModuleNotFoundError: No module named 'rest_framework.schemas.coreapi':
+#djangorestframework==3.17.1
 
 # -------------------------------
 # OpenAPI / Swagger UI (modern replacement)
 # - Replaces deprecated: coreapi, django-rest-swagger
 # -------------------------------
-#coreapi == 2.3.3
+# coreapi == 2.3.3
 drf-spectacular>=0.27,<0.28
 drf-spectacular-sidecar>=2024.3,<2025.0  # ships Swagger UI assets
 
@@ -29,7 +32,9 @@ drf-spectacular-sidecar>=2024.3,<2025.0  # ships Swagger UI assets
 # -------------------------------
 # mysqlclient: 2.2.x supports Python 3.12; older 2.1.x may fail to build.
 #mysqlclient>=2.2,<3.0
-mysqlclient==2.2.7
+#mysqlclient==2.2.7
+# python 3.12:
+mysqlclient==2.2.8
 
 # -------------------------------
 # Image handling (required by models.ImageField)
@@ -42,9 +47,10 @@ mysqlclient==2.2.7
 # libjpeg: https://installati.one/ubuntu/22.04/libjpeg-dev/
 #python 3.8-10:
 #Pillow==9.4.0
-Pillow==11.3.0
-#python version larger:
-#Pillow==12.2.0
+# python 3.12:
+#Pillow==11.3.0
+# python 3.12:
+Pillow==12.2.0
 # If you remove ImageField usages (e.g., in sagenkarta_rest_api or TradarkAdmin)
 # For django models.ImageField: (sagenkarta_rest_api.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
 # you may also remove Pillow.
@@ -52,10 +58,12 @@ Pillow==11.3.0
 # -------------------------------
 # HTTP clients / CORS
 # -------------------------------
-requests==2.32.5
-#python version larger:
-#requests==2.33.1
 # requests>=2.32 works with urllib3 2.x
+#requests==2.27.1
+# python 3.8:
+# requests==2.32.3
+# python 3.12:
+requests==2.34.2
 urllib3==2.6.3
 # CORS
 #django-cors-headers==3.10.1
@@ -90,7 +98,7 @@ django-cors-headers==4.9.0
 # OR Downgrade requests to 2.26.0
 # There's no django-revproxy-ng package on PyPI.
 #django-revproxy-ng==
-django-revproxy==0.12.0
+django-revproxy==0.13.0
 # -e git+https://git@github.com/jazzband/django-revproxy@master#egg=django-revproxy
 
 
