@@ -82,6 +82,12 @@ class _AuthProxy(ProxyView):
     `config.LantmaterietProxy_access` (“user:pass”).
     Subclasses must override the class attribute `upstream`.
 
+    Example basic auth lantmateriet
+    Gotland north part:
+    https://username:password@maps.lantmateriet.se/topowebb/v1.1/wmts/1.0.0/topowebb/default/3857/7/38/70.png
+    Kumla:
+    https://username:password@maps.lantmateriet.se/topowebb/v1.1/wmts/1.0.0/topowebb/default/3857/9/151/277.png
+
     Tests for development environment:
     - curl -i http://localhost:8000/api/lm_epsg3857_proxy/9/151/277.png
     - http://localhost:8000/api/lm_nedtonad_epsg3857_proxy/9/151/277.png
