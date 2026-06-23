@@ -30,16 +30,16 @@ router.register(r'utterances', UtterancesViewSet, basename='utterances')
 app_name = 'api'
 
 urlpatterns = [
-    path('isofGeoProxy/', isofGeoProxy),
-    path('simple_lm_proxy/', SimpleLantmaterietProxy),
-    re_path(r'^lm_proxy/(?P<path>.*)$', LantmaterietProxyView.as_view()),
-    re_path(r'^lm_epsg3857_proxy/(?P<path>.*)$', LantmaterietEpsg3857ProxyView.as_view()),
-    re_path(r'^lm_nedtonad_epsg3857_proxy/(?P<path>.*)$', LantmaterietNedtonadEpsg3857ProxyView.as_view()),
-    re_path(r'^lm_orto_proxy/(?P<path>.*)$', LantmaterietOrtoProxyView.as_view()),
-    re_path(r'^lm_historto_proxy/(?P<path>.*)$', LantmaterietHistOrtoProxyView.as_view()),
-    re_path(r'^isofgeo_proxy/(?P<path>.*)$', IsofGeoProxyView.as_view()),
-    re_path(r'^isofhomepage/(?P<path>.*)$', IsofHomepageView.as_view()),
-    re_path(r'^frigg_static/(?P<path>.*)$', FriggStaticView.as_view()),
-    re_path(r'^filemaker_proxy/(?P<path>.*)$', FilemakerProxyView.as_view()),
+    path('isofGeoProxy/', isofGeoProxy, name='isofGeoProxy'),
+    path('simple_lm_proxy/', SimpleLantmaterietProxy, name='simple_lm_proxy'),
+    re_path(r'^lm_proxy/(?P<path>.*)$', LantmaterietProxyView.as_view(), name='lm_proxy'),
+    re_path(r'^lm_epsg3857_proxy/(?P<path>.*)$', LantmaterietEpsg3857ProxyView.as_view(), name='lm_epsg3857_proxy'),
+    re_path(r'^lm_nedtonad_epsg3857_proxy/(?P<path>.*)$', LantmaterietNedtonadEpsg3857ProxyView.as_view(), name='lm_nedtonad_epsg3857_proxy'),
+    re_path(r'^lm_orto_proxy/(?P<path>.*)$', LantmaterietOrtoProxyView.as_view(), name='lm_orto_proxy'),
+    re_path(r'^lm_historto_proxy/(?P<path>.*)$', LantmaterietHistOrtoProxyView.as_view(), name='lm_historto_proxy'),
+    re_path(r'^isofgeo_proxy/(?P<path>.*)$', IsofGeoProxyView.as_view(), name='isofgeo_proxy'),
+    re_path(r'^isofhomepage/(?P<path>.*)$', IsofHomepageView.as_view(), name='isofhomepage'),
+    re_path(r'^frigg_static/(?P<path>.*)$', FriggStaticView.as_view(), name='frigg_static'),
+    re_path(r'^filemaker_proxy/(?P<path>.*)$', FilemakerProxyView.as_view(), name='filemaker_proxy'),
     path('', include(router.urls)),
 ]
