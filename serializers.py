@@ -707,7 +707,6 @@ class RecordsSerializer(serializers.ModelSerializer):
 			'headwords',
 			'taxonomy', 
 			'archive', 
-			'language', # Replaced with language model (languages): To be removed
 			'languages',
 			'materialtype',
 			'numberofonerecord',

@@ -294,7 +294,6 @@ class Records(models.Model):
                                            help_text='OBS: one_accession_row ska ha "accession"')
     publishstatus = models.CharField(max_length=20, blank=False, null=False, default='unpublished')
     update_status = models.CharField(max_length=20, blank=True, null=True, verbose_name='Uppdateringsstatus', help_text='Utvalda för uppdatering')
-    language = models.CharField(max_length=50)
     copyright_license = models.TextField(blank=True, verbose_name='Datalicens')
     pages_transcribed = models.IntegerField(blank=True, null=True, default=0)
     transcribe_time = models.IntegerField(blank=True, null=True, verbose_name='Tid att transkribera',
