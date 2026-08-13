@@ -19,6 +19,7 @@ single point of truth for future developers.
 """
 import json
 import logging
+import re
 from datetime import datetime
 
 from django.db import transaction
@@ -33,6 +34,7 @@ from sagenkarta_rest_api.models import (
     Records, RecordsMedia, Persons, RecordsPersons, CrowdSourceUsers,
     set_avoid_timer_before_update_of_search_database,
 )
+from sagenkarta_rest_api.models_segment import Segments, SegmentsPersons
 
 from .utils import (
     CsrfExemptSessionAuthentication,
@@ -40,6 +42,8 @@ from .utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+PAGE_NUMBER_IN_SOURCE_RE = re.compile(r'_(\d{4})\.jpg$', re.IGNORECASE)
 
 # Transcription status values
 # Used to determine if a record has already been handled and shouldn't be modified again.
@@ -115,12 +119,63 @@ def save_crowdsource_user(_, jsonData, recordid, user):
     return create_or_update_crowdsource_user(u, user)
 
 
+def page_number_from_media_source(source):
+    """
+    Extract the page number from source names ending in _0000.jpg.
+    """
+    if not source:
+        return None
+
+    match = PAGE_NUMBER_IN_SOURCE_RE.search(source)
+    if not match:
+        return None
+
+    return int(match.group(1))
+
+
+def find_segment_for_records_media(records_media):
+    """
+    Find the segment whose start page is the closest one at or before records_media.
+    """
+    media_page = page_number_from_media_source(records_media.source)
+    if media_page is None:
+        return None
+
+    segment_for_page = None
+    segment_start_page = None
+    for segment in Segments.objects.filter(record=records_media.record).select_related("start"):
+        start_page = page_number_from_media_source(segment.start.source if segment.start else None)
+        if start_page is None or start_page > media_page:
+            continue
+        if segment_start_page is None or start_page > segment_start_page:
+            segment_for_page = segment
+            segment_start_page = start_page
+
+    return segment_for_page
+
+
+def save_informant_to_segment(informant, records_media, user):
+    segment = find_segment_for_records_media(records_media)
+    if not segment:
+        return
+
+    if not SegmentsPersons.objects.filter(segment=segment, person=informant).exists():
+        SegmentsPersons.objects.create(
+            segment=segment,
+            person=informant,
+            createdby=user,
+            editedby=user,
+        )
+
+
 def save_informant_to_record(informant, jsonData, recordid, transcribed_object, user):
     """
     Persist Persons row (informant) + RecordsPersons relation if ‘informantName’ present.
     """
     # If transcriptiontype === "sida", set informant on the parent record
+    transcribed_records_media = None
     if isinstance(transcribed_object, RecordsMedia):
+        transcribed_records_media = transcribed_object
         transcribed_object = transcribed_object.record
     if len(jsonData.get("informantName", "")) <= 1:
         return informant  # nothing to do
@@ -160,6 +215,10 @@ def save_informant_to_record(informant, jsonData, recordid, transcribed_object, 
         person=informant, record=transcribed_object, relation__in=["i", "informant"]
     ).exists():
         RecordsPersons.objects.create(person=informant, record=transcribed_object, relation="informant")
+
+    if transcribed_records_media:
+        # Save informant to record segment if it exists:
+        save_informant_to_segment(informant, transcribed_records_media, user)
 
     return informant
 
