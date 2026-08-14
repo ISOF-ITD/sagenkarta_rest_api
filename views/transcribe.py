@@ -57,7 +57,7 @@ STATUSES_COMPLETED = {
 def save_message_comment(comment: str, supertranscriber: bool, obj):
     """
     Append *comment* to the correct field (comment / transcription_comment)
-    unless it is already present.  Hard-limit to 255 chars.
+    unless it is already present.
     """
     if not comment:
         return
