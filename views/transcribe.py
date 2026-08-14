@@ -70,8 +70,9 @@ def save_message_comment(comment: str, supertranscriber: bool, obj):
         return                       # already there – nothing to do
 
     combined = f"{current};{comment}" if current else comment
-    if len(combined) > 255:
-        combined = combined[:252] + "..."
+    # If length needs to be shortened:
+    #if len(combined) > 255:
+    #    combined = combined[:252] + "..."
 
     setattr(obj, field, combined)
 
