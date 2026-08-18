@@ -41,6 +41,7 @@ from .utils import (
     validate_string as validateString,
 )
 
+MAIN_LOG_ID = 'transcribe.'
 logger = logging.getLogger(__name__)
 
 PAGE_NUMBER_IN_SOURCE_RE = re.compile(r'_(\d{4})\.jpg$', re.IGNORECASE)
@@ -89,6 +90,7 @@ def create_or_update_crowdsource_user(crowdsource_user, user):
     """
     Insert or return existing CrowdSourceUsers row that matches name+email.
     """
+    log_id = MAIN_LOG_ID + 'create_or_update_crowdsource_user'
     if not (crowdsource_user.email or crowdsource_user.name):
         # fall back to anonymous user
         return CrowdSourceUsers.objects.filter(userid='crowdsource-anonymous').first()
@@ -97,13 +99,13 @@ def create_or_update_crowdsource_user(crowdsource_user, user):
         name=crowdsource_user.name, email=crowdsource_user.email
     ).first()
     if existing:
-        logger.info("Transcription crowdsource_user existing %s %s", crowdsource_user.email, crowdsource_user.name)
+        logger.info("%s Transcription crowdsource_user existing %s %s", log_id, crowdsource_user.email, crowdsource_user.name)
         return existing
 
     crowdsource_user.createdate = Now()
     crowdsource_user.createdby = user
     crowdsource_user.save()
-    logger.info("Transcription crowdsource_user saved %s %s", crowdsource_user.email, crowdsource_user.name)
+    logger.info("%s Transcription crowdsource_user saved %s %s", log_id, crowdsource_user.email, crowdsource_user.name)
     return crowdsource_user
 
 
@@ -156,10 +158,12 @@ def find_segment_for_records_media(records_media):
 
 
 def save_informant_to_segment(informant, records_media, user):
+    log_id = MAIN_LOG_ID + 'save_informant_to_segment'
     segment = find_segment_for_records_media(records_media)
     if not segment:
         return
 
+    logger.debug("%s records_media segment %s %s", log_id, str(records_media.source), str(segment.id))
     if not SegmentsPersons.objects.filter(segment=segment, person=informant).exists():
         SegmentsPersons.objects.create(
             segment=segment,
@@ -173,16 +177,25 @@ def save_informant_to_record(informant, jsonData, recordid, transcribed_object, 
     """
     Persist Persons row (informant) + RecordsPersons relation if ‘informantName’ present.
     """
+    log_id = MAIN_LOG_ID + 'save_informant_to_record '
     # If transcriptiontype === "sida", set informant on the parent record
     transcribed_records_media = None
+    segment_id = ''
     if isinstance(transcribed_object, RecordsMedia):
         transcribed_records_media = transcribed_object
         transcribed_object = transcribed_object.record
+        segment = find_segment_for_records_media(transcribed_records_media)
+        if segment:
+            segment_id = str(segment.id)
+
     if len(jsonData.get("informantName", "")) <= 1:
         return informant  # nothing to do
 
+    # Person id is record id and if record has segments add segment id:
+    person_id = f"crwd{recordid}-{segment_id}"
+    logger.debug("%s person_id %s %s %s", log_id, recordid, segment_id, person_id)
     informant = Persons(
-        id=f"crwd{recordid}",
+        id=person_id,
         name=jsonData["informantName"],
         birthplace=jsonData.get("informantBirthPlace", ""),
         birth_year=jsonData.get("informantBirthDate", "") if jsonData.get("informantBirthDate", "").isdigit() else None,
@@ -202,7 +215,7 @@ def save_informant_to_record(informant, jsonData, recordid, transcribed_object, 
         informant.createdate = Now()
         informant.save()
 
-    # Update transcriptioncomment (avoid duplicates; trim 255)
+    # Update person transcriptioncomment (avoid duplicates; trim 255)
     info_extra = jsonData.get("informantInformation", "")
     if info_extra:
         current = informant.transcriptioncomment or ""
@@ -231,12 +244,13 @@ def save_transcription(request, response_message, response_status, set_status_to
     """
     Heavy-lifting helper shared by /transcribe/ (finish) and /transcribesave/ (intermediate save)
     """
+    log_id = MAIN_LOG_ID + 'save_transcription'
     jsonData = None
     if 'json' not in request.data:
         return jsonData, 'Ett oväntat fel: Error in request', response_status
 
     jsonData = json.loads(request.data['json'])
-    logger.debug("save_transcription post %s", jsonData)
+    logger.debug("%s save_transcription post %s", log_id, jsonData)
 
     recordid = jsonData['recordid']
     page_id = jsonData.get('page')  # None if not present
@@ -324,7 +338,7 @@ def save_transcription(request, response_message, response_status, set_status_to
     if set_status_to_transcribed and transcribed_object.transcriptionstatus == valid_status_before_transcribed:
         transcribed_object.transcriptionstatus = 'transcribed'
         transcribed_object.transcriptiondate = Now()
-        logger.info("Transcriptionstatus transcribed for %s", recordid)
+        logger.info("%s Transcriptionstatus transcribed for %s", log_id, recordid)
 
     # Save informant / contributor
     informant = None
@@ -337,6 +351,7 @@ def save_transcription(request, response_message, response_status, set_status_to
 
     # Super-transcriber auto-publish
     supertranscriber = crowdsource_user and "supertranscriber" in crowdsource_user.role
+    logger.debug("%s supertranscriber %s %s", log_id, recordid, supertranscriber)
     if supertranscriber:
         transcribed_object.transcriptionstatus = "autopublished"
         transcribed_object.publishstatus = "published"
@@ -368,7 +383,7 @@ def save_transcription(request, response_message, response_status, set_status_to
                 transcribed_object_parent.editedby = user
             # Always save the parent record for update in search database of calculated values in json
             transcribed_object_parent.save()
-            logger.info("Transcription parent saved for %s", str(page_id), recordid)
+            logger.info("Transcription parent saved for %s %s", str(page_id), recordid)
 
         response_status = 'true'
         logger.info("Transcription saved for %s %s", str(page_id), recordid)
