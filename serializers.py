@@ -356,15 +356,27 @@ class AccessionsFormListaSerializer(serializers.ModelSerializer):
 class AccessionsPersSerializer(serializers.ModelSerializer):
 	namn = serializers.CharField()
 	fodd = serializers.CharField()
-	fodd_ar = serializers.IntegerField()
+	# fodd_ar direct from view:
+	# fodd_ar = serializers.IntegerField()
+	fodd_ar = serializers.SerializerMethodField('get_fodd_ar')
 	kon = serializers.CharField()
 	titel = serializers.CharField()
 	osaker = serializers.CharField()
 	personalia = serializers.CharField()
 	roll = serializers.IntegerField()
 
+	# return fodd_ar as integer if possible
+	def get_fodd_ar(self, obj):
+		if obj.fodd_ar is not None:
+			if obj.fodd_ar.isdigit():
+				return int(obj.fodd_ar)
+			else:
+				None
+		else:
+			return None
+
 	class Meta:
-		model = Accessionsregister_FormLista
+		model = Accessionsregister_pers
 
 		fields = (
 			'namn',
