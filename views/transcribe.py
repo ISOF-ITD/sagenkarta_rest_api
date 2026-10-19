@@ -214,6 +214,7 @@ def save_informant_to_record(informant, jsonData, recordid, transcribed_object, 
         informant.editedby = user
         informant.createdate = Now()
         informant.save()
+        # logger.debug("%s Transcription informant saved %s %s", log_id, informant.name, informant.birthplace, informant.birth_year)
 
     # Update person transcriptioncomment (avoid duplicates; trim 255)
     info_extra = jsonData.get("informantInformation", "")
@@ -386,7 +387,14 @@ def save_transcription(request, response_message, response_status, set_status_to
             logger.info("Transcription parent saved for %s %s", str(page_id), recordid)
 
         response_status = 'true'
-        logger.info("Transcription saved for %s %s", str(page_id), recordid)
+        crowdsource_user_description = 'crowdsource_user=None'
+        if crowdsource_user is not None:
+            crowdsource_user_description = str(crowdsource_user.name) + '/' + str(crowdsource_user.email)
+        # if informant is not None:
+        # informant_description = informant.name  + '@' + informant.birthplace + '/' + str(informant.birth_year)
+        # logger.info("Transcription saved for %s %s %s", str(page_id), recordid, informant_description)
+        logger.info("Transcription saved for %s %s %s", str(page_id), recordid, crowdsource_user_description)
+        # logger.info("Transcription saved for %s %s", str(page_id), recordid)
 
 
     except Exception as e:
