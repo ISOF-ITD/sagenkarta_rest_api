@@ -50,7 +50,7 @@ mysqlclient==2.2.8
 # python 3.12:
 #Pillow==11.3.0
 # python 3.12:
-Pillow==12.2.0
+Pillow==13.0.0
 # If you remove ImageField usages (e.g., in sagenkarta_rest_api or TradarkAdmin)
 # For django models.ImageField: (sagenkarta_rest_api.Persons.image: (fields.E210) Cannot use ImageField because Pillow is not installed)
 # you may also remove Pillow.
