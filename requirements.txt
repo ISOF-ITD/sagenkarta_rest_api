@@ -3,24 +3,24 @@
 # -------------------------------
 #Django==4.2.29
 # python 3.12:
-Django==5.2.15
+Django==5.2.18
 
 # -------------------------------
 # Django REST Framework
 # Used by sagenkarta_rest_api and sagendatabas_es_api
 # -------------------------------
 # python 3.9:
-djangorestframework==3.15.2
-# ModuleNotFoundError: No module named 'rest_framework.schemas.coreapi':
-#djangorestframework==3.17.1
+#djangorestframework==3.15.2
+# ModuleNotFoundError: No module named 'rest_framework.schemas.coreapi' from 3.16.3:
+djangorestframework==3.18.3
 
 # -------------------------------
 # OpenAPI / Swagger UI (modern replacement)
 # - Replaces deprecated: coreapi, django-rest-swagger
 # -------------------------------
-coreapi == 2.3.3
-drf-spectacular>=0.27,<0.28
-drf-spectacular-sidecar>=2024.3,<2025.0  # ships Swagger UI assets
+#coreapi == 2.3.3
+#drf-spectacular>=0.27,<0.28
+#drf-spectacular-sidecar>=2024.3,<2025.0  # ships Swagger UI assets
 
 # If you must keep the old stack, comment the two lines above and
 # (not recommended) un-comment these—but they are not supported on Django 4.2:
@@ -64,7 +64,8 @@ Pillow==13.0.0
 # requests==2.32.3
 # python 3.12:
 requests==2.34.2
-urllib3==2.6.3
+#urllib3==2.6.3
+urllib3==2.8.0
 # CORS
 #django-cors-headers==3.10.1
 #django-cors-headers==4.7.0
